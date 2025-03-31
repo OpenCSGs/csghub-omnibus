@@ -1,0 +1,20 @@
+#!/bin/bash -e
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+{{- $dataDir := "/var/opt/csghub/minio/data" }}
+{{- if (datasource "config").minio.data }}
+{{- $dataDir = (datasource "config").minio.data }}
+{{- end }}
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+exec chpst -e /opt/csghub/etc/minio/env -P \
+  -U minio:minio \
+  -u minio:minio \
+  /opt/csghub/embedded/bin/minio server --json \
+  {{ $dataDir }}

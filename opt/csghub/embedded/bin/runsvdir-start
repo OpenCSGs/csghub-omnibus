@@ -1,0 +1,7 @@
+#!/bin/sh
+
+PATH=/opt/csghub/bin:/opt/csghub/embedded/bin:/usr/local/bin:/sbin:/usr/sbin:/bin:/usr/bin
+SVDIR=/opt/csghub/service
+
+exec env - PATH=$PATH \
+runsvdir -P "${SVDIR}" 'log: .....................'

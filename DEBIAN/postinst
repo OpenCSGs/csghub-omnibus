@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+config_file="/etc/csghub/csghub.yaml"
+backup_file="/tmp/csghub.yaml.backup"
+
+case "$1" in
+  configure)
+    if [ -e "$backup_file" ]; then
+      echo "Restoring $config_file from backup $backup_file"
+      cp -a "$backup_file" "$config_file"
+      rm -rf "$backup_file" || true
+
+      echo "Reconfigure ..."
+      /usr/bin/csghub-ctl reconfigure || true
+    fi
+    systemctl daemon-reload || true
+    systemctl start csghub-runsvdir.service || true
+    systemctl enable csghub-runsvdir.service || true
+    echo "Configured."
+    ;;
+esac
+
+exit 0

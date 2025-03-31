@@ -1,0 +1,191 @@
+---
+csghub:
+  ## The external URL for accessing CSGHub
+  external_url: http://csghub.example.com
+  ## The secret file
+  # secret_file: "/var/opt/csghub/gitaly/.csghub_secret"
+  ## The secret key
+  # secret: "signing-key"
+
+gitaly:
+  enable: false
+  ## Directory containing Gitaly executables
+  bin_dir: /opt/csghub/embedded/bin
+  ## The data directory for Gitaly
+  data_dir: /var/opt/csghub/gitaly
+  ## Unencrypted TCP listen address
+  listen_addr: "127.0.0.1:8075"
+  auth:
+    ## Auth token for Gitaly authentication
+    # token: "abc123secret"
+  storage:
+    ## Storage name
+    name: "default"
+    ## Storage path
+    path: "/var/opt/csghub/gitaly/repositories"
+  # tls:
+    ## Path to TLS certificate
+    # certificate_path: "/var/opt/csghub/gitaly/ssl/cert.cert"
+    ## Path to TLS key
+    # key_path: "/var/opt/csghub/gitaly/ssl/key.pem"
+  logging:
+    ## Log destination
+    dir: "/var/log/csghub/gitaly"
+    ## Log format (json or text)
+    format: "json"
+    ## Log level (debug, info, warn, error, fatal, panic)
+    level: "info"
+  # prometheus:
+    ## Prometheus gRPC latency buckets
+    # grpc_latency_buckets: [0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0]
+  hooks:
+    ## Directory for custom Git hooks
+    custom_hooks_dir: "/var/opt/csghub/gitaly/custom_hooks"
+  # concurrency:
+    ## RPC method
+    # rpc: "/gitaly.RepositoryService/OptimizeRepository"
+    ## Max concurrency per repository
+    # max_per_repo: 1
+    ## Max wait time in queue
+    # max_queue_wait: "1m"
+    ## Max queue size
+    # max_queue_size: 10
+  # rate_limiting:
+    ## RPC method
+    # rpc: "/gitaly.SmartHTTPService/PostUploadPackWithSidechannel"
+    ## Rate limiting interval
+    # interval: "1m"
+    ## Rate limiting burst size
+    # burst: 5
+  # daily_maintenance:
+    ## Disable daily maintenance
+    # disabled: false
+    ## Start hour
+    # start_hour: 23
+    ## Start minute
+    # start_minute: 30
+    ## Maintenance duration
+    # duration: "45m"
+    ## Storages to include
+    # storages: ["default"]
+  # cgroups:
+    ## Cgroups mountpoint
+    # mountpoint: "/sys/fs/cgroup"
+    ## Cgroups hierarchy root
+    # hierarchy_root: "gitaly"
+    ## Memory limit in bytes
+    # memory_bytes: 64424509440
+    ## CPU shares
+    # cpu_shares: 1024
+    ## CPU quota in microseconds
+    # cpu_quota_us: 400000
+    # repositories:
+      ## Repository count
+      # count: 500
+      ## Repository memory limit in bytes
+      # memory_bytes: 12884901888
+      ## Repository CPU shares
+      # cpu_shares: 512
+      ## Repository CPU quota in microseconds
+      # cpu_quota_us: 200000
+  # backup:
+    ## Go cloud URL for backups
+    # go_cloud_url: "gs://gitaly-backups"
+    ## Backup layout
+    # layout: "pointer"
+    ## Go cloud URL for WAL backups
+    # wal_backup_go_cloud_url: "gs://gitaly-wal-backups"
+    ## Number of WAL backup workers
+    # wal_backup_worker_count: 1
+    ## Buffer size
+    # buffer_size: 0
+  # bundle_uri:
+    ## Go cloud URL for bundle URI
+    # go_cloud_url: "gs://my-bundle-uri-bucket"
+  # timeout:
+    ## Upload pack negotiation timeout
+    # upload_pack_negotiation: "10m"
+    ## Upload archive negotiation timeout
+    # upload_archive_negotiation: "1m"
+  git: #  Git configuration parameters
+    use_bundled_binaries: true # 使用绑定的 Git
+    ignore_gitconfig: true # 忽略系统 Git 配置
+    bin_path: "/opt/gitlab/embedded/bin/git" # Git二进制文件路径
+    catfile_cache_size: 100 # catfile缓存大小
+
+praefect:
+  ## Enable Praefect
+  enable: false
+  ## Praefect listen address
+  listen_addr: "127.0.0.1:2305"
+  auth:
+    ## Auth token for Praefect
+    # token: "abc123secret"
+  logging:
+    ## Log destination
+    dir: "/var/log/csghub/praefect"
+    ## Log format
+    format: "json"
+    ## Log level
+    level: "warn"
+  database:
+    ## Praefect database host
+    host: "127.0.0.1"
+    ## Praefect database port
+    port: "5432"
+    ## Praefect database user
+    user: "praefect"
+    ## Praefect database password
+    password: "praefect"
+    ## Praefect database name
+    dbname: "praefect_production"
+  virtual_storage:
+    - ## Virtual storage name
+      name: "default"
+      nodes:
+        - ## Gitaly storage name
+          storage: "gitaly-01"
+          ## Gitaly address
+          address: "tcp://10.6.0.21:8075"
+          ## Gitaly token
+          token: "abc123secret"
+        - ## Gitaly storage name
+          storage: "gitaly-02"
+          ## Gitaly address
+          address: "tcp://10.6.0.22:8075"
+          ## Gitaly token
+          token: "abc123secret"
+        - ## Gitaly storage name
+          storage: "gitaly-03"
+          ## Gitaly address
+          address: "tcp://10.6.0.23:8075"
+          ## Gitaly token
+          token: "abc123secret"
+  replication:
+    batch_size: 10
+  reconciliation:
+    ## Reconciliation scheduling interval
+    scheduling_interval: "1m"
+    ## Histogram buckets
+    histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+  failover:
+    ## Enable failover
+    enabled: true
+  # yamux:
+    ## Maximum stream window size in bytes
+    # maximum_stream_window_size_bytes: 262144
+    ## Accept backlog
+    # accept_backlog: 256
+
+minio:
+  enable: true
+  data: "/var/opt/csghub/minio/data"
+  log: "/var/log/csghub/minio"
+  auth:
+    user: "minio"
+    password: "Minio@1234"
+  environments:
+    MINIO_OPTS: " --console-address=:9001"
+
+logger:
+  enable: true

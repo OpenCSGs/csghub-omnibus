@@ -1,0 +1,20 @@
+#!/bin/bash -e
+
+case "$1" in
+  upgrade)
+    echo "Cleaning up old version resources during upgrade..."
+    ;;
+
+  purge)
+    echo "Purging package, removing all data and configuration..."
+    cp -a /etc/csghub ~/csghub_$(date +%y.%m.%d.%N) || true
+    systemctl stop csghub-runsvdir.service || true
+    rm -rf /etc/systemd/system/csghub-runsvdir.service || true
+    rm -rf /usr/bin/csghub-* || true
+    rm -rf /{opt,etc}/csghub || true
+    systemctl daemon-reload || true
+    ;;
+
+esac
+
+exit 0

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/logger" }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

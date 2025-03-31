@@ -1,0 +1,34 @@
+#!/bin/bash
+
+{{- $envDir := "/opt/csghub/etc/minio/env" }}
+
+# Clear all environment variable files
+rm -rf {{ $envDir }}/* >/dev/null 2>&1
+
+# Render environments
+{{- with (datasource "config").minio.auth }}
+{{- if .user }}
+echo {{ .user }} > {{ $envDir }}/MINIO_ROOT_USER
+{{- end }}
+{{- if .password }}
+echo {{ .password }} > {{ $envDir }}/MINIO_ROOT_PASSWORD
+{{- end }}
+{{- end }}
+
+{{- if has (datasource "config") "logger" }}
+{{- if has (datasource "config").logger "enable" }}
+{{- if (datasource "config").logger.enable }}
+{{- $webhook_endpoint := "http://localhost:9002/minio-logger" }}
+{{- $auth_token := "Bearer MTIzYWJj" }}
+echo "on" > {{ $envDir }}/MINIO_AUDIT_WEBHOOK_ENABLE_PRIMARY
+echo {{ $webhook_endpoint }} > {{ $envDir }}/MINIO_AUDIT_WEBHOOK_ENDPOINT_PRIMARY
+echo {{ $auth_token }} > {{ $envDir }}/MINIO_AUDIT_WEBHOOK_AUTH_TOKEN_PRIMARY
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- range $env, $value := (datasource "config").minio.environments }}
+echo {{ $value }} > {{ $envDir }}/{{ $env }}
+{{- end }}
+
+exit 0

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+{{- $envDir := "/opt/csghub/etc/minio/env" }}
+{{- $webhook_listen_port := "9002" }}
+{{- $webhook_auth_token := "MTIzYWJj" }}
+
+echo {{ $webhook_listen_port }} > {{ $envDir }}/WEBHOOK_LISTEN_PORT
+echo {{ $webhook_auth_token }} > {{ $envDir }}/WEBHOOK_AUTH_TOKEN
+
+# Clear all environment variable files
+rm -rf {{ $envDir }}/* >/dev/null 2>&1
+
+exit 0

@@ -1,0 +1,13 @@
+#!/bin/bash -e
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+# Redirect stderr -> stdout
+exec 2>&1
+
+exec chpst -e /opt/csghub/etc/minio/env -P \
+  -U root:root \
+  -u root:root \
+  /opt/csghub/embedded/bin/logger

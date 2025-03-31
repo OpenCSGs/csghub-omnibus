@@ -1,0 +1,11 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/minio" }}
+{{- if (datasource "config").minio.log }}
+{{- $logDir = (datasource "config").minio.log }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

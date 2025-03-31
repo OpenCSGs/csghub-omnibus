@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+config_file="/etc/csghub/csghub.yaml"
+backup_file="/tmp/csghub.yaml.backup"
+
+if [ "$1" = "upgrade" ]; then
+  echo "Backup $config_file to $backup_file"
+  cp -a "$config_file" "$backup_file"
+fi
+
+exit 0
