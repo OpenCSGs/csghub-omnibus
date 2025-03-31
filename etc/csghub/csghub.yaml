@@ -177,15 +177,51 @@ praefect:
     ## Accept backlog
     # accept_backlog: 256
 
+# MinIO storage configuration section
 minio:
+  # Enable or disable MinIO service
   enable: true
+  # Path to store MinIO data files
   data: "/var/opt/csghub/minio/data"
+  # Path for MinIO log files
   log: "/var/log/csghub/minio"
+  # Authentication credentials for MinIO
   auth:
+    # MinIO root username
     user: "minio"
+    # MinIO root password
     password: "Minio@1234"
+  # Environment variables for MinIO
   environments:
+    # Additional MinIO server options (console port configuration)
     MINIO_OPTS: " --console-address=:9001"
 
+# Logger configuration section
 logger:
+  # Enable or disable logging system
   enable: true
+
+# Consul service discovery configuration
+consul:
+  # Enable or disable Consul service
+  enable: false
+  # Datacenter name for Consul cluster
+  datacenter: "csghub-consul-dc"
+  # Directory to store Consul data
+  data_dir: "/var/opt/csghub/consul"
+  # Network interface address to bind to
+  bind_addr: "0.0.0.0"
+  # Indicate Which client can connect to
+  client_addr: "0.0.0.0"
+  # Address to advertise to other Consul nodes
+  advertise_addr: "127.0.0.1"
+  # Whether to run in server mode (true) or client mode (false)
+  server: true
+  # Web UI configuration
+  ui_config:
+    # Enable or disable Consul web UI
+    enabled: true
+  # List of Consul server addresses to join during startup
+  retry_join: ["127.0.0.1", "127.0.0.2", "127.0.0.3"]
+  # Directory to log Consul
+  log_dir: "/var/log/csghub/consul"

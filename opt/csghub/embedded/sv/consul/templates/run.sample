@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Exit if execute with any errors
+set -e
+
+exec chpst -e /opt/csghub/etc/consul/env -P \
+  -U consul:consul \
+  -u consul:consul \
+  /opt/csghub/embedded/bin/consul agent -config-dir=/var/opt/csghub/consul
