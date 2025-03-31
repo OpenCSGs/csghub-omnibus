@@ -28,7 +28,7 @@ echo {{ $auth_token }} > {{ $envDir }}/MINIO_AUDIT_WEBHOOK_AUTH_TOKEN_PRIMARY
 {{- end }}
 
 {{- range $env, $value := (datasource "config").minio.environments }}
-echo {{ $value }} > {{ $envDir }}/{{ $env }}
+echo {{ $value | quote }} > {{ $envDir }}/{{ $env }}
 {{- end }}
 
 exit 0
