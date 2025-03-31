@@ -3,7 +3,7 @@
 {{- $envDir := "/opt/csghub/etc/minio/env" }}
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* >/dev/null 2>&1
+rm -rf {{ $envDir }}/* &>/dev/null
 
 # Render environments
 {{- with (datasource "config").minio.auth }}

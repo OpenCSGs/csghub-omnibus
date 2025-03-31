@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/gitaly" }}
+{{- if has (datasource "config").gitaly "logging" }}
+{{- if has (datasource "config").gitaly.logging "dir" }}
+{{- if (datasource "config").gitaly.logging.dir }}
+{{- $logDir = (datasource "config").gitaly.logging.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

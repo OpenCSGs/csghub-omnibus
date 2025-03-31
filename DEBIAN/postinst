@@ -5,6 +5,9 @@ backup_file="/tmp/csghub.yaml.backup"
 
 case "$1" in
   configure)
+    systemctl daemon-reload || true
+    systemctl start csghub-runsvdir.service || true
+    systemctl enable csghub-runsvdir.service || true
     if [ -e "$backup_file" ]; then
       echo "Restoring $config_file from backup $backup_file"
       cp -a "$backup_file" "$config_file"
@@ -13,9 +16,6 @@ case "$1" in
       echo "Reconfigure ..."
       /usr/bin/csghub-ctl reconfigure || true
     fi
-    systemctl daemon-reload || true
-    systemctl start csghub-runsvdir.service || true
-    systemctl enable csghub-runsvdir.service || true
     echo "Configured."
     ;;
 esac

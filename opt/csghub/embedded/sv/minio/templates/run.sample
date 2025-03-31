@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Redirect stderr -> stdout
+exec 2>&1
+
 # Run the pre-start script to ensure that the service meets the startup conditions
 if [ -x ./pre-start ]; then
   ./pre-start
@@ -9,9 +12,6 @@ fi
 {{- if (datasource "config").minio.data }}
 {{- $dataDir = (datasource "config").minio.data }}
 {{- end }}
-
-# Redirect stderr -> stdout
-exec 2>&1
 
 exec chpst -e /opt/csghub/etc/minio/env -P \
   -U minio:minio \

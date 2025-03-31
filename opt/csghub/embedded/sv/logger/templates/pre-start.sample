@@ -8,6 +8,6 @@ echo {{ $webhook_listen_port }} > {{ $envDir }}/WEBHOOK_LISTEN_PORT
 echo {{ $webhook_auth_token }} > {{ $envDir }}/WEBHOOK_AUTH_TOKEN
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* >/dev/null 2>&1
+rm -rf {{ $envDir }}/* &>/dev/null
 
 exit 0

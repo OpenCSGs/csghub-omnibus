@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Attempt to change ulimit before the set -e flag, ignore failures
+ulimit -n 15000
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# Exit if execute with any errors
+set -e
+
+{{- $dataDir := (datasource "config").gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
+cd {{ $dataDir }}
+exec chpst -e /opt/csghub/etc/gitaly/env -P \
+  -U gitaly:gitaly \
+  -u gitaly:gitaly \
+  /opt/csghub/embedded/bin/gitaly-wrapper /opt/csghub/embedded/bin/gitaly serve {{ $dataDir }}/config.toml

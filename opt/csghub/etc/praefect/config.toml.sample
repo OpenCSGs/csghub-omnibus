@@ -1,0 +1,136 @@
+# Gitaly Praefect configuration file
+# This file is managed by csghub-ctl. Manual changes will be
+# erased! To change the contents below, edit /etc/csghub/csghub.yaml
+# and run:
+# sudo csghub-ctl reconfigure
+
+# TCP address to listen on
+listen_addr = "{{ (datasource "config").praefect.listen_addr | default "127.0.0.1:2305" }}"
+
+{{- if (datasource "config").praefect.tls_listen_addr }}
+# Secured TCP address to listen on.
+tls_listen_addr = "{{ (datasource "config").praefect.tls_listen_addr }}"
+{{- end }}
+
+{{- if (datasource "config").praefect.tls }}
+# Path to the certificate and its key used for TLS listening address.
+[tls]
+{{- if (datasource "config").praefect.tls.certificate_path }}
+certificate_path = "{{ (datasource "config").praefect.tls.certificate_path }}"
+{{- end }}
+{{- if (datasource "config").praefect.tls.key_path }}
+key_path = "{{ (datasource "config").praefect.tls.key_path }}"
+{{- end }}
+{{- end }}
+
+# Optional: grace period before a praefect process is forcibly terminated (duration)
+# Defaults to "1m"
+graceful_stop_timeout = "{{ (datasource "config").praefect.graceful_stop_timeout | default "30s" }}"
+
+# Optional: export metrics via Prometheus
+prometheus_listen_addr = "{{ (datasource "config").praefect.prometheus_listen_addr | default "127.0.0.1:9652" }}"
+
+{{- if (datasource "config").praefect.logging }}
+# You can optionally configure Praefect to output JSON-formatted log messages to stdout
+[logging]
+format = "{{ (datasource "config").praefect.logging.format | default "json" }}"
+# Optional: Set log level to only log entries with that severity or above
+# One of, in order: debug, info, warn, error, fatal, panic
+# Defaults to "info"
+level = "{{ (datasource "config").praefect.logging.level | default "warn" }}"
+{{ end }}
+
+{{ if (datasource "config").praefect.prometheus }}
+[prometheus]
+{{- if (datasource "config").praefect.prometheus.grpc_latency_buckets }}
+grpc_latency_buckets = [ {{ (datasource "config").praefect.prometheus.grpc_latency_buckets | default }} ]
+{{- else }}
+grpc_latency_buckets = [ 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0 ]
+{{- end }}
+{{ end }}
+
+{{- if (datasource "config").praefect.sentry }}
+[sentry]
+{{- if (datasource "config").praefect.sentry.sentry_environment }}
+sentry_environment = "{{ (datasource "config").praefect.sentry.sentry_environment | default "" }}"
+{{- end }}
+{{- if (datasource "config").praefect.sentry.sentry_dsn }}
+sentry_dsn = "{{ (datasource "config").praefect.sentry.sentry_dsn | default "" }}"
+{{- end }}
+{{ end }}
+
+{{- if (datasource "config").praefect.database }}
+[database]
+host = "{{ (datasource "config").praefect.database.host | default "127.0.0.1" }}"
+port = {{ (datasource "config").praefect.database.port | default 5432 }}
+user = "{{ (datasource "config").praefect.database.user | default "praefect" }}"
+password = "{{ (datasource "config").praefect.database.password | default "" }}"
+dbname = "{{ (datasource "config").praefect.database.dbname | default "praefect_production" }}"
+{{ end }}
+
+{{- if (datasource "config").praefect.auth }}
+# Optional: authenticate Gitaly requests using a shared secret. This token works the same way as a gitaly token
+[auth]
+token = "{{ (datasource "config").praefect.auth.token | default "abc123secret" }}"
+{{ end }}
+
+{{- if (datasource "config").praefect.replication }}
+# One or more Gitaly servers need to be configured to be managed. The names
+# of each server are used to link multiple nodes, or `gitaly_server`s together
+# as shard. listen_addr should be unique for all nodes.
+# Requires the protocol to be defined, e.g. tcp://host.tld:1234
+[replication]
+batch_size = {{ (datasource "config").praefect.replication.batch_size | default 10 }}
+{{ end }}
+
+{{- if (datasource "config").praefect.reconciliation }}
+[reconciliation]
+# Duration value specifying an interval at which to run the automatic repository reconciler.
+# Automatic reconciliation is disabled if set to 0. Example: "1m" for reconciliation every minute.
+scheduling_interval = "{{ (datasource "config").praefect.reconciliation.scheduling_interval | default "1m" }}"
+# Scheduling duration histogram buckets.
+{{- if (datasource "config").praefect.reconciliation.histogram_buckets }}
+histogram_buckets = [{{- range $i, $v := (datasource "config").praefect.reconciliation.histogram_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
+{{- else }}
+histogram_buckets = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+{{- end }}
+{{ end }}
+
+{{- if (datasource "config").praefect.failover }}
+[failover]
+enabled = {{ (datasource "config").praefect.failover.enabled | default true }}
+{{ end }}
+
+{{- if (datasource "config").praefect.delete_invalid_records }}
+[background_verification]
+delete_invalid_records = {{ (datasource "config").praefect.background_verification.delete_invalid_records | default false }}
+verification_interval = "{{ (datasource "config").praefect.background_verification.verification_interval | default "72h" }}"
+{{ end }}
+
+{{- if (datasource "config").praefect.virtual_storage }}
+{{- range $vs := (datasource "config").praefect.virtual_storage }}
+[[virtual_storage]]
+name = "{{ $vs.name }}"
+{{- if $vs.default_replication_factor }}
+default_replication_factor = {{ $vs.default_replication_factor }}
+{{- end }}
+{{- if $vs.nodes }}
+{{- range $node := $vs.nodes }}
+[[virtual_storage.node]]
+storage = "{{ $node.storage }}"
+address = "{{ $node.address }}"
+token = "{{ $node.token }}"
+{{ end }}
+{{- end }}
+{{- end }}
+{{ end }}
+
+{{- if (datasource "config").praefect.yamux }}
+[yamux]
+# MaximumStreamWindowSizeBytes sets the maximum window size in bytes used for yamux streams.
+# Higher value can increase throughput at the cost of more memory usage.
+maximum_stream_window_size_bytes = {{ (datasource "config").praefect.yamux.maximum_stream_window_size_bytes | default 262144 }}
+# AcceptBacklog sets the maximum number of stream openings in-flight
+# before further openings block.
+accept_backlog = {{ (datasource "config").praefect.yamux.accept_backlog | default 256 }}
+{{ end }}
