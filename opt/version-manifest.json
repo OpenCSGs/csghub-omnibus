@@ -37,6 +37,12 @@
         "description": "Consul offers a fully-featured service mesh solution that solves the networking and security challenges of operating microservices in multi-cloud and hybrid-cloud environment.",
         "version": "1.20.5",
         "repository": "https://github.com/hashicorp/consul"
+      },
+      {
+        "name": "postgresql",
+        "description": "PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance.",
+        "version": "16.8",
+        "repository": "https://www.postgresql.org/"
       }
     ]
   }

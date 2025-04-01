@@ -225,3 +225,44 @@ consul:
   retry_join: ["127.0.0.1", "127.0.0.2", "127.0.0.3"]
   # Directory to log Consul
   log_dir: "/var/log/csghub/consul"
+
+postgresql:
+  # Enable or disable PostgreSQL service
+  enable: true
+  # Directory to store data files
+  data_dir: "/var/opt/csghub/postgresql/data"
+  # Network addresses to listen on (* = all available IPs)
+  listen_addresses: "*"
+  # TCP port number for connections
+  port: 5432
+  # Maximum number of concurrent connections
+  max_connections: "200"
+  # Shared memory buffer size for caching data
+  shared_buffers: "256MB"
+  # Preloaded extensions (comma-separated)
+  shared_preload_libraries: "pg_stat_statements"
+  # Log all SQL statements (off|ddl|mod|all)
+  log_statement: "none"
+  # Log checkpoint operations
+  log_checkpoints: "off"
+  # Write-Ahead Log level (minimal|replica|logical)
+  wal_level: "minimal"
+  # Allow read-only connections during recovery
+  hot_standby: "off"
+  # Write full page images to WAL for checksums
+  wal_log_hints: "off"
+  # Maximum number of WAL sender processes
+  max_wal_senders: "4"
+  # Maximum number of replication slots
+  max_replication_slots: "3"
+  # Automatic checkpoint interval
+  checkpoint_timeout: "10min"
+  # Specify db timezone
+  timezone: "Asia/Shanghai"
+  # Host-based authentication rules
+  pg_hba: [ ]
+
+
+
+
+

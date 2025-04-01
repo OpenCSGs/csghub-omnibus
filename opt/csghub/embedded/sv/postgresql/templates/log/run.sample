@@ -1,0 +1,13 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/postgresql" }}
+{{- if has (datasource "config").postgresql "log_dir" }}
+{{- if (datasource "config").postgresql.log_dir }}
+{{- $logDir = (datasource "config").postgresql.log_dir }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

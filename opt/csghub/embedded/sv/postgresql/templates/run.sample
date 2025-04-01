@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+{{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql" }}
+
+exec chpst -e /opt/csghub/etc/postgresql/env -P \
+  -U postgres:postgres \
+  -u postgres:postgres \
+  /opt/csghub/embedded/bin/postgres -D  {{ $dataDir }}

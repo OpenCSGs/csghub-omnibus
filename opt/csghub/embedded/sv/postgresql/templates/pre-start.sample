@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+{{- $envDir := "/opt/csghub/etc/postgresql/env" }}
+
+# Clear all environment variable files
+rm -rf {{ $envDir }}/* &>/dev/null
+
+{{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
+
+export PGHOME=/opt/csghub/embedded/sv/postgresql
+export PGDATA={{ $dataDir }}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PGHOME/lib
+export PATH=$PGHOME/bin:$PATH
+export MANPATH=$MANPATH:$PGHOME/share/man
+
+echo $PGHOME > {{ $envDir }}/PGHOME
+echo $PGDATA > {{ $envDir }}/PGDATA
+echo $LD_LIBRARY_PATH > {{ $envDir }}/LD_LIBRARY_PATH
+echo $PATH > {{ $envDir }}/PATH
+
+chown -R postgres:postgres {{ $dataDir }}
+
+if [ ! -f "$PGDATA/PG_VERSION" ]; then
+    if [ -f {{ $dataDir }}/postgresql.conf ]; then
+        mv {{ $dataDir }}/*.conf {{ $dataDir }}/..
+    fi
+
+    echo "Initializing database cluster..."
+    chpst -e /opt/csghub/etc/postgresql/env -P \
+      -U postgres:postgres \
+      -u postgres:postgres \
+      /opt/csghub/embedded/bin/initdb -D {{ $dataDir }}
+
+    if [ -f {{ $dataDir }}/../postgresql.conf ]; then
+        mv {{ $dataDir }}/../*.conf {{ $dataDir }}/
+    fi
+fi
+
+exit 0

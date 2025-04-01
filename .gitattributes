@@ -1,5 +1,8 @@
 opt/csghub/bin/* filter=lfs diff=lfs merge=lfs -text
 opt/csghub/embedded/sv/*/bin/* filter=lfs diff=lfs merge=lfs -text
+**/*.so filter=lfs diff=lfs merge=lfs -text
+*.so filter=lfs diff=lfs merge=lfs -text
+opt/csghub/embedded/bin/* filter=lfs diff=lfs merge=lfs -text
 minio filter=lfs diff=lfs merge=lfs -text
 logger filter=lfs diff=lfs merge=lfs -text
 gomplate filter=lfs diff=lfs merge=lfs -text
