@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Redirect stderr -> stdout
+exec 2>&1
+
 {{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
 if [ ! -s {{ $dataDir }}/praefect.pid ]; then
   echo 0 > {{ $dataDir }}/praefect.pid
@@ -8,3 +11,5 @@ fi
 echo {{ $dataDir }}/praefect.pid > /opt/csghub/etc/praefect/env/GITALY_PID_FILE
 
 chown -R gitaly:gitaly {{ $dataDir }}
+
+exit 0

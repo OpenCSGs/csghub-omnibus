@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Redirect stderr -> stdout
+exec 2>&1
+
 {{- $envDir := "/opt/csghub/etc/minio/env" }}
 
 # Clear all environment variable files
