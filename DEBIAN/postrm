@@ -1,20 +1,112 @@
-#!/bin/bash -e
+#!/bin/sh -e
+
+# For Upgrade
+## $1 ==> upgrade
+## $2 ==> version upgraded
+# For Purge
+## $1 ==> 1st ==> remove can be rolled back
+## $1 ==> 2nd ==> purge
+
+# Function to clean up residual files after package removal
+# Parameters:
+#   $1 - Directory containing symbolic links to remove
+#   $2 - Original source directory (optional, for verification)
+postrm_cleanup() {
+    local link_dir="$1"
+    local source_dir="$2"
+
+    # Validate parameters
+    if [ -z "$link_dir" ]; then
+        echo "Error: Link directory must be specified" >&2
+        return 1
+    fi
+
+    # Check if link directory exists
+    if [ ! -d "$link_dir" ]; then
+        echo "Warning: Link directory $link_dir does not exist. Nothing to clean up." >&2
+        return 2
+    fi
+
+    echo "Starting cleanup of symbolic links in $link_dir..."
+
+    local removed=0
+    local skipped=0
+    local errors=0
+
+    # Process each item in the link directory
+    for item in "$link_dir"/*; do
+        if [ -L "$item" ]; then
+            # If source directory was provided, verify the link points to it
+            if [ -n "$source_dir" ]; then
+                local link_target=$(readlink -f "$item")
+                if [[ "$link_target" != "$source_dir"/* ]]; then
+                    echo "Warning: Link $item points outside $source_dir - skipping" >&2
+                    ((skipped++))
+                    continue
+                fi
+            fi
+
+            # Remove the symbolic link
+            if rm "$item"; then
+                echo "Removed: $item"
+                ((removed++))
+            else
+                echo "Error: Failed to remove $item" >&2
+                ((errors++))
+            fi
+        elif [ -e "$item" ]; then
+            echo "Warning: $item is not a symbolic link - skipping" >&2
+            ((skipped++))
+        fi
+    done
+
+    # Optionally remove the directory if empty
+    if [ -d "$link_dir" ] && [ -z "$(ls -A "$link_dir")" ]; then
+        if rmdir "$link_dir"; then
+            echo "Removed empty directory: $link_dir"
+        else
+            echo "Error: Failed to remove directory $link_dir" >&2
+            ((errors++))
+        fi
+    fi
+
+    # Print summary statistics
+    echo "Cleanup completed: Removed $removed links, skipped $skipped, errors $errors"
+
+    # Return error status if any failures occurred
+    if [ $errors -gt 0 ]; then
+        return 3
+    fi
+    return 0
+}
 
 case "$1" in
-  upgrade)
-    echo "Cleaning up old version resources during upgrade..."
-    ;;
-
   purge)
-    echo "Purging package, removing all data and configuration..."
-    cp -a /etc/csghub ~/csghub_$(date +%y.%m.%d.%N) || true
-    systemctl stop csghub-runsvdir.service || true
+    echo "Purging all files installed with package..."
+
+    echo "Backup configurations..."
+    cp -af /etc/csghub ~/csghub_"$(date +%F_%T)" || true
+    rm -rf /etc/csghub /etc/csghub.bak || true
+
+    echo "Remove all links from /usr/bin..."
+    postrm_cleanup "/usr/bin" "/opt/csghub/bin"
+
+    echo "Remove the main program directory"
+    rm -rf /opt/csghub || true
+
+    echo "Remove csghub systemd service"
     rm -rf /etc/systemd/system/csghub-runsvdir.service || true
-    rm -rf /usr/bin/csghub-* || true
-    rm -rf /{opt,etc}/csghub || true
+
     systemctl daemon-reload || true
     ;;
 
+  upgrade|remove|failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+
+  *)
+
+    exit 1
+    ;;
 esac
 
 exit 0

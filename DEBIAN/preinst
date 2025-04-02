@@ -1,11 +1,84 @@
 #!/bin/sh -e
 
-config_file="/etc/csghub/csghub.yaml"
-backup_file="/tmp/csghub.yaml.backup"
+# $1 ==> 'install' or 'upgrade'
+# $2 ==> nil or 'version installed'
+# $3 ==> nil or 'version upgrading'
 
-if [ "$1" = "upgrade" ]; then
-  echo "Backup $config_file to $backup_file"
-  cp -a "$config_file" "$backup_file"
-fi
+# Function to compare versions in Debian preinst script
+# Parameters:
+#   $1 - Action being performed (install, upgrade, etc.)
+#   $2 - Currently installed version (empty if not installed)
+#   $3 - New version being installed
+preinst_version_check() {
+    action="$1"
+    current_version="$2"
+    new_version="$3"
+
+    echo "Running pre-installation checks..."
+    echo "Action: $action"
+    echo "Current version: ${current_version:-'Not installed'}"
+    echo "New version: $new_version"
+
+    # Check if this is an upgrade
+    if [ "$action" = "upgrade" ] && [ -n "$current_version" ]; then
+        echo "Performing version comparison..."
+
+        # Use dpkg to compare versions (Debian/Ubuntu proper method)
+        if dpkg --compare-versions "$current_version" lt "$new_version"; then
+            echo "Proceeding with upgrade from $current_version to $new_version"
+        elif dpkg --compare-versions "$current_version" eq "$new_version"; then
+            echo "Warning: Reinstalling the same version ($new_version)" >&2
+        else
+            echo "Error: Downgrade detected ($current_version -> $new_version)" >&2
+            echo "Downgrades must be forced with --force-downgrades" >&2
+            return 1
+        fi
+
+        # Additional upgrade checks can go here
+        check_upgrade_readiness "$current_version" "$new_version" || return $?
+
+    elif [ "$action" = "install" ] && [ -n "$current_version" ]; then
+        echo "Error: Package already installed (version $current_version)" >&2
+        return 2
+    fi
+
+    # Common pre-install checks for all actions
+    check_system_requirements || return $?
+
+    echo "Pre-installation checks completed successfully"
+    return 0
+}
+
+echo "Stopping csghub services..."
+systemctl stop csghub-runsvdir.service || true
+
+case "$1" in
+  install)
+    rm -rf /opt/csghub
+    ;;
+
+  upgrade)
+    preinst_version_check "$1" "$2" "$3"
+
+    echo "Backup configuration files..."
+    if [ -e /etc/csghub.bak ]; then
+      rm -rf /etc/csghub.bak
+    fi
+    cp -af /etc/csghub /etc/csghub.bak
+
+    echo "Remove executable programs"
+    if [ -e /opt/csghub ]; then
+      rm -rf /opt/csghub
+    fi
+    ;;
+
+  abort-upgrade)
+    ;;
+
+  *)
+    echo "preinst called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
 
 exit 0

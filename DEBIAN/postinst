@@ -1,22 +1,107 @@
-#!/bin/bash -e
+#!/bin/sh -e
 
-config_file="/etc/csghub/csghub.yaml"
-backup_file="/tmp/csghub.yaml.backup"
+# $1 ==> configure or configure
+# $2 ==> nil or version installed before
+
+# Function to create symbolic links from source to destination directory
+# Parameters:
+#   $1 - Source directory path
+#   $2 - Destination directory path
+create_symlinks() {
+    local src="$1"
+    local dst="$2"
+
+    # Validate parameters
+    if [ -z "$src" ] || [ -z "$dst" ]; then
+        echo "Error: Both source and destination directories must be specified" >&2
+        return 1
+    fi
+
+    # Check if source directory exists
+    if [ ! -d "$src" ]; then
+        echo "Warning: Source directory $src does not exist. Skipping symbolic link creation." >&2
+        return 2
+    fi
+
+    # Create destination directory if it doesn't exist
+    if [ ! -d "$dst" ]; then
+        echo "Destination directory $dst doesn't exist, creating it..."
+        mkdir -p "$dst" || {
+            echo "Error: Failed to create destination directory $dst" >&2
+            return 3
+        }
+    fi
+
+    echo "Creating symbolic links for all files in $src to $dst..."
+
+    local count=0
+    local skipped=0
+    local errors=0
+
+    # Process each file in source directory
+    for file in "$src"/*; do
+        if [ -f "$file" ]; then
+            local filename=$(basename "$file")
+            local link="$dst/$filename"
+
+            if [ -e "$link" ]; then
+                if [ -L "$link" ]; then
+                    echo "Skipped: Symbolic link already exists - $link -> $(readlink -f "$link")"
+                else
+                    echo "Warning: Target exists but is not a symbolic link - $link" >&2
+                fi
+                ((skipped++))
+                continue
+            fi
+
+            # Create the symbolic link
+            if ln -sf "$file" "$link"; then
+                echo "Created: $link -> $file"
+                ((count++))
+            else
+                echo "Error: Failed to create symbolic link $link" >&2
+                ((errors++))
+            fi
+        fi
+    done
+
+    # Print summary statistics
+    echo "Completed: Created $count symbolic links, skipped $skipped, failed $errors"
+
+    # Return error status if any failures occurred
+    if [ $errors -gt 0 ]; then
+        return 4
+    fi
+    return 0
+}
 
 case "$1" in
   configure)
+    if [ -n "$2" ]; then
+      cp -af /etc/csghub.bak /etc/csghub && rm -rf /etc/csghub.bak
+    fi
+
+    echo "Re-linking all ...."
+    create_symlinks "/opt/csghub/bin" "/usr/bin"
+    create_symlinks "/opt/csghub/embedded/python/bin" "/opt/csghub/embedded/bin"
+
+    echo "Starting csghub services..."
     systemctl daemon-reload || true
     systemctl start csghub-runsvdir.service || true
     systemctl enable csghub-runsvdir.service || true
-    if [ -e "$backup_file" ]; then
-      echo "Restoring $config_file from backup $backup_file"
-      cp -a "$backup_file" "$config_file"
-      rm -rf "$backup_file" || true
 
-      echo "Reconfigure ..."
+    if [ -n "$2" ]; then
+      echo "Reconfiguring csghub services..."
       /usr/bin/csghub-ctl reconfigure || true
     fi
-    echo "Configured."
+    ;;
+
+  abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1
     ;;
 esac
 

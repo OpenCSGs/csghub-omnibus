@@ -1,11 +1,16 @@
 #!/bin/sh -e
 
-# $1 is the action: remove, install, upgrade, failed-upgrade, abort-install etc.
+# For Upgrade
+## $1 ==> upgrade $2 ==> version upgraded
+# For Purge
+## $1 ==> remove $2 ==> nil
+
+echo "Stopping csghub services..."
+systemctl stop csghub-runsvdir.service || true
 
 case "$1" in
-  upgrade)
-    echo "Stopping old version..."
-    systemctl stop csghub-runsvdir.service || true
+  remove)
+    systemctl disable csghub-runsvdir.service || true
     ;;
 
 esac
