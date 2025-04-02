@@ -240,11 +240,13 @@ postgresql:
   # Shared memory buffer size for caching data
   shared_buffers: "256MB"
   # Preloaded extensions (comma-separated)
-  shared_preload_libraries: "pg_stat_statements"
+  shared_preload_libraries: "pg_stat_statements,zhparser"
   # Log all SQL statements (off|ddl|mod|all)
   log_statement: "none"
   # Log checkpoint operations
   log_checkpoints: "off"
+  # Log statements elapsed above 2s
+  log_min_duration_statement: "2s"
   # Write-Ahead Log level (minimal|replica|logical)
   wal_level: "minimal"
   # Allow read-only connections during recovery

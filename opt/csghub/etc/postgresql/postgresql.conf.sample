@@ -192,7 +192,7 @@ bgwriter_lru_multiplier = 10		# 0-10.0 multiplier on buffers scanned/round
 #backend_flush_after = 0		# measured in pages, 0 disables
 effective_io_concurrency = 1		# 1-1000; 0 disables prefetching
 #maintenance_io_concurrency = 10	# 1-1000; 0 disables prefetching
-max_worker_processes = {{ math.Floor (math.Div $cpuCores 2) }}		# (change requires restart)
+max_worker_processes = {{ math.Max (math.Floor (math.Div $cpuCores 2)) 2 }}		# (change requires restart)
 max_parallel_workers_per_gather = {{ math.Min (math.Max (math.Floor (math.Sub $cpuCores 4)) 2) 24 }}	# taken from max_parallel_workers
 max_parallel_maintenance_workers = {{ math.Min (math.Max (math.Floor (math.Div $cpuCores 2)) 2) 16 }}	# taken from max_parallel_workers
 max_parallel_workers = {{ math.Max (math.Floor (math.Sub $cpuCores 4)) 2 }}		# maximum number of max_worker_processes that
@@ -530,7 +530,7 @@ effective_cache_size = {{ printf "%dGB" (conv.ToInt (math.Floor (math.Mul (math.
 					#   fatal
 					#   panic (effectively off)
 
-log_min_duration_statement = 2s	# -1 is disabled, 0 logs all statements
+log_min_duration_statement = {{ (datasource "config").postgresql.log_min_duration_statement | default "2s" }}	# -1 is disabled, 0 logs all statements
 					# and their durations, > 0 logs only
 					# statements running at least this number
 					# of milliseconds
@@ -748,7 +748,7 @@ default_text_search_config = 'pg_catalog.english'
 
 #local_preload_libraries = ''
 #session_preload_libraries = ''
-shared_preload_libraries = {{ (datasource "config").postgresql.shared_preload_libraries | default "pg_stat_statements" }}	# (change requires restart)
+shared_preload_libraries = {{ (datasource "config").postgresql.shared_preload_libraries | default "pg_stat_statements" | squote }}	# (change requires restart)
 #jit_provider = 'llvmjit'		# JIT library to use
 
 # - Other Defaults -
