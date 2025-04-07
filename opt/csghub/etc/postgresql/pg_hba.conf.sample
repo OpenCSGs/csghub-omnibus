@@ -96,6 +96,9 @@ host    all             all             ::1/128                 trust
 local   replication     all                                     trust
 host    replication     all             127.0.0.1/32            trust
 host    replication     all             ::1/128                 trust
+{{- $postgresql := (datasource "config").postgresql }}
+{{- if has $postgresql "pg_hba" }}
 {{- range (datasource "config").postgresql.pg_hba }}
 {{ . }}
+{{- end }}
 {{- end }}
