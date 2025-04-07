@@ -12,8 +12,8 @@
 #   $1 - Directory containing symbolic links to remove
 #   $2 - Original source directory (optional, for verification)
 postrm_cleanup() {
-    local link_dir="$1"
-    local source_dir="$2"
+    link_dir="$1"
+    source_dir="$2"
 
     # Validate parameters
     if [ -z "$link_dir" ]; then
@@ -29,19 +29,19 @@ postrm_cleanup() {
 
     echo "Starting cleanup of symbolic links in $link_dir..."
 
-    local removed=0
-    local skipped=0
-    local errors=0
+    removed=0
+    skipped=0
+    errors=0
 
     # Process each item in the link directory
     for item in "$link_dir"/*; do
         if [ -L "$item" ]; then
             # If source directory was provided, verify the link points to it
             if [ -n "$source_dir" ]; then
-                local link_target=$(readlink -f "$item")
-                if [[ "$link_target" != "$source_dir"/* ]]; then
+                link_target=$(readlink -f "$item")
+                if [ "$link_target" != "$source_dir/*" ]; then
                     echo "Warning: Link $item points outside $source_dir - skipping" >&2
-                    ((skipped++))
+                    skipped=$((skipped+1))
                     continue
                 fi
             fi
@@ -49,14 +49,14 @@ postrm_cleanup() {
             # Remove the symbolic link
             if rm "$item"; then
                 echo "Removed: $item"
-                ((removed++))
+                removed=$((removed+1))
             else
                 echo "Error: Failed to remove $item" >&2
-                ((errors++))
+                errors=$((errors+1))
             fi
         elif [ -e "$item" ]; then
             echo "Warning: $item is not a symbolic link - skipping" >&2
-            ((skipped++))
+            skipped=$((skipped+1))
         fi
     done
 
@@ -66,7 +66,7 @@ postrm_cleanup() {
             echo "Removed empty directory: $link_dir"
         else
             echo "Error: Failed to remove directory $link_dir" >&2
-            ((errors++))
+            errors=$((errors+1))
         fi
     fi
 

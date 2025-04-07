@@ -8,8 +8,8 @@
 #   $1 - Source directory path
 #   $2 - Destination directory path
 create_symlinks() {
-    local src="$1"
-    local dst="$2"
+    src="$1"
+    dst="$2"
 
     # Validate parameters
     if [ -z "$src" ] || [ -z "$dst" ]; then
@@ -34,15 +34,15 @@ create_symlinks() {
 
     echo "Creating symbolic links for all files in $src to $dst..."
 
-    local count=0
-    local skipped=0
-    local errors=0
+    count=0
+    skipped=0
+    errors=0
 
     # Process each file in source directory
     for file in "$src"/*; do
         if [ -f "$file" ]; then
-            local filename=$(basename "$file")
-            local link="$dst/$filename"
+            filename=$(basename "$file")
+            link="$dst/$filename"
 
             if [ -e "$link" ]; then
                 if [ -L "$link" ]; then
@@ -50,17 +50,17 @@ create_symlinks() {
                 else
                     echo "Warning: Target exists but is not a symbolic link - $link" >&2
                 fi
-                ((skipped++))
+                skipped=$((skipped+1))
                 continue
             fi
 
             # Create the symbolic link
             if ln -sf "$file" "$link"; then
                 echo "Created: $link -> $file"
-                ((count++))
+                count=$((count+1))
             else
                 echo "Error: Failed to create symbolic link $link" >&2
-                ((errors++))
+                errors=$((errors+1))
             fi
         fi
     done
@@ -78,7 +78,10 @@ create_symlinks() {
 case "$1" in
   configure)
     if [ -n "$2" ]; then
-      cp -af /etc/csghub.bak /etc/csghub && rm -rf /etc/csghub.bak
+      if [ -e /etc/csghub ]; then
+        rm -rf /etc/csghub || true
+      fi
+      mv /etc/csghub.bak /etc/csghub
     fi
 
     echo "Re-linking all ...."
