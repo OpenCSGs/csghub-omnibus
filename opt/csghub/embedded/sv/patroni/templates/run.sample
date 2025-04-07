@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+{{- $configDir := (datasource "config").patroni.config_dir | default "/var/opt/csghub/patroni" }}
+{{- $embedded := "/opt/csghub/embedded" }}
+
+exec chpst -e /opt/csghub/etc/patroni/env -P \
+  -U postgres:postgres \
+  -u postgres:postgres \
+  {{ $embedded }}/bin/python3.13 {{ $embedded }}/bin/patroni {{ $configDir }}/patroni.yaml

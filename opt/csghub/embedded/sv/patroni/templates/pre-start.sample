@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+{{- $envDir := "/opt/csghub/etc/patroni/env" }}
+
+# Clear all environment variable files
+rm -rf {{ $envDir }}/* &>/dev/null
+
+if [ -e /dev/watchdog ]; then
+    /bin/chown postgres:postgres /dev/watchdog
+fi
+
+{{- $dataDir := (datasource "config").patroni.data_dir | default "/var/opt/csghub/postgresql" }}
+if [ ! -e {{ $dataDir }} ]; then
+    mkdir -p {{ $dataDir }}/data || true
+    chown -R postgres:postgres {{ $dataDir }} || true
+fi
+
+export PGHOME=/opt/csghub/embedded/sv/postgresql
+export PGDATA={{ $dataDir }}/data
+export MANPATH=$PGHOME/share/man:$MANPATH
+export PYTHONHOME=/opt/csghub/embedded/python
+export LD_LIBRARY_PATH=$PYTHONHOME/lib:$PGHOME/lib:$LD_LIBRARY_PATH
+export PATH=$PYTHONHOME/bin:$PGHOME/bin:$PATH
+export PATRONI_HOME=/opt/csghub/embedded/sv/patroni
+export PYTHONPATH=$PATRONI_HOME/lib/python3.13/site-packages:$PYTHONHOME/lib/python3.13/site-packages
+
+echo $PGHOME > {{ $envDir }}/PGHOME
+echo $PGDATA > {{ $envDir }}/PGDATA
+echo $MANPATH > {{ $envDir }}/MANPATH
+echo $PYTHONHOME > {{ $envDir }}/PYTHONHOME
+echo $LD_LIBRARY_PATH > {{ $envDir }}/LD_LIBRARY_PATH
+echo $PATH > {{ $envDir }}/PATH
+echo $PATRONI_HOME > {{ $envDir }}/PATRONI_HOME
+echo $PYTHONPATH > {{ $envDir }}/PYTHONPATH
+
+chown -R postgres:postgres {{ $dataDir }}
+
+exit 0

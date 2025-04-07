@@ -1,0 +1,13 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/patroni" }}
+{{- if has (datasource "config").patroni "log_dir" }}
+{{- if (datasource "config").patroni.log_dir }}
+{{- $logDir = (datasource "config").patroni.log_dir }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

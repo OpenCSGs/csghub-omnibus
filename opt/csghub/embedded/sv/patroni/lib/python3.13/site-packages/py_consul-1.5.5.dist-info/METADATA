@@ -1,0 +1,213 @@
+Metadata-Version: 2.2
+Name: py-consul
+Version: 1.5.5
+Summary: Python client for Consul (http://www.consul.io/)
+Home-page: https://github.com/criteo-forks/py-consul
+Author: Criteo
+Author-email: github@criteo.com
+License: MIT
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests>=2.0
+Provides-Extra: asyncio
+Requires-Dist: aiohttp; extra == "asyncio"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: summary
+
+# py-consul [![PyPi version](https://img.shields.io/pypi/v/py-consul.svg)](https://pypi.python.org/pypi/py-consul/) [![Python version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/) ![Status](https://img.shields.io/badge/status-maintained-green.svg)
+
+Status
+-----------
+This project is maintained and actively developed by Criteo.
+We aim at converging towards a full compatibility with the official Consul API.
+
+We're currently supporting consul 1.13 up to 1.17. Due to quite a few changes 
+since our development started (see section "A bit of history"), some endpoints are 
+still partially handled.
+
+Therefore, we are open to contributions and suggestions.
+
+Example
+-------
+
+```python
+    import consul
+
+    c = consul.Consul()
+
+    # poll a key for updates
+    index = None
+    while True:
+        index, data = c.kv.get('foo', index=index)
+        print data['Value']
+
+    # in another process
+    c.kv.put('foo', 'bar')
+```
+
+Installation
+------------
+```bash
+    pip install py-consul
+```
+
+**Note:** When using py-consul library in environment with proxy server, 
+setting of ``http_proxy``, ``https_proxy`` and ``no_proxy`` environment variables 
+can be required for proper functionality.
+
+A bit of history
+-----------
+
+The origin project [python-consul](https://github.com/cablehead/python-consul) is not maintained
+since 2018.  As we were not able to get in touch with the maintainer (cablehead)
+to merge and release our PRs, we've forked the project in order to continue the
+maintenance of the project. We also renamed the project to be able to upload
+on pypi; see [PyPI](https://pypi.org/project/py-consul/)
+
+Following some major changes, we decided to detach this fork from the original project
+and move from [criteo fork space](https://github.com/criteo-forks/) 
+to [criteo space](https://github.com/criteo/).
+
+Contributing
+------------
+
+Please reach out if you're interested in being a maintainer as well. Otherwise,
+open a PR or Issue we'll try and respond as quickly as possible.
+
+When you create a PR please ensure:
+
+- To add tests for your new features, if applicable
+- To add docstrings for new API features you may add
+
+
+# Change log
+
+
+## 1.5.5
+
+- **fix:**  Simplify loop handling in async Consul client
+
+
+## 1.5.4
+
+- **feature:**  Improve robustness of JSON decoding
+- **feature:**  Add support for honoring additional arguments in consul.Consul()
+
+## 1.5.3
+
+- **feature:** add replace_existing_checks option to agent.service.register()
+- **revert:** add replace_existing_checks option to Catalog.register()
+
+## 1.5.2
+
+- **feature:** add replace_existing_checks option to Catalog.register()
+
+## 1.5.1
+
+- **feature:** Implement creation of policies.
+- **feature:** Integrate policy addition during token creation.
+
+## 1.5.0
+
+- **[Breaking]** ACL endpoint change, consul.acl is now consul.acl.token
+- **feature:** add consul.acl.policy.list and acl.policy.read
+
+## 1.4.1
+
+- **ci:** fix package publishing and update GH actions versions
+
+## 1.4.0 (unreleased)
+
+- **[Breaking]** due to the re-implementation of the ACL endpoint and the drop of the support of OSX and consul 1.1.0.
+  - **feature:** re-implement some basic ACL endpoint
+  - **feature:** drop support of OSX and consul 1.1.0
+  - **feature:** support multi-check service registration (through extra_checks parameter)
+  - **env:** support python 3.12
+  - **tests:** multi consul version test (1.13.8, 1.15.4, 1.16.1, 1.17.3)
+  - **tests:** add test utils for cleaner API output expected assertion
+  - **code-style:** use ruff linter and formatter
+  - **code-style:** split files following the consul API logic
+  - **ci:** speedup ci with uv/tox-uv
+
+## 1.3.0
+
+- **feature:** drop tornado and twisted support
+- **env:** support python 3.10 and 3.11
+- **env:** drop support of EOL python versions 3.5, 3.6, and 3.7
+- **code-style:** syntax modernization
+- **code-style:** formatter and linter use
+- **ci:** multiple python version test and linter enforcement
+
+## 1.2.4
+
+- **feature:** aio: allow setting timeout by request
+
+## 1.2.3
+
+- **feature:** base: ensure return format of json callback is more consistent
+
+## 1.2.2
+
+- **bugfix:** connect: fix wrong endpoints callbacks
+
+## 1.2.1
+
+- **feature:** Add support for context-managers
+- **feature:** Add support for /agent/service/:service_id API
+- **bugfix:** rename internal connect method
+
+## 1.2.0
+
+- **feature:** Support deregister field in Check.script
+- **feature:** Introduce Consul Connect-related API wrappers
+- **feature:** Add token support missing in multiple methods
+- **bugfix:** aio: fix timeout type
+- **feature:** allow multiple tags in service health query
+
+## 1.1.5
+
+- Dummy release to overcome a pypi release issue
+
+## 1.1.4
+
+- **bugfix:** fixed connection_timeout usage for aiohttp
+
+## 1.1.3
+
+- **bugfix:** fixed connection_limit usage for aiohttp
+
+## 1.1.2
+
+- add support for connection_limit and connection_timeout in aiohttp
+- fix asyncio session close
+
+## 1.1.1
+
+- Add support for python 3.7 and 3.8
+- Fix asyncio compatibility to support latest python version
+- Remove six dependency
+- Use new style of class declaration
+- Get rid of py3.4 old compat
+- Drop support of deprecated python2
+- **base:** allow weights parameter in service register
+
+# Base fork
+
+Criteo starts forking this library from [https://github.com/cablehead/python-consul](https://github.com/cablehead/python-consul)

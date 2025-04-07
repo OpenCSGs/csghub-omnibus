@@ -1,0 +1,40 @@
+#!/bin/bash
+
+readonly OPERATION=$1
+readonly ROLE=$2
+readonly SCOPE=$3
+
+{{- if has (datasource "config").patroni "callback" }}
+{{- $callback := (datasource "config").patroni.callback }}
+VIP={{ $callback.virtual_ip | default "127.0.0.1" }}
+PREFIX={{ $callback.virtual_ip | default 24 }}
+BRD={{ $parts := strings.Split "." $callback.virtual_ip }}{{ join (coll.Slice $parts 0 3) "." }}.255
+INF={{ $callback.interface | default "eth0" }}
+{{- end }}
+
+function usage() {
+    echo "Usage: $0 <on_start|on_stop|on_role_change> <ROLE> <SCOPE>";
+    exit 1;
+
+
+echo "$(date "+%Y-%m-%d %H:%M:%S %z") This is patroni callback $OPERATION $ROLE $SCOPE"
+
+case $OPERATION in
+    on_stop)
+        sudo ip addr del ${VIP}/${PREFIX} dev ${INF} label ${INF}:1
+        echo "$(date "+%Y-%m-%d %H:%M:%S %z") VIP ${VIP} removed"
+        ;;
+    on_start | on_restart | on_role_change)
+        if [[ $ROLE == 'master' || $ROLE == 'standby_leader' ]]; then
+            sudo ip addr add ${VIP}/${PREFIX} brd ${BRD} dev ${INF} label ${INF}:1
+            sudo arping -q -A -c 1 -I ${INF} ${VIP}
+            echo "$(date "+%Y-%m-%d %H:%M:%S %z") VIP ${VIP} added"
+        else
+            sudo ip addr del ${VIP}/${PREFIX} dev ${INF} label ${INF}:1
+            echo "$(date "+%Y-%m-%d %H:%M:%S %z") VIP ${VIP} removed"
+        fi
+        ;;
+    *)
+        usage
+        ;;
+esac
