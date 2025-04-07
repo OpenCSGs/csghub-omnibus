@@ -140,6 +140,8 @@ ENV PATH=/opt/csghub/embedded/python/bin:$PATH \
 # Install Patroni
 RUN python3 -m pip install \
       --no-cache-dir \
-      --prefix=/opt/csghub/embedded/sv/patroni patroni[consul]
+      --prefix=/opt/csghub/embedded/sv/patroni patroni[consul] psycopg2-binary \
+
+COPY ./opt/csghub/etc/patroni /opt/csghub/etc/patroni
 
 
