@@ -22,7 +22,7 @@ gitaly:
   listen_addr: "127.0.0.1:8075"
   auth:
     ## Auth token for Gitaly authentication
-    # token: "abc123secret"
+    token: "abc123secret"
   storage:
     ## Storage name
     name: "default"
