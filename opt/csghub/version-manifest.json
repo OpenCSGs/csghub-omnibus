@@ -43,6 +43,12 @@
         "description": "PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance.",
         "version": "16.8",
         "repository": "https://www.postgresql.org/"
+      },
+      {
+        "name": "patroni",
+        "description": "A template for PostgreSQL High Availability with Etcd, Consul, ZooKeeper, or Kubernetes.",
+        "version": "4.0.5",
+        "repository": "https://github.com/patroni/patroni"
       }
     ]
   }
