@@ -45,7 +45,10 @@ RUN apt update && \
 # Compile postgresql
 RUN wget -O postgresql-16.8.tar.gz https://ftp.postgresql.org/pub/source/v16.8/postgresql-16.8.tar.gz && \
     tar -zxf postgresql-16.8.tar.gz && cd postgresql-16.8 && \
-    ./configure --prefix=/opt/csghub/embedded/sv/postgresql && \
+    ./configure --prefix=/opt/csghub/embedded/sv/postgresql \
+    --with-openssl \
+    --with-icu \
+    --with-readline && \
     make world -j$(nproc) && make install-world -j$(nproc) \
 
 # Compile zhparser
@@ -64,8 +67,9 @@ RUN apt install -y \
 
 RUN wget -O scws-1.2.3.tar.bz2 http://www.xunsearch.com/scws/down/scws-1.2.3.tar.bz2 && \
     tar -xjf scws-1.2.3.tar.bz2 && cd /scws-1.2.3 && \
-    ./configure && make install
+    ./configure --prefix=/opt/csghub/embedded && make install
 
+ENV SCWS_HOME=/opt/csghub/embedded
 RUN git clone https://github.com/amutu/zhparser.git && \
     cd /zhparser && make && make install
 
@@ -82,8 +86,8 @@ RUN apt install -y \
       libsqlite3-dev \
       libbz2-dev \
 
-RUN wget -O Python-3.12.3.tgz https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz && \
-    tar -zxf Python-3.12.3.tgz && cd Python-3.12.3 && \
+RUN wget -O Python-3.13.2.tgz https://www.python.org/ftp/python/3.13.2/Python-3.13.2.tgz && \
+    tar -zxf Python-3.13.2.tgz && cd Python-3.13.2 && \
     ./configure --prefix=/opt/csghub/embedded/python \
       --enable-optimizations \
       --enable-shared \
@@ -127,18 +131,21 @@ COPY ./opt/csghub/embedded/sv/consul /opt/csghub/embedded/sv/consul
 
 # Install PostgreSQL
 COPY --from=Builder /opt/csghub/embedded/sv/postgresql /opt/csghub/embedded/sv/postgresql
+COPY --from=Builder /opt/csghub/embedded/scws /opt/csghub/embedded/scws
 COPY ./opt/csghub/etc/postgresql /opt/csghub/etc/postgresql
 COPY ./opt/csghub/embedded/sv/postgresql /opt/csghub/embedded/sv/postgresql
 
 # Install Python3
 COPY --from=Builder /opt/csghub/embedded/python /opt/csghub/embedded/python
 RUN ln -sf /opt/csghub/embedded/python/bin/* /opt/csghub/embedded/bin/
-ENV PATH=/opt/csghub/embedded/python/bin:$PATH \
-    LD_LIBRARY_PATH=/opt/csghub/embedded/python/lib:$LD_LIBRARY_PATH \
-    PYTHONPATH=/opt/csghub/embedded/sv:$PYTHONPATH
+ENV PYTHONHOME=/opt/csghub/embedded/python \
+    PYTHONPATH=/opt/csghub/embedded/sv:$PYTHONPATH \
+    PGHOME=/opt/csghub/embedded/sv/postgresql \
+    PATH=$PYTHONHOME/bin:$PGHOME/bin:$PATH \
+    LD_LIBRARY_PATH=$PYTHONHOME/lib:$PGHOME/lib:$LD_LIBRARY_PATH
 
 # Install Patroni
-RUN python3 -m pip install \
+RUN python3.13 -m pip install \
       --no-cache-dir \
       --prefix=/opt/csghub/embedded/sv/patroni patroni[consul] psycopg2-binary \
 
