@@ -37,6 +37,13 @@ BuildRequires:  libicu-devel libxml2-devel libxslt-devel
 BuildRequires:  unzip patchelf chrpath
 BuildRequires:  systemd-devel
 
+# Disable debuginfo packet generation
+%global debug_package %{nil}
+%global __debug_install_post %{nil}
+
+# Optional: Disable debug builds (optimized compilation)
+%global _enable_debug_packages 0
+
 %description
 An all-in-one package for deploying and managing CSGHub.
 Bundles all necessary components, dependencies, and tools.
@@ -58,19 +65,21 @@ cd %{_builddir}/%{name}-%{version}/postgresql-%{pgsql_version}
     --with-libxml \
     --with-libxslt
 make %{?_smp_mflags} world
+make install-world DESTDIR=%{_builddir}/%{name}-%{version}/postgresql-%{pgsql_version}
 
 # Compile scws
 cd %{_builddir}/%{name}-%{version}/scws-%{scws_version}
-./configure --prefix=%{scws_home} \
-    --disable-shared \
-    --enable-static
+./configure --prefix=%{scws_home}
 make %{?_smp_mflags}
+make install DESTDIR=%{_builddir}/%{name}-%{version}/scws-%{scws_version}
 
 # Compile zhparser
+export SCWS_HOME=%{_builddir}/%{name}-%{version}/scws-%{scws_version}%{scws_home}
+export PGHOME=%{_builddir}/%{name}-%{version}/postgresql-%{pgsql_version}%{pg_home}
+export PATH=$PGHOME/bin:$PATH
+export LD_LIBRARY_PATH=$PGHOME/lib:$LD_LIBRARY_PATH
 cd %{_builddir}/%{name}-%{version}/zhparser-%{zhparser_version}
-export SCWS_HOME=%{_builddir}/%{name}-%{version}/scws-%{scws_version}
-export PG_CONFIG=%{_builddir}/%{name}-%{version}/postgresql-%{pgsql_version}/src/bin/pg_config/pg_config
-make %{?_smp_mflags} CPPFLAGS="-I$SCWS_HOME/libscws"
+make %{?_smp_mflags}
 
 # Compile python
 cd %{_builddir}/%{name}-%{version}/Python-%{python_version}
@@ -106,8 +115,11 @@ make install DESTDIR=%{buildroot}
 libtool --finish %{buildroot}%{scws_home}/lib
 
 # Install zhparser
-export SCWS_HOME=%{scws_home}  # Cannot add %{buildroot} as prefix
-export PG_CONFIG=%{buildroot}%{pg_home}/bin/pg_config
+# Cannot add %{buildroot} as prefix
+export SCWS_HOME=%{scws_home}
+export PGHOME=%{buildroot}%{pg_home}
+export LD_LIBRARY_PATH=$PGHOME/lib:$LD_LIBRARY_PATH
+export PATH=$PGHOME/bin:$PATH
 cd %{_builddir}/%{name}-%{version}/zhparser-%{zhparser_version}
 make install
 
@@ -116,13 +128,19 @@ cd %{_builddir}/%{name}-%{version}/Python-%{python_version}
 make altinstall DESTDIR=%{buildroot}
 
 # Install patroni
-export PYTHONHOME=%{buildroot}/opt/csghub/embedded/python
-export PYTHONPATH=%{buildroot}/opt/csghub/embedded/sv:$PYTHONPATH
-export PGHOME=%{buildroot}/opt/csghub/embedded/sv/postgresql
-export PATH=$PYTHONHOME/bin:$PGHOME/bin:$PATH
-export LD_LIBRARY_PATH=$PYTHONHOME/lib:$PGHOME/lib:$LD_LIBRARY_PATH
-python3.13 -m pip install --no-cache-dir \
-    --prefix=/opt/csghub/embedded/sv/patroni patroni[consul] psycopg2-binary
+export PYTHONHOME=%{buildroot}%{python_home}
+export PYTHONPATH=%{buildroot}/opt/csghub/embedded/sv
+export PATH=$PYTHONHOME/bin:$PATH
+export LD_LIBRARY_PATH=$PYTHONHOME/lib:$LD_LIBRARY_PATH
+python3.13 -m pip install \
+    --no-cache-dir \
+    --root=%{buildroot} \
+    --prefix=/opt/csghub/embedded/sv/patroni \
+    patroni[consul] psycopg2-binary
+
+# Fixed shebang path
+find %{buildroot}/opt/csghub/embedded/sv/patroni/bin -type f -exec \
+    sed -i '1s|#!.*/python3.13|#!/opt/csghub/embedded/python/bin/python3.13|' {} \;
 
 # Fix path references
 find %{buildroot} -type f -name "*.so" -exec chmod 755 {} \;
@@ -130,8 +148,8 @@ find %{buildroot} -type f -name "*.so" -exec patchelf --remove-rpath {} \; 2>/de
 find %{buildroot} -type f -name "*.so" -exec patchelf --set-rpath '$ORIGIN/../lib:%{scws_home}/lib:%{pg_home}/lib:%{python_home}/lib:/lib:/lib64:/usr/lib:/usr/lib64:/usr/local/lib:/usr/local/lib64' {} \; 2>/dev/null || true
 
 # Clean up temporary paths
-find %{buildroot} -type f \( -name "*.py" -o -name "Makefile" \) \
-  -exec sed -i '/BUILDROOT\|LD_LIBRARY_PATH/d' {} \;
+find %{buildroot} -type f -name "*.py" -o -name "*" -exec \
+    sed -i "s|%{buildroot}||g" {} 2>/dev/null \;
 
 %clean
 rm -rf %{buildroot}
@@ -151,14 +169,18 @@ fi
 
 %post
 #!/bin/sh
-for binfile in /opt/csghub/embedded/bin/*; do
+for binfile in /opt/csghub/bin/*; do
     [ -f "$binfile" ] && ln -sf "$binfile" /usr/bin/ 2>/dev/null || true
 done
 
 systemctl daemon-reload >/dev/null 2>&1 || true
 systemctl enable csghub-runsvdir.service >/dev/null 2>&1 || true
+
 if [ "$1" -ge 1 ]; then
     systemctl restart csghub-runsvdir.service >/dev/null 2>&1 || true
+fi
+
+if [ "$1" -gt 1 ]; then
     /opt/csghub/bin/csghub-ctl reconfigure
 fi
 
