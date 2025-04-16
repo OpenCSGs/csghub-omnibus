@@ -50,7 +50,7 @@ Bundles all necessary components, dependencies, and tools.
 
 %build
 # Compile postgresql
-cd %{_builddir}/postgresql-%{pgsql_version}
+cd %{_builddir}/%{name}-%{version}/postgresql-%{pgsql_version}
 ./configure --prefix=%{pg_home} \
     --with-openssl \
     --with-icu \
@@ -60,20 +60,20 @@ cd %{_builddir}/postgresql-%{pgsql_version}
 make %{?_smp_mflags} world
 
 # Compile scws
-cd %{_builddir}/scws-%{scws_version}
+cd %{_builddir}/%{name}-%{version}/scws-%{scws_version}
 ./configure --prefix=%{scws_home} \
     --disable-shared \
     --enable-static
 make %{?_smp_mflags}
 
 # Compile zhparser
-cd %{_builddir}/zhparser-%{zhparser_version}
-export SCWS_HOME=%{_builddir}/%{name}-%{version}/opt/csghub/embedded
-export PG_CONFIG=%{_builddir}/postgresql-%{pgsql_version}/src/bin/pg_config/pg_config
-make %{?_smp_mflags}
+cd %{_builddir}/%{name}-%{version}/zhparser-%{zhparser_version}
+export SCWS_HOME=%{_builddir}/%{name}-%{version}/scws-%{scws_version}
+export PG_CONFIG=%{_builddir}/%{name}-%{version}/postgresql-%{pgsql_version}/src/bin/pg_config/pg_config
+make %{?_smp_mflags} CPPFLAGS="-I$SCWS_HOME/libscws"
 
 # Compile python
-cd %{_builddir}/Python-%{python_version}
+cd %{_builddir}/%{name}-%{version}/Python-%{python_version}
 ./configure --prefix=%{python_home} \
     --enable-optimizations \
     --enable-shared \
@@ -97,27 +97,27 @@ install -d -m 0755 %{buildroot}/opt/csghub/embedded/{bin,lib,python,sv}
 )
 
 # Install postgresql
-cd %{_builddir}/postgresql-%{pgsql_version}
+cd %{_builddir}/%{name}-%{version}/postgresql-%{pgsql_version}
 make install-world DESTDIR=%{buildroot}
 
 # Install scws
-cd %{_builddir}/scws-%{scws_version}
+cd %{_builddir}/%{name}-%{version}/scws-%{scws_version}
 make install DESTDIR=%{buildroot}
-libtool --finish %{buildroot}/opt/csghub/embedded/lib
+libtool --finish %{buildroot}%{scws_home}/lib
 
 # Install zhparser
-export SCWS_HOME=%{scws_home}
+export SCWS_HOME=%{scws_home}  # Cannot add %{buildroot} as prefix
 export PG_CONFIG=%{buildroot}%{pg_home}/bin/pg_config
-cd %{_builddir}/zhparser-%{zhparser_version}
+cd %{_builddir}/%{name}-%{version}/zhparser-%{zhparser_version}
 make install
 
 # Install python
-cd %{_builddir}/Python-%{python_version}
+cd %{_builddir}/%{name}-%{version}/Python-%{python_version}
 make altinstall DESTDIR=%{buildroot}
 
 # Install patroni
 export PYTHONHOME=%{buildroot}/opt/csghub/embedded/python
-export PYTHONPATH=/opt/csghub/embedded/sv:$PYTHONPATH
+export PYTHONPATH=%{buildroot}/opt/csghub/embedded/sv:$PYTHONPATH
 export PGHOME=%{buildroot}/opt/csghub/embedded/sv/postgresql
 export PATH=$PYTHONHOME/bin:$PGHOME/bin:$PATH
 export LD_LIBRARY_PATH=$PYTHONHOME/lib:$PGHOME/lib:$LD_LIBRARY_PATH
@@ -181,11 +181,11 @@ if [ "$1" = 0 ]; then
     # Remove systemd service
     rm -f /etc/systemd/system/csghub-runsvdir.service >/dev/null 2>&1 || true
     # Remove symbol links
-    find /usr/bin -type l -lname '/opt/csghub/bin/*' -delete
+    find /usr/bin -type l -lname '/opt/csghub/bin/*' -delete >/dev/null 2>&1 || true
     # Remove program main directory
-    rm -rf /opt/csghub
+    rm -rf /opt/csghub >/dev/null 2>&1 || true
     # Remove configuration files
-    rm -rf /etc/csghub
+    rm -rf /etc/csghub >/dev/null 2>&1 || true
     # Reload systemd daemon
     systemctl daemon-reload >/dev/null 2>&1 || true
     echo "Uninstallation completed at $(date)"
