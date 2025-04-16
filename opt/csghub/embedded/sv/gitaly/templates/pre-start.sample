@@ -33,6 +33,6 @@ mkdir -p {{ path.Dir $secretFile }} &>/dev/null
 echo {{ $secret }} > {{ $secretFile }}
 {{- end }}
 
-chown -R gitaly:gitaly {{ $dataDir }}/run {{ $dataDir }}/repositories
+chown -R git:git {{ $dataDir }}/run {{ $dataDir }}/repositories
 
 exit 0
