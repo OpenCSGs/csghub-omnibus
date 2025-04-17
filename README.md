@@ -25,7 +25,14 @@ dpkg-deb -Z xz -b omnibus-csghub omnibus-csghub_1.6.0-ee.0_amd64.deb
 
 ```shell
 # Install required tools
-dnf install -y rpm-build rpmdevtools dnf-plugins-core
+dnf install -y rpm-build rpmdevtools dnf-plugins-core openssh-clients
+
+# Install building dependencies
+dnf install -y gcc make bison flex libtool readline-devel zlib-devel openssl-devel libicu-devel libxml2-devel libxslt-devel unzip patchelf chrpath systemd-devel
+
+# or
+# Install build dependencies
+# yum-builddep ~/rpmbuild/SPECS/omnibus-csghub.spec
 
 # Set up the RPM build tree
 rpmdev-setuptree
@@ -68,22 +75,15 @@ cp omnibus-csghub/omnibus-csghub.spec ~/rpmbuild/SPECS/omnibus-csghub.spec
 ##### 5. Build the RPM
 
 ```shell
-# Install building dependencies
-dnf install -y gcc make bison flex libtool readline-devel zlib-devel openssl-devel libicu-devel libxml2-devel libxslt-devel unzip patchelf chrpath systemd-devel
-
-# or
-# Install build dependencies
-# yum-builddep ~/rpmbuild/SPECS/omnibus-csghub.spec
-
 # Using en locale
 export LANG="" 
 # Ignore rpath check error
 export QA_RPATHS=$(( 0x0001|0x0002 )) 
 # Build the RPM package
-rpmbuild -ba ~/rpmbuild/SPECS/omnibus-csghub.spec
+rpmbuild -ba --define 'dist .oe2203sp4' ~/rpmbuild/SPECS/omnibus-csghub.spec
 
 # The built RPM will be in:
-# ~/rpmbuild/RPMS/x86_64/omnibus-csghub-1.6.0-1.el7.x86_64.rpm (or similar)
+# ~/rpmbuild/RPMS/x86_64/omnibus-csghub-1.6.0-1.oe2203sp4.x86_64.rpm (or similar)
 ```
 
 ##### 6. Verification
@@ -104,13 +104,13 @@ rpm -qip ~/rpmbuild/SRPMS/omnibus-csghub-*.src.rpm
 
 ```shell
 # Install required tools
-dnf install -y rpm-build rpmdevtools dnf-plugins-core
+dnf install -y rpm-build rpmdevtools dnf-plugins-core openssh-clients
 
 # Install build dependencies
-dnf install bison flex libicu-devel libtool libxml2-devel libxslt-devel openssl-devel readline-devel systemd-devel zlib-devel
+dnf install -y gcc make bison flex libicu-devel libtool libxml2-devel libxslt-devel openssl-devel readline-devel systemd-devel zlib-devel chrpath
 
 # Rebuild from source code package
-rpmbuild --rebuild ~/omnibus-csghub-1.6.0-1.src.rpm
+rpmbuild --rebuild --define 'dist .oe2109' ~/omnibus-csghub-1.6.0-1.src.rpm
 ```
 
 ##### Manual re-build from src package
@@ -154,7 +154,7 @@ rpmbuild/
 
 ```shell
 # Install build dependencies
-dnf install bison flex libicu-devel libtool libxml2-devel libxslt-devel openssl-devel readline-devel systemd-devel zlib-devel
+dnf install gcc make bison flex libicu-devel libtool libxml2-devel libxslt-devel openssl-devel readline-devel systemd-devel zlib-devel chrpath
 
 # If patchelf cannot be installed automatically
 # CentOS 7
