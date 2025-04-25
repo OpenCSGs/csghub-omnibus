@@ -29,7 +29,7 @@
       {
         "name": "praefect",
         "description": "Gitaly high availability git request routing component",
-        "version": "17.7.6",
+        "version": "17.5.0",
         "repository": "https://gitlab.com/gitlab-org/gitaly"
       },
       {

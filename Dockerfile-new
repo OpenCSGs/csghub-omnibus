@@ -1,0 +1,187 @@
+ARG GITALY_VERSION=v17.5.0
+ARG GITLAB_SHELL_VERSION=v17.5.0
+
+FROM ubuntu:22.04 AS builder01
+WORKDIR /
+
+COPY . .
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+ENV GOPROXY=https://goproxy.cn,direct
+
+RUN apt update && \
+    apt install -y \
+      wget curl git \
+      golang \
+      clang \
+      bzip2 \
+      unzip \
+      build-essential \
+      openssh-client \
+      tree
+
+RUN ssh-keygen -A
+## Install Runit Service Daemon
+ARG RUNIT_VERSION=2.2.0
+RUN wget https://smarden.org/runit/runit-${RUNIT_VERSION}.tar.gz && \
+    tar -zxf runit-${RUNIT_VERSION}.tar.gz && \
+    cd /admin/runit-${RUNIT_VERSION} && package/install && cp command/* ${CSGHUB_EMBEDDED}/bin
+
+## Install Gompalte
+ARG GOMPLATE_VERSION=v4.3.2
+ARG TARGETPLATFORM
+RUN case ${TARGETPLATFORM} in \
+        "linux/amd64") \
+            curl -L -o ${CSGHUB_EMBEDDED}/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64 \
+            ;; \
+        "linux/arm64") \
+            curl -L -o ${CSGHUB_EMBEDDED}/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-arm64 \
+            ;; \
+        *) \
+            echo "Unsupported platform: ${TARGETPLATFORM}" && \
+            exit 1 \
+            ;; \
+     esac
+
+## Install csghub-ctl
+RUN cd /csghub-ctl && \
+    mkdir -p ${CSGHUB_HOME}/bin && \
+    go build -buildvcs=false -o ${CSGHUB_HOME}/bin/csghub-ctl
+
+## Install minio
+ARG MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
+RUN mkdir -p ${CSGHUB_SRV_HOME}/minio/bin && \
+    wget -O ${CSGHUB_SRV_HOME}/minio/bin/minio https://dl.min.io/server/minio/release/linux-amd64/archive/minio.${MINIO_VERSION} && \
+    wget -O ${CSGHUB_SRV_HOME}/minio/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
+
+## Install logger
+RUN mkdir -p ${CSGHUB_SRV_HOME}/logger/bin && \
+    cd /webhook && go build -buildvcs=false -o ${CSGHUB_SRV_HOME}/logger/bin/logger
+
+## Install consul
+ARG CONSUL_VERSION=1.20.5
+RUN wget -O consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip && \
+    unzip consul.zip -d /consul && \
+    mkdir -p ${CSGHUB_SRV_HOME}/consul/bin && \
+    cp /consul/consul ${CSGHUB_SRV_HOME}/consul/bin && \
+    cp /consul/LICENSE.txt ${CSGHUB_HOME}/LICENSES/Consul-LICENSE
+
+#RUN ["/bin/bash", "-c", "set -x && tree /opt"]
+
+FROM ubuntu:22.04 AS builder02
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+ENV GOPROXY=https://goproxy.cn,direct
+
+## Install postgresql
+RUN apt update && \
+    apt install -y \
+      gcc flex bison make wget bzip2 clang git \
+      libicu-dev \
+      build-essential \
+      libreadline-dev \
+      libssl-dev \
+      zlib1g-dev \
+      pkg-config \
+      ca-certificates
+
+ARG POSTGRESQL_VERSION=16.8
+RUN wget https://ftp.postgresql.org/pub/source/v${POSTGRESQL_VERSION}/postgresql-${POSTGRESQL_VERSION}.tar.gz && \
+    mkdir /postgresql && tar --strip-components=1 -zxf postgresql-${POSTGRESQL_VERSION}.tar.gz -C /postgresql && \
+    cd /postgresql && ./configure --prefix=${CSGHUB_SRV_HOME}/postgresql \
+      --with-openssl \
+      --with-icu \
+      --with-readline && \
+    make world && make install-world
+
+# Compile zhparser
+ENV PGHOME=${CSGHUB_SRV_HOME}/postgresql
+ENV LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$PGHOME/lib \
+    PATH=$PGHOME/bin:/usr/local/bin:/sbin:/usr/sbin:/bin:/usr/bin:\$PATH
+
+ARG SCWS_VERSION=1.2.3
+RUN wget http://www.xunsearch.com/scws/down/scws-${SCWS_VERSION}.tar.bz2 && \
+    mkdir /scws && tar --strip-components=1 -xjf scws-${SCWS_VERSION}.tar.bz2 -C /scws && \
+    cd /scws && ./configure --prefix=${CSGHUB_EMBEDDED} && make install
+
+ENV SCWS_HOME=${CSGHUB_EMBEDDED}
+RUN git clone https://github.com/amutu/zhparser.git && \
+    cd /zhparser && make && make install
+
+## Install Python
+RUN apt update && \
+    apt install -y \
+      build-essential \
+      zlib1g-dev \
+      libncurses5-dev \
+      libgdbm-dev \
+      libnss3-dev \
+      libssl-dev \
+      libreadline-dev  \
+      libffi-dev \
+      libsqlite3-dev \
+      libbz2-dev
+
+ARG PYTHON_VERSION=3.13.2
+RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    mkdir /python && tar --strip-components=1 -zxf Python-${PYTHON_VERSION}.tgz -C /python && \
+    cd /python && ./configure --prefix=${CSGHUB_EMBEDDED}/python \
+      --enable-optimizations \
+      --enable-shared \
+      --with-ensurepip=install && \
+    make && make altinstall
+
+## Install patroni
+RUN ln -sf ${CSGHUB_EMBEDDED}/python/bin/* ${CSGHUB_EMBEDDED}/bin/
+ENV PYTHONHOME=${CSGHUB_EMBEDDED}/python
+ENV PYTHONPATH=${CSGHUB_SRV_HOME}:\$PYTHONPATH \
+    PATH=$PYTHONHOME/bin:$PATH \
+    LD_LIBRARY_PATH=$PYTHONHOME/lib:\$LD_LIBRARY_PATH
+
+# Install Patroni
+ARG PATRONI_VERSION=4.0.5
+RUN python3.13 -m pip install \
+      --no-cache-dir \
+      --prefix=/opt/csghub/embedded/sv/patroni patroni[consul]==${PATRONI_VERSION} psycopg2-binary
+
+## Install Gitaly
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/gitaly:${GITALY_VERSION} AS gitaly
+
+## Install Gitlab-Shell
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/gitlab-shell:${GITLAB_SHELL_VERSION} AS gitlab-shell
+
+FROM ubuntu:22.04
+WORKDIR /
+
+COPY ./etc/. /etc/
+COPY ./opt/. /opt/
+COPY ./scripts /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+COPY --from=builder01 /etc/ssh/ssh_host_* /etc/ssh/
+COPY --from=builder01 /opt/. /opt/
+COPY --from=builder02 /opt/. /opt/
+#COPY --from=gitaly /usr/local/bin/git* ${CSGHUB_SRV_HOME}/gitaly/bin/
+#COPY --from=gitaly /usr/local/bin/praefect ${CSGHUB_SRV_HOME}/gitaly/bin/
+COPY --from=gitaly /usr/local/. ${CSGHUB_SRV_HOME}/gitaly/
+COPY --from=gitlab-shell /srv/gitlab-shell/. ${CSGHUB_SRV_HOME}/gitlab-shell/
+
+RUN apt update && \
+    apt install -y --no-install-recommends libicu70 && \
+    apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
+
+RUN chmod +x -R /opt/csghub/bin && \
+    chmod +x -R /opt/csghub/embedded/bin && \
+    chmod +x -R /opt/csghub/embedded/sv/**/bin && \
+    chmod +x -R /opt/csghub/embedded/sv/**/templates && \
+    chmod +x -R /scripts && \
+    ln -s /opt/csghub/bin/* /usr/bin/
+
+ENTRYPOINT ["/scripts/entrypoint.sh"]

@@ -1,0 +1,6 @@
+[submodule "csghub-ctl"]
+	path = csghub-ctl
+	url = git@git-devops.opencsg.com:product/infra/csghub-ctl.git
+[submodule "webhook"]
+	path = webhook
+	url = git@git-devops.opencsg.com:product/infra/minio/webhook.git

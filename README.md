@@ -6,9 +6,40 @@ This document is only used to guide users on how to build deb/rpm packages and c
 
 ## Build method
 
+### Docker
+
+```shell
+```
+
+
+
 ### Linux
 
-#### DEB
+#### [DEB](https://www.debian.org/doc/manuals/maint-guide/build.zh-cn.html)
+
+##### 1. Prepare the build environment
+
+```shell
+apt install -y debhelper devscripts dh-make
+apt install -y build-essential libicu-dev zlib1g-dev pkg-config libssl-dev
+```
+
+##### 2. Create the package structure
+
+```shell
+git clone git@git-devops.opencsg.com:product/infra/omnibus-csghub.git
+dpkg-buildpackage -us -uc -b
+```
+
+
+
+
+
+dh_make -c apache -e support@opencsg.com -n -p omnibus-csghub -y -s
+
+
+
+
 
 _Tips: There is currently no need to distinguish between Debian distributions_
 
@@ -46,7 +77,7 @@ git clone git@git-devops.opencsg.com:product/infra/omnibus-csghub.git
 
 # Copy your files to the appropriate locations
 mkdir -p omnibus-csghub-1.6.0 && cp -a omnibus-csghub/{etc,opt} omnibus-csghub-1.6.0
-rm -rf omnibus-csghub-1.6.0/opt/csghub/embedded/{python,sv/{postgresql,patroni}/{bin,lib,include,share}}
+rm -rf omnibus-csghub-1.6.0/opt/csghub/embedded/{python,sv/{postgresql,patroni}/{bin,lib,include,share,*requirements*}}
 
 # Create source code packages
 tar -zcf ~/rpmbuild/SOURCES/omnibus-csghub-1.6.0.tar.gz omnibus-csghub-1.6.0

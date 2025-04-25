@@ -1,0 +1,24 @@
+Source: omnibus-csghub
+Section: misc
+Priority: optional
+Maintainer: opencsg <support@opencsg.com>
+Rules-Requires-Root: no
+Build-Depends:
+ libicu-dev,
+ zlib1g-dev,
+ pkg-config,
+ libssl-dev,
+ wget,
+ debhelper (>=9)
+Standards-Version: 1.6.0
+Homepage: https://github.com/OpenCSGs/csghub
+
+Package: omnibus-csghub
+Architecture: any
+Multi-Arch: foreign
+Depends: libc6 (>= 2.33), libicu70, ${shlibs:Depends}, ${misc:Depends}
+Replaces: omnibus-csghub (<= 1.6.0)
+Conflicts: omnibus-csghub (= 1.6.0)
+Description: An all-in-one package for deploying and managing CSGHub. 
+  Bundles all necessary components, dependencies, and tools, ensuring 
+  quick and reliable installation without complex setup.

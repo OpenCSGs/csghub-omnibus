@@ -8,7 +8,7 @@ Vendor:         opencsg
 URL:            https://www.opencsg.com
 Packager:       opencsg <support@opencsg.com>
 
-Requires:       glibc >= 2.31
+Requires:       glibc >= 2.31, libicu
 Conflicts:      %{name} < %{version}
 Obsoletes:      %{name} <= %{version}
 
