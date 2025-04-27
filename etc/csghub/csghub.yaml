@@ -502,3 +502,22 @@ temporal-ui:
   ## Public URL path for Temporal UI
   public_path: "/temporal-ui"
 
+##########################################################################
+# Casdoor Configuration
+# - An open-source UI-first Identity and Access Management (IAM) / Single-Sign-On (SSO)
+#   platform with web UI supporting OAuth 2.0, OIDC, SAML, CAS, LDAP, SCIM, WebAuthn,
+#   TOTP, MFA, Face ID, RADIUS, Google Workspace, Active Directory and Kerberos
+##########################################################################
+casdoor:
+  ## Database configuration for Casdoor
+  db:
+    ## Database name
+    name: "casdoor"
+    ## Database host address
+    host: "127.0.0.1"
+    ## Database port number
+    port: 5432
+    ## Database username
+    user: "casdoor"
+    ## Database password
+    password: "b4d2a550f04ac69d"

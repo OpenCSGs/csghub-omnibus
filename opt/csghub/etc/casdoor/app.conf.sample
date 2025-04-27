@@ -1,0 +1,38 @@
+{{- $casdoor := (datasource "config").casdoor }}
+{{- $db := dict }}
+{{- if has $casdoor "db" }}
+{{- $db = $casdoor.db }}
+{{- end }}
+{{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
+appname = casdoor
+httpport = 8087
+runmode = prod
+copyrequestbody = true
+driverName = postgres
+dataSourceName = "user={{ $db.user | default "casdoor" }} password={{ $db.password | default (crypto.PBKDF2 "casdoor" "opencsg" 2048 8) }} host={{ $db.host | default "127.0.0.1" }} port={{ $db.port | default 5432 }} sslmode=disable dbname={{ $db.name | default "casdoor" }}"
+dbName =
+tableNamePrefix =
+showSql = false
+redisEndpoint =
+defaultStorageProvider =
+isCloudIntranet = false
+authState = "casdoor"
+socks5Proxy = "127.0.0.1:10808"
+verificationCodeTimeout = 10
+initScore = 0
+logPostOnly = true
+origin =
+originFrontend =
+staticBaseUrl = "https://cdn.casbin.org"
+isDemoMode = false
+batchSize = 100
+enableGzip = true
+ldapServerPort = 389
+radiusServerPort = 1812
+radiusSecret = "secret"
+quota = {"organization": -1, "user": -1, "application": -1, "provider": -1}
+logConfig = {"filename": "logs/casdoor.log", "maxdays":99999, "perm":"0770"}
+initDataFile = "{{ $dataDir }}/init_data.json"
+initDataNewOnly = true
+frontendBaseDir = "/opt/csghub/etc/casdoor"
+inactiveTimeoutMinutes = 30

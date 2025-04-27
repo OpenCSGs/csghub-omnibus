@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/casdoor" }}
+{{- if has (datasource "config").casdoor "log" }}
+{{- if has (datasource "config").casdoor.log "dir" }}
+{{- if (datasource "config").casdoor.log.dir }}
+{{- $logDir = (datasource "config").casdoor.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

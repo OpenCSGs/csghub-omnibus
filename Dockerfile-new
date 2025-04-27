@@ -200,7 +200,17 @@ ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
 ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
 
 RUN mkdir -p ${CSGHUB_SRV_HOME}/temporal-ui/bin && \
-        cp /home/ui-server/ui-server ${CSGHUB_SRV_HOME}/temporal-ui/bin/
+    cp /home/ui-server/ui-server ${CSGHUB_SRV_HOME}/temporal-ui/bin/
+
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/casbin/casdoor:v1.733.0 AS casdoor
+WORKDIR /
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+RUN mkdir -p ${CSGHUB_SRV_HOME}/casdoor/bin && \
+    cp /server ${CSGHUB_SRV_HOME}/casdoor/bin/casdoor && \
+    cp -a /web ${CSGHUB_HOME}/etc/casdoor/
 
 FROM ubuntu:22.04
 WORKDIR /
@@ -231,6 +241,10 @@ COPY --from=temporal /etc/temporal/schema ${CSGHUB_HOME}/etc/temporal/
 COPY --from=temporal-ui ${CSGHUB_SRV_HOME}/temporal-ui/. ${CSGHUB_SRV_HOME}/temporal-ui/
 COPY --from=temporal-ui /home/ui-server/config ${CSGHUB_HOME}/etc/temporal-ui/
 COPY --from=temporal-ui /home/ui-server/config-template.yaml ${CSGHUB_HOME}/etc/temporal-ui/
+
+## Install Casdoor
+COPY --from=casdoor ${CSGHUB_SRV_HOME}/casdoor/. ${CSGHUB_SRV_HOME}/casdoor/
+COPY --from=casdoor ${CSGHUB_HOME}/etc/casdoor/. ${CSGHUB_HOME}/etc/casdoor/
 
 RUN apt update && \
     apt install -y --no-install-recommends libicu70 && \
