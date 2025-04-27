@@ -1,0 +1,56 @@
+{{- $registry := (datasource "config").registry }}
+{{- $dataDir := $registry.data }}
+{{- $minio := (datasource "config").minio }}
+{{- $minioAuth := }}
+{{- if has $minio "auth" }}
+{{- $minioAuth = $minio.auth }}
+{{- end }}
+version: 0.1
+log:
+  {{- if has $registry "log" }}
+  level: {{ $registry.log.level | default "info" }}
+  formatter: {{ $registry.log.formatter | default "json" }}
+  {{- else }}
+  level: info
+  formatter: text
+  {{- end }}
+  fields:
+    service: registry
+storage:
+  cache:
+    blobdescriptor: inmemory
+  {{- if has $registry "storage" }}
+  {{- if has $registry.storage "filesystem" }}
+  filesystem:
+    rootdirectory: {{ $registry.storage.filesystem.rootdirectory }}
+    maxthreads: {{ $registry.storage.filesystem.maxthreads }}
+  {{- else }}
+  {{- if has $registry.storage "s3" }}
+  {{- $auth := $registry.storage.s3 }}
+  s3:
+    accesskey: {{ $auth.accesskey | default $minioAuth.user }}
+    secretkey: {{ $auth.secretkey | default $minioAuth.password }}
+    region: {{ $auth.region | default "cn-north-1" }}
+    regionendpoint: {{ $auth.region | default "http://127.0.0.1:9000" }}
+    forcepathstyle: {{ $auth.forcepathstyle | default false }}
+    bucket: {{ $auth.bucket | default "csghub-registry" }}
+    encrypt: {{ $auth.encrypt | default false }}
+    secure: {{ $auth.secure | default false }}
+    v4auth: {{ $auth.v4auth | default true }}
+    skipverify: {{ $auth.skipverify | default true }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+http:
+  addr: {{ $registry | default ":5000" }}
+  headers:
+    X-Content-Type-Options: [nosniff]
+auth:
+  htpasswd:
+    realm: basic-realm
+    path: {{ printf "%s/.htpasswd" $dataDir }}
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3

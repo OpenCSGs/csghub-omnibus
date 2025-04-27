@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+{{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
+if [ ! -d {{ $dataDir }} ]; then
+    mkdir -p {{ $dataDir }}
+fi
+
+{{- $auth := (datasource "config").registry.auth }}
+{{- $user := $auth.username | default "registry" }}
+{{- $password := $auth.password | default (crypto.PBKDF2 "registry" "opencsg" 2048 8) }}
+{{- if and ($auth.username | default) $auth.password }}
+htpasswd -Bb -c {{ $dataDir }}/.htpasswd {{ $user }} {{ $password }}
+{{- end }}
+
+chown -R registry:registry {{ $dataDir }}
+
+exit 0

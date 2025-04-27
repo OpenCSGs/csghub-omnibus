@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+{{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
+cd {{ $dataDir }}
+exec chpst -e /opt/csghub/etc/registry/env -P \
+  -U registry:registry \
+  -u registry:registry \
+  /opt/csghub/embedded/bin/registry serve {{ $dataDir }}/config.yml
+

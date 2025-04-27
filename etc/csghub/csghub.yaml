@@ -22,7 +22,7 @@ gitaly:
   listen_addr: "127.0.0.1:8075"
   auth:
     ## Auth token for Gitaly authentication
-    token: "abc123secret"
+    token: "79a93a9a40f83c41"
   storage:
     ## Storage name
     name: "default"
@@ -131,7 +131,7 @@ praefect:
   listen_addr: "127.0.0.1:2305"
   auth:
     ## Auth token for Praefect
-    token: "abc123secret"
+    token: "3b43a3d15b8ad20d"
   logging:
     ## Log destination
     dir: "/var/log/csghub/praefect"
@@ -147,7 +147,7 @@ praefect:
     ## Praefect database user
     user: "praefect"
     ## Praefect database password
-    password: "praefect"
+    password: "3b43a3d15b8ad20d"
     ## Praefect database name
     dbname: "praefect_production"
   virtual_storage:
@@ -159,19 +159,19 @@ praefect:
           ## Gitaly address
           address: "tcp://10.6.0.21:8075"
           ## Gitaly token
-          token: "abc123secret"
+          token: "79a93a9a40f83c41"
         - ## Gitaly storage name
           storage: "gitaly-02"
           ## Gitaly address
           address: "tcp://10.6.0.22:8075"
           ## Gitaly token
-          token: "abc123secret"
+          token: "79a93a9a40f83c41"
         - ## Gitaly storage name
           storage: "gitaly-03"
           ## Gitaly address
           address: "tcp://10.6.0.23:8075"
           ## Gitaly token
-          token: "abc123secret"
+          token: "79a93a9a40f83c41"
   replication:
     batch_size: 10
   reconciliation:
@@ -204,7 +204,7 @@ minio:
     ## MinIO root username
     user: "minio"
     ## MinIO root password
-    password: "Minio@1234"
+    password: "927df20a3382c14d"
   ## Environment variables for MinIO
   environments:
     ## Additional MinIO server options (console port configuration)
@@ -322,15 +322,15 @@ patroni:
     ## Authentication configuration
     authentication:
       ## Superuser password
-      postgres: ""
+      postgres: "bba85b8ab3d1d64b"
       ## Replication user password
-      replicator: ""
+      replicator: "7b69f13bbc5c6eb6"
       ## Rewind user password
-      rewinder: ""
+      rewinder: "601ac040d1220adc"
     ## PostgreSQL parameters
     parameters:
       ## Shared memory buffers for PostgreSQL
-      shared_buffers: "120MB"
+      shared_buffers: "256MB"
   ## Standby leader configuration (disabled)
   # standby_leader:
   #   enable: false
@@ -365,4 +365,140 @@ patroni:
   #   ## Specific node to replicate from
   #   replicatefrom: ""
 
+##########################################################################
+# Redis server configuration
+# - Redis configuration for single node.
+##########################################################################
+redis:
+  ## Authentication
+  password: "47260d0e6523e59f"
+  ## Network interface to bind to (* means all available interfaces)
+  listen: "*"
+  ## TCP port to listen on (default Redis port)
+  port: 6379
+  ## Client connection timeout in seconds (0 to disable)
+  timeout: 0
+  ## TCP keepalive timeout in seconds
+  keepalive: 300
+  ## Directory for Redis data persistence (RDB/AOF files)
+  data: "/var/opt/csghub/redis"
+  ## Logging configuration
+  log:
+    ## Directory for Redis log files
+    dir: "/var/log/csghub/redis"
+    ## Log verbosity level (options: debug, verbose, notice, warning)
+    level: "notice"
+
+##########################################################################
+# Distribution Registry Configuration
+# - The toolkit to pack, ship, store, and deliver container content
+# - https://github.com/distribution/distribution
+##########################################################################
+registry:
+  ## Network address and port to listen on
+  listen: ":5000"
+  ## Directory for Registry data persistence
+  data: "/var/opt/csghub/registry"
+  ## Authentication
+  auth:
+    ## username for authenticate
+    username: "registry"
+    ## password for authenticate
+    password: "945d60b0d03f4f72"
+  ## Logging
+  log:
+    ## Directory path for storing log files
+    dir: "/var/log/csghub/registry"
+    ## Logging verbosity level
+    ## Options error, warn, info, debug, default info
+    level: "info"
+    ## Log output format specification
+    ## Supported formats:
+    ##   - text: Human-readable plain text format
+    ##   - json: Structured JSON format (machine parseable)
+    ##   - logstash: Logstash-compatible JSON format
+    ## Default: text
+    formatter: "json"
+  ## Storage backend configuration
+  storage:
+    ## Filesystem storage settings
+    # filesystem:
+      ## Root directory for storing registry files
+      # rootdirectory: "/var/opt/csghub/registry"
+      ## Maximum concurrent file operations
+      # maxthreads: 100
+    ## Amazon S3 storage settings (commented out by default)
+    ## Documentation: https://distribution.github.io/distribution/storage-drivers/s3/
+    s3:
+      ## Default value from internal Minio
+      ## AWS access key ID
+      accesskey: "minio"
+      ## AWS secret access key
+      secretkey: "927df20a3382c14d"
+      ## AWS region name
+      region: "cn-north-1"
+      ## Custom endpoint URL (for non-AWS S3 compatible services)
+      regionendpoint: "http://127.0.0.1:9000"
+      ## Force path-style URLs for S3 (true/false)
+      forcepathstyle: "false"
+      ## S3 bucket name
+      bucket: "csghub-registry"
+      ## Server-side encryption (true/false)
+      encrypt: "false"
+      ## Use HTTPS (true/false)
+      secure: "false"
+      ## Use AWS Signature Version 4 (true/false)
+      v4auth: "true"
+      ## Skip TLS certificate verification (true/false)
+      skipverify: "true"
+
+##########################################################################
+# NATS Configuration
+# - Only provide authentication conf
+##########################################################################
+nats:
+  ## NATS server data storage directory
+  data: "/var/opt/csghub/nats"
+  ## Authentication configuration for NATS server
+  auth:
+    ## Username for NATS authentication
+    user: "natsadmin"
+    ## Password for NATS authentication (recommend using secrets management in production)
+    password: "8116bb024f7b11fb"
+
+##########################################################################
+# Temporal Configuration
+# - Temporal delivers an open-source Durable Execution platform that abstracts
+#   away the complexity of building scalable, reliable distributed systems.
+##########################################################################
+temporal:
+  ## Temporal service listen address and port
+  listen: "127.0.0.1:7233"
+  ## Authentication configuration for Temporal (leave empty if not used)
+  auth:
+    ## Username for Temporal authentication
+    user: "temporal"
+    ## Password for Temporal authentication
+    password: "f7ebfa1e128adfd2"
+  ## Database configuration for Temporal
+  db:
+    ## Database name
+    name: "temporal"
+    ## Database host address
+    host: "127.0.0.1"
+    ## Database port number
+    port: 5432
+    ## Database username
+    user: "temporal"
+    ## Database password
+    password: "f7ebfa1e128adfd2"
+  ## Retention period for workflow history (e.g., "7d" for 7 days)
+  retention: "7d"
+
+## Web UI configuration
+temporal-ui:
+  ## Enable or disable Temporal UI
+  enable: true
+  ## Public URL path for Temporal UI
+  public_path: "/temporal-ui"
 

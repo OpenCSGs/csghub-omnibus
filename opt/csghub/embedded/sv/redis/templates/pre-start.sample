@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+{{- $dataDir := (datasource "config").redis.data | default "/var/opt/csghub/redis" }}
+if [ ! -d {{ $dataDir }} ]; then
+    mkdir -p {{ $dataDir }}
+fi
+
+chown -R redis:redis {{ $dataDir }}
+
+exit 0

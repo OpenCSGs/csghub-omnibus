@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/redis" }}
+{{- if has (datasource "config").redis "log" }}
+{{- if has (datasource "config").redis.log "dir" }}
+{{- if (datasource "config").redis.log.dir }}
+{{- $logDir = (datasource "config").redis.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

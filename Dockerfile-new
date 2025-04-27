@@ -1,5 +1,9 @@
 ARG GITALY_VERSION=v17.5.0
 ARG GITLAB_SHELL_VERSION=v17.5.0
+ARG REGISTRY_VERSION=2.8.3
+ARG NATS_VERSION=2.10.16
+ARG TEMPORAL_VERSION=1.25.1
+ARG TEMPORAL_UI_VERSION=2.30.3
 
 FROM ubuntu:22.04 AS builder01
 WORKDIR /
@@ -19,7 +23,8 @@ RUN apt update && \
       unzip \
       build-essential \
       openssh-client \
-      tree
+      tree \
+      apache2-utils
 
 RUN ssh-keygen -A
 ## Install Runit Service Daemon
@@ -67,6 +72,8 @@ RUN wget -O consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/c
     cp /consul/consul ${CSGHUB_SRV_HOME}/consul/bin && \
     cp /consul/LICENSE.txt ${CSGHUB_HOME}/LICENSES/Consul-LICENSE
 
+## Install htpasswd
+RUN cp /usr/bin/htpasswd ${CSGHUB_EMBEDDED}/bin/
 #RUN ["/bin/bash", "-c", "set -x && tree /opt"]
 
 FROM ubuntu:22.04 AS builder02
@@ -113,8 +120,7 @@ RUN git clone https://github.com/amutu/zhparser.git && \
     cd /zhparser && make && make install
 
 ## Install Python
-RUN apt update && \
-    apt install -y \
+RUN apt install -y \
       build-essential \
       zlib1g-dev \
       libncurses5-dev \
@@ -148,18 +154,60 @@ RUN python3.13 -m pip install \
       --no-cache-dir \
       --prefix=/opt/csghub/embedded/sv/patroni patroni[consul]==${PATRONI_VERSION} psycopg2-binary
 
+RUN apt install -y \
+      libjemalloc-dev \
+      liblua5.1-dev
+
+ARG REDIS_VERSION=6.2.14
+RUN wget -O /redis.tar.gz https://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
+    mkdir /redis && tar --strip-components=1 -xzf /redis.tar.gz -C /redis && \
+    cd /redis/deps && make hiredis linenoise hdr_histogram lua jemalloc && \
+    cd /redis && make BUILD_TLS=no && make install PREFIX=${CSGHUB_SRV_HOME}/redis
+
 ## Install Gitaly
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/gitaly:${GITALY_VERSION} AS gitaly
 
 ## Install Gitlab-Shell
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/gitlab-shell:${GITLAB_SHELL_VERSION} AS gitlab-shell
 
+## Install Registry
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/registry:${REGISTRY_VERSION} AS registry
+WORKDIR /
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+RUN mkdir -p ${CSGHUB_SRV_HOME}/registry/bin && \
+    cp /bin/registry ${CSGHUB_SRV_HOME}/registry/bin/ && \
+    cp /bin/busybox ${CSGHUB_SRV_HOME}/registry/bin/
+
+## Install NATS
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_nats:${NATS_VERSION} AS nats
+WORKDIR /
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+RUN mkdir -p ${CSGHUB_SRV_HOME}/nats/bin && \
+    cp /nats-server ${CSGHUB_SRV_HOME}/nats/bin/
+
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/temporalio/auto-setup:${TEMPORAL_VERSION} AS temporal
+
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/temporalio/ui:${TEMPORAL_UI_VERSION} AS temporal-ui
+WORKDIR /
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+RUN mkdir -p ${CSGHUB_SRV_HOME}/temporal-ui/bin && \
+        cp /home/ui-server/ui-server ${CSGHUB_SRV_HOME}/temporal-ui/bin/
+
 FROM ubuntu:22.04
 WORKDIR /
 
 COPY ./etc/. /etc/
 COPY ./opt/. /opt/
-COPY ./scripts /
+COPY ./scripts/. /scripts/
 
 ENV CSGHUB_HOME=/opt/csghub
 ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
@@ -168,10 +216,21 @@ ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
 COPY --from=builder01 /etc/ssh/ssh_host_* /etc/ssh/
 COPY --from=builder01 /opt/. /opt/
 COPY --from=builder02 /opt/. /opt/
-#COPY --from=gitaly /usr/local/bin/git* ${CSGHUB_SRV_HOME}/gitaly/bin/
-#COPY --from=gitaly /usr/local/bin/praefect ${CSGHUB_SRV_HOME}/gitaly/bin/
+## Install Gitaly
 COPY --from=gitaly /usr/local/. ${CSGHUB_SRV_HOME}/gitaly/
+## Install Gitlab-Shell
 COPY --from=gitlab-shell /srv/gitlab-shell/. ${CSGHUB_SRV_HOME}/gitlab-shell/
+## Install Registry
+COPY --from=registry ${CSGHUB_SRV_HOME}/registry/. ${CSGHUB_SRV_HOME}/registry/
+## Install NATS
+COPY --from=nats ${CSGHUB_SRV_HOME}/nats/. ${CSGHUB_SRV_HOME}/nats/
+## Install Temporal & Temporal-ui
+COPY --from=temporal /usr/local/. ${CSGHUB_SRV_HOME}/temporal/
+COPY --from=temporal /etc/temporal/config ${CSGHUB_HOME}/etc/temporal/
+COPY --from=temporal /etc/temporal/schema ${CSGHUB_HOME}/etc/temporal/
+COPY --from=temporal-ui ${CSGHUB_SRV_HOME}/temporal-ui/. ${CSGHUB_SRV_HOME}/temporal-ui/
+COPY --from=temporal-ui /home/ui-server/config ${CSGHUB_HOME}/etc/temporal-ui/
+COPY --from=temporal-ui /home/ui-server/config-template.yaml ${CSGHUB_HOME}/etc/temporal-ui/
 
 RUN apt update && \
     apt install -y --no-install-recommends libicu70 && \
