@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+exec chpst -e /opt/csghub/etc/dnsmasq/env -P \
+  -U dnsmasq:dnsmasq \
+  -u dnsmasq:dnsmasq \
+  /opt/csghub/embedded/bin/dnsmasq --conf-dir=/opt/csghub/etc/dnsmasq --no-daemon

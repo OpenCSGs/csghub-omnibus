@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/praefect" }}
+{{- if has (datasource "config").praefect "logging" }}
+{{- if has (datasource "config").praefect.logging "dir" }}
+{{- if (datasource "config").praefect.logging.dir }}
+{{- $logDir = (datasource "config").praefect.logging.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/dnsmasq" }}
+{{- if has (datasource "config").dnsmasq "log" }}
+{{- if has (datasource "config").dnsmasq.log "dir" }}
+{{- if (datasource "config").dnsmasq.log.dir }}
+{{- $logDir = (datasource "config").dnsmasq.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

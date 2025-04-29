@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+{{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
+cd {{ $dataDir }}
+/opt/csghub/embedded/bin/praefect --config {{ $dataDir }}/config.toml sql-migrate
+
+exec chpst -e /opt/csghub/etc/praefect/env -P \
+  -U gitaly:gitaly \
+  -u gitaly:gitaly \
+  /opt/csghub/embedded/bin/gitaly-wrapper /opt/csghub/embedded/bin/praefect -config {{ $dataDir }}/config.toml
+

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+
+{{- $configDir := "/opt/csghub/etc/dnsmasq" }}
+if [ ! -d {{ $configDir }} ]; then
+    mkdir -p {{ $configDir }}
+fi
+
+rm -f {{ $configDir }}/internal-domain.conf 2>/dev/null
+
+{{- $csghub := (datasource "config").csghub }}
+{{- $services := dict }}
+{{- $ns := "spaces" }}
+{{- if has $csghub "deployment" }}
+{{- if has $csghub.deployment "namespace" }}
+{{- $ns = $csghub.deployment.namespace }}
+{{- end }}
+{{- if has $csghub.deployment "knative" }}
+{{- if has $csghub.deployment.knative "services" }}
+{{- $services = $csghub.deployment.knative.services }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- range $services }}
+echo "address/{{ $ns }}.{{ .domain }}/127.0.0.1" >> {{ $configDir }}/internal-domain.conf
+{{- end }}
+
+sed -i '0,/nameserver/s//nameserver 127.0.0.1\n&/' /tmp/resolv.conf
+
+exit 0
