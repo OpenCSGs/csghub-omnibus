@@ -1,154 +1,134 @@
-FROM debian:bookworm-slim AS Downloader
-WORKDIR /
-RUN apt update && apt install -y wget golang
+ARG OS_RELEASE=ubuntu:22.04
 
-# Download gitaly
-ARG GITALY_VERSION=v17.7.6
-RUN wget http://gitlab-ubi.s3.amazonaws.com/ubi-build-dependencies-${GITALY_VERSION}-ubi/gitaly.tar.gz && \
-    tar -zxf gitaly.tar.gz \
-
-# Download Minio
-RUN mkdir -p /minio/bin /logger/bin
-## Download minio server
-RUN wget -O /minio/bin/minio https://dl.min.io/server/minio/release/linux-amd64/minio && \
-    chmod -R +x /minio/bin/minio
-## Download minio client
-RUN wget -O /minio/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && \
-    chmod -R +x /minio/bin/mc
-## Compile minio webhook logger
-RUN git clone https://git-devops.opencsg.com/product/infra/minio/webhook.git && \
-    cd webhook && go build -o /logger/bin/logger main.go
-
-# Download Consul
+ARG RUNIT_VERSION=2.2.0
+ARG TOOLBOX_VERSION=1.0.0
 ARG CONSUL_VERSION=1.20.5
-RUN wget -O consul.zip https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip && \
-    unzip consul.zip -d /consul
+ARG MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
+ARG POSTGRESQL_VERSION=16.8
+ARG REDIS_VERSION=6.2.14
+ARG REGISTRY_VERSION=2.8.3
+ARG GITALY_VERSION=v17.5.0
+ARG GITLAB_SHELL_VERSION=v17.5.0
+ARG TEMPORAL_VERSION=1.25.1
+ARG NATS_VERSION=2.10.16
+ARG CASDOOR_VERSION=v1.733.0
+ARG DNSMASQ_VERSION=2.91
 
-FROM ubuntu:22.04 AS Builder
+## Install Runit Service Daemon
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-${RUNIT_VERSION} AS runit
+
+## Install csghub-ctl, gomplate, htpasswd, ssh host key pairs
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:toolbox-${TOOLBOX_VERSION} AS toolbox
+
+## Install Consul
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/hashicorp/consul:${CONSUL_VERSION} AS consul
+
+## Install Minio
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:minio-${MINIO_VERSION} AS minio
+
+## Install PostgreSQL
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} AS postgresql
+
+## Install Redis
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:redis-${REDIS_VERSION} AS redis
+
+## Install Registry
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/registry:${REGISTRY_VERSION} AS registry
+
+## Install Gitaly
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/gitaly:${GITALY_VERSION} AS gitaly
+
+## Install Gitlab-Shell
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/gitlab-shell:${GITLAB_SHELL_VERSION} AS gitlab-shell
+
+## Install Temporal
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:temporal-${TEMPORAL_VERSION} AS temporal
+
+## Install NATS
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_nats:${NATS_VERSION} AS nats
+
+## Install Casdoor
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/casbin/casdoor:${CASDOOR_VERSION} AS casdoor
+
+## Install Dnsmasq
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/dockurr/dnsmasq:${DNSMASQ_VERSION} AS dnsmasq
+
+FROM ${OS_RELEASE}
 WORKDIR /
 
-# Install the compilation environment
-RUN apt update && \
-    apt install -y \
-      gcc  \
-      libicu-dev \
-      build-essential \
-      libreadline-dev \
-      zlib1g-dev \
-      pkg-config \
-      flex \
-      bison \
-      make \
-      postgresql-common && \
-    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+COPY ./etc/. /etc/
+COPY ./opt/. /opt/
+COPY ./scripts/. /scripts/
 
-# Compile postgresql
-RUN wget -O postgresql-16.8.tar.gz https://ftp.postgresql.org/pub/source/v16.8/postgresql-16.8.tar.gz && \
-    tar -zxf postgresql-16.8.tar.gz && cd postgresql-16.8 && \
-    ./configure --prefix=/opt/csghub/embedded/sv/postgresql \
-    --with-openssl \
-    --with-icu \
-    --with-readline && \
-    make world -j$(nproc) && make install-world -j$(nproc) \
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
 
-# Compile zhparser
-ENV PGHOME=/opt/csghub/embedded/sv/postgresql \
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PGHOME/lib \
-    PATH=$PGHOME/bin:/usr/local/bin:/sbin:/usr/sbin:/bin:/usr/bin:$PATH
-
-RUN apt install -y \
-      build-essential \
-      llvm-16 \
-      clang \
-      bzip2 \
-      wget \
-      ca-certificates \
-      postgresql-server-dev-16 \
-
-RUN wget -O scws-1.2.3.tar.bz2 http://www.xunsearch.com/scws/down/scws-1.2.3.tar.bz2 && \
-    tar -xjf scws-1.2.3.tar.bz2 && cd /scws-1.2.3 && \
-    ./configure --prefix=/opt/csghub/embedded && make install
-
-ENV SCWS_HOME=/opt/csghub/embedded
-RUN git clone https://github.com/amutu/zhparser.git && \
-    cd /zhparser && make && make install
-
-# Compile Python
-RUN apt install -y \
-      build-essential \
-      zlib1g-dev \
-      libncurses5-dev \
-      libgdbm-dev \
-      libnss3-dev \
-      libssl-dev \
-      libreadline-dev  \
-      libffi-dev \
-      libsqlite3-dev \
-      libbz2-dev \
-
-RUN wget -O Python-3.13.2.tgz https://www.python.org/ftp/python/3.13.2/Python-3.13.2.tgz && \
-    tar -zxf Python-3.13.2.tgz && cd Python-3.13.2 && \
-    ./configure --prefix=/opt/csghub/embedded/python \
-      --enable-optimizations \
-      --enable-shared \
-      --with-ensurepip=install && \
-    make -j$(nproc) && make altinstall
-
-FROM ubuntu:22.04
-WORKDIR /
-
-# --no-install-recommends
-
-# Using bash SHELL default
 SHELL ["/bin/bash", "-c"]
 
-# Create the Directory Structure
-RUN mkdir -p /opt/csghub/{bin,embedded/{bin,lib,sv},etc,LICENSES}
+RUN mkdir -p \
+      ${CSGHUB_HOME}/{LICENSES,bin,services} \
+      ${CSGHUB_EMBEDDED}/{bin,lib,sv} \
+      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal-ui,casdoor,dnsmasq,consul}/bin
 
-# Install Gitaly & Praefect
-COPY --from=Downloader /gitaly/usr/local /opt/csghub/embedded/sv/gitaly
-COPY --from=Downloader /gitaly/licenses/GitLab.txt /opt/csghub/LICENSES/GitLab-LICENSE
+## Install Runit Service Daemon
+COPY --from=runit ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
+
+## Install csghub-ctl, gomplate, htpasswd, ssh host key pairs
+COPY --from=toolbox /etc/ssh/ssh_host_* /etc/ssh/
+COPY --from=toolbox ${CSGHUB_HOME}/bin/. ${CSGHUB_HOME}/bin/
+COPY --from=toolbox ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
+
+## Install Consul
+COPY --from=consul /bin/consul ${CSGHUB_SRV_HOME}/consul/bin/
+COPY --from=consul /usr/share/doc/consul/LICENSE.txt ${CSGHUB_HOME}/LICENSES/Consul-LICENSE
+
+## Install Minio
+COPY --from=minio ${CSGHUB_SRV_HOME}/minio/bin/. ${CSGHUB_SRV_HOME}/minio/bin/
+COPY --from=minio ${CSGHUB_SRV_HOME}/logger/bin/. ${CSGHUB_SRV_HOME}/logger/bin/
+
+## Installer PostgreSQL (or Patroni Python)
+COPY --from=postgresql ${CSGHUB_EMBEDDED}/. ${CSGHUB_EMBEDDED}/
+
+## Install Redis
+COPY --from=redis ${CSGHUB_SRV_HOME}/redis/bin/. ${CSGHUB_SRV_HOME}/redis/bin/
+
+## Install Registry
+COPY --from=registry /bin/registry ${CSGHUB_SRV_HOME}/registry/bin/
+COPY --from=registry /bin/busybox ${CSGHUB_SRV_HOME}/registry/bin/
+
 ## Install Gitaly
-COPY ./opt/csghub/etc/gitaly /opt/csghub/etc/gitaly
-COPY ./opt/csghub/embedded/sv/gitaly /opt/csghub/embedded/sv/gitaly
-## Install Praefect
-COPY ./opt/csghub/etc/praefect /opt/csghub/etc/praefect
-COPY ./opt/csghub/embedded/sv/praefect /opt/csghub/embedded/sv/praefect
+COPY --from=gitaly /usr/local/. ${CSGHUB_SRV_HOME}/gitaly/
 
-# Install Minio
-COPY --from=Downloader /minio /opt/csghub/embedded/sv/minio
-COPY ./opt/csghub/embedded/sv/minio /opt/csghub/embedded/sv/minio
+## Install Gitlab-Shell
+COPY --from=gitlab-shell /srv/gitlab-shell/. ${CSGHUB_SRV_HOME}/gitlab-shell/
 
-# Install Minio Logger Webhook
-COPY --from=Downloader /logger /opt/csghub/embedded/sv/logger
-COPY ./opt/csghub/embedded/sv/logger /opt/csghub/embedded/sv/logger
+## Install Temporal & Temporal-ui
+COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_HOME}/etc/temporal/
+COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal/
+COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_HOME}/etc/temporal-ui/
+COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal-ui/
 
-# Install Consul
-COPY --from=Downloader /consul /opt/csghub/embedded/sv/consul
-COPY --from=Downloader /consul/LICENSE.txt /opt/csghub/LICENSES/consul-LICENSE
-COPY ./opt/csghub/etc/consul /opt/csghub/etc/consul
-COPY ./opt/csghub/embedded/sv/consul /opt/csghub/embedded/sv/consul
+## Install NATS
+COPY --from=nats /nats-server ${CSGHUB_SRV_HOME}/nats/bin/
 
-# Install PostgreSQL
-COPY --from=Builder /opt/csghub/embedded/sv/postgresql /opt/csghub/embedded/sv/postgresql
-COPY --from=Builder /opt/csghub/embedded/scws /opt/csghub/embedded/scws
-COPY ./opt/csghub/etc/postgresql /opt/csghub/etc/postgresql
-COPY ./opt/csghub/embedded/sv/postgresql /opt/csghub/embedded/sv/postgresql
+## Install Casdoor
+COPY --from=casdoor /server ${CSGHUB_SRV_HOME}/casdoor/bin/
+COPY --from=casdoor /web ${CSGHUB_HOME}/etc/casdoor/
 
-# Install Python3
-COPY --from=Builder /opt/csghub/embedded/python /opt/csghub/embedded/python
-RUN ln -sf /opt/csghub/embedded/python/bin/* /opt/csghub/embedded/bin/
-ENV PYTHONHOME=/opt/csghub/embedded/python \
-    PYTHONPATH=/opt/csghub/embedded/sv:$PYTHONPATH \
-    PGHOME=/opt/csghub/embedded/sv/postgresql \
-    PATH=$PYTHONHOME/bin:$PGHOME/bin:$PATH \
-    LD_LIBRARY_PATH=$PYTHONHOME/lib:$PGHOME/lib:$LD_LIBRARY_PATH
+## Install Dnsmasq
+COPY --from=dnsmasq /usr/sbin/dnsmasq ${CSGHUB_SRV_HOME}/dnsmasq/bin/
 
-# Install Patroni
-RUN python3.13 -m pip install \
-      --no-cache-dir \
-      --prefix=/opt/csghub/embedded/sv/patroni patroni[consul] psycopg2-binary \
+RUN apt update && \
+    apt install -y --no-install-recommends libicu70 && \
+    apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
-COPY ./opt/csghub/etc/patroni /opt/csghub/etc/patroni
+RUN chmod +x -R /opt/csghub/bin && \
+    chmod +x -R /opt/csghub/embedded/bin && \
+    chmod +x -R /opt/csghub/embedded/sv/**/bin && \
+    chmod +x -R /opt/csghub/embedded/sv/**/templates && \
+    chmod +x -R /scripts && \
+    ln -s /opt/csghub/bin/* /usr/bin/ && \
+    find /opt/csghub/etc/ -type f -name "*.sh" -exec chmod +x {} \;
 
-
+ENTRYPOINT ["/scripts/entrypoint.sh"]
