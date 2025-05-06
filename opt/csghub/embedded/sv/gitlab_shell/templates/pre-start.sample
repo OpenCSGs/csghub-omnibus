@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+{{- $configDir := "/opt/csghub/etc/gitlab_shell" }}
+
+# Define the repository parent directory
+{{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
+mkdir -p {{ $configDir }} {{ $dataDir }} &>/dev/null
+
+{{- $gitaly := (datasource "config").gitaly }}
+{{- $token := "79a93a9a40f83c41" }}
+{{- if has $gitaly "auth" }}
+{{- if $gitaly.auth.token }}
+{{- $token = $gitaly.auth.token }}
+{{- end }}
+{{- end }}
+echo {{ $token }} > /opt/csghub/etc/gitlab_shell/.gitlab_shell_secret
+
+exit 0

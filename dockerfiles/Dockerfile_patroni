@@ -1,0 +1,87 @@
+ARG OS_RELEASE=ubuntu:22.04
+FROM ${OS_RELEASE} AS builder
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+## Install postgresql
+RUN apt update && \
+    apt install -y \
+      gcc flex bison make wget bzip2 clang git \
+      libicu-dev \
+      build-essential \
+      libreadline-dev \
+      libssl-dev \
+      zlib1g-dev \
+      pkg-config \
+      ca-certificates
+
+ARG POSTGRESQL_VERSION=16.8
+RUN wget https://ftp.postgresql.org/pub/source/v${POSTGRESQL_VERSION}/postgresql-${POSTGRESQL_VERSION}.tar.gz && \
+    mkdir /postgresql && tar --strip-components=1 -zxf postgresql-${POSTGRESQL_VERSION}.tar.gz -C /postgresql && \
+    cd /postgresql && ./configure --prefix=${CSGHUB_SRV_HOME}/postgresql \
+      --with-openssl \
+      --with-icu \
+      --with-readline && \
+    make world && make install-world
+
+# Compile zhparser
+ENV PGHOME=${CSGHUB_SRV_HOME}/postgresql
+ENV LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$PGHOME/lib \
+    PATH=$PGHOME/bin:/usr/local/bin:/sbin:/usr/sbin:/bin:/usr/bin:\$PATH
+
+ARG SCWS_VERSION=1.2.3
+RUN wget http://www.xunsearch.com/scws/down/scws-${SCWS_VERSION}.tar.bz2 && \
+    mkdir /scws && tar --strip-components=1 -xjf scws-${SCWS_VERSION}.tar.bz2 -C /scws && \
+    cd /scws && ./configure --prefix=${CSGHUB_EMBEDDED} && make install
+
+ENV SCWS_HOME=${CSGHUB_EMBEDDED}
+RUN git clone https://github.com/amutu/zhparser.git && \
+    cd /zhparser && make && make install
+
+## Install Python
+RUN apt install -y \
+      build-essential \
+      zlib1g-dev \
+      libncurses5-dev \
+      libgdbm-dev \
+      libnss3-dev \
+      libssl-dev \
+      libreadline-dev  \
+      libffi-dev \
+      libsqlite3-dev \
+      libbz2-dev
+
+ARG PYTHON_VERSION=3.13.3
+RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    mkdir /python && tar --strip-components=1 -zxf Python-${PYTHON_VERSION}.tgz -C /python && \
+    cd /python && ./configure --prefix=${CSGHUB_EMBEDDED}/python \
+      --enable-optimizations \
+      --enable-shared \
+      --with-ensurepip=install && \
+    make && make altinstall
+
+## Install patroni
+RUN ln -sf ${CSGHUB_EMBEDDED}/python/bin/* ${CSGHUB_EMBEDDED}/bin/
+ENV PYTHONHOME=${CSGHUB_EMBEDDED}/python
+ENV PYTHONPATH=${CSGHUB_SRV_HOME}:\$PYTHONPATH \
+    PATH=$PYTHONHOME/bin:$PATH \
+    LD_LIBRARY_PATH=$PYTHONHOME/lib:\$LD_LIBRARY_PATH
+
+# Install Patroni
+ARG PATRONI_VERSION=4.0.5
+RUN python3.13 -m pip install \
+      --no-cache-dir \
+      --prefix=/opt/csghub/embedded/sv/patroni patroni[consul]==${PATRONI_VERSION} psycopg2-binary
+
+FROM ${OS_RELEASE}
+
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+COPY --from=builder /opt/. /opt/

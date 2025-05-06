@@ -20,3 +20,4 @@ debian
 *.DS_Store
 ehthumbs.db
 Thumbs.db
+dockerfiles

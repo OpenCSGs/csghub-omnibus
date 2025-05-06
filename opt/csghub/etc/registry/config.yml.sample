@@ -1,26 +1,33 @@
-{{- $registry := (datasource "config").registry }}
-{{- $dataDir := $registry.data }}
-{{- $minio := (datasource "config").minio }}
-{{- $minioAuth := }}
-{{- if has $minio "auth" }}
-{{- $minioAuth = $minio.auth }}
-{{- end }}
+{{- $registry := (datasource "config").registry -}}
+{{- $dataDir := $registry.data | default "/var/opt/csghub/registry" -}}
+{{- $minio := (datasource "config").minio -}}
+{{- $user := "minio" -}}
+{{- $password := crypto.PBKDF2 $user "opencsg" 2048 8 -}}
+{{- if has $minio "auth" -}}
+{{- if $minio.auth.user -}}
+{{- $user = $minio.auth.user -}}
+{{- end -}}
+{{- if $minio.auth.password -}}
+{{- $password = $minio.auth.password -}}
+{{- end -}}
+{{- end -}}
 version: 0.1
 log:
-  {{- if has $registry "log" }}
-  level: {{ $registry.log.level | default "info" }}
-  formatter: {{ $registry.log.formatter | default "json" }}
-  {{- else }}
-  level: info
-  formatter: text
+  {{- $logLevel := "info" -}}
+  {{- $logFormatter := "text" }}
+  {{- if has $registry "log" -}}
+  {{- $logLevel = $registry.log.level -}}
+  {{- $logFormatter = $registry.log.formatter }}
   {{- end }}
+  level: {{ $logLevel }}
+  formatter: {{ $logFormatter }}
   fields:
     service: registry
 storage:
   cache:
     blobdescriptor: inmemory
-  {{- if has $registry "storage" }}
-  {{- if has $registry.storage "filesystem" }}
+  {{- if has $registry "storage" -}}
+  {{- if has $registry.storage "filesystem" -}}
   filesystem:
     rootdirectory: {{ $registry.storage.filesystem.rootdirectory }}
     maxthreads: {{ $registry.storage.filesystem.maxthreads }}
@@ -28,8 +35,8 @@ storage:
   {{- if has $registry.storage "s3" }}
   {{- $auth := $registry.storage.s3 }}
   s3:
-    accesskey: {{ $auth.accesskey | default $minioAuth.user }}
-    secretkey: {{ $auth.secretkey | default $minioAuth.password }}
+    accesskey: {{ $auth.accesskey | default $user }}
+    secretkey: {{ $auth.secretkey | default $password }}
     region: {{ $auth.region | default "cn-north-1" }}
     regionendpoint: {{ $auth.region | default "http://127.0.0.1:9000" }}
     forcepathstyle: {{ $auth.forcepathstyle | default false }}
@@ -42,7 +49,7 @@ storage:
   {{- end }}
   {{- end }}
 http:
-  addr: {{ $registry | default ":5000" }}
+  addr: {{ $registry.listen | default "127.0.0.1:5000" }}
   headers:
     X-Content-Type-Options: [nosniff]
 auth:

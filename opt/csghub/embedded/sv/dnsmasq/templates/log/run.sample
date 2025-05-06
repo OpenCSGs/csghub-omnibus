@@ -1,10 +1,10 @@
 #!/bin/bash
 
-{{- $logDir := "/var/log/csghub/praefect" }}
-{{- if has (datasource "config").praefect "logging" }}
-{{- if has (datasource "config").praefect.logging "dir" }}
-{{- if (datasource "config").praefect.logging.dir }}
-{{- $logDir = (datasource "config").praefect.logging.dir }}
+{{- $logDir := "/var/log/csghub/dnsmasq" }}
+{{- if has (datasource "config").dnsmasq "log" }}
+{{- if has (datasource "config").dnsmasq.log "dir" }}
+{{- if (datasource "config").dnsmasq.log.dir }}
+{{- $logDir = (datasource "config").dnsmasq.log.dir }}
 {{- end }}
 {{- end }}
 {{- end }}

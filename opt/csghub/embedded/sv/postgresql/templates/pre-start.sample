@@ -32,7 +32,7 @@ if [ ! -f "$PGDATA/PG_VERSION" ]; then
     chpst -e /opt/csghub/etc/postgresql/env -P \
       -U postgres:postgres \
       -u postgres:postgres \
-      /opt/csghub/embedded/bin/initdb -D {{ $dataDir }}
+      /opt/csghub/embedded/bin/initdb --encoding=UTF8 -D {{ $dataDir }}
 
     if [ -f {{ $dataDir }}/../postgresql.conf ]; then
         mv {{ $dataDir }}/../*.conf {{ $dataDir }}/

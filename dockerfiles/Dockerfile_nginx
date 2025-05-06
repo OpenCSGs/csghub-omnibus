@@ -1,0 +1,46 @@
+ARG OS_RELEASE=ubuntu:22.04
+FROM ${OS_RELEASE}
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+RUN apt update && \
+    apt install -y --no-install-recommends \
+      wget \
+      build-essential \
+      libpcre2-dev \
+      libssl-dev \
+      zlib1g-dev \
+      pkg-config \
+      ca-certificates && \
+    apt clean && \
+      rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* && \
+    mkdir -p ${CSGHUB_SRV_HOME}/nginx/bin ${CSGHUB_HOME}/etc/nginx/config.d
+
+## Install Runit Service Daemon
+ARG NGINX_VERSION=1.22.1
+RUN wget --no-check-certificate https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
+    tar -zxf nginx-${NGINX_VERSION}.tar.gz && \
+    cd /nginx-${NGINX_VERSION} && \
+    ./configure \
+      --prefix=${CSGHUB_SRV_HOME}/nginx \
+      --sbin-path=${CSGHUB_SRV_HOME}/nginx/bin/nginx \
+      --conf-path=${CSGHUB_HOME}/etc/nginx/nginx.conf \
+      --pid-path=${CSGHUB_HOME}/etc/nginx/nginx.pid \
+      --lock-path=${CSGHUB_HOME}/etc/nginx/nginx.lock \
+      --error-log-path=/var/log/csghub/nginx/error.log \
+      --http-log-path=/var/log/csghub/nginx/access.log \
+      --with-http_ssl_module \
+      --with-http_realip_module \
+      --with-http_gzip_static_module \
+      --with-stream \
+      --with-pcre-jit \
+      --with-threads && \
+    make && make install && \
+    rm -rf /nginx*
+
+RUN chmod +x -R ${CSGHUB_SRV_HOME}/nginx/bin
+
+

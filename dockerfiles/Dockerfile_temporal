@@ -1,0 +1,30 @@
+ARG TEMPORAL_VERSION=1.25.1
+ARG TEMPORAL_UI_VERSION=2.30.3
+ARG OS_RELEASE=ubuntu:22.04
+
+FROM temporalio/auto-setup:${TEMPORAL_VERSION} AS temporal
+
+FROM temporalio/ui:${TEMPORAL_UI_VERSION} AS temporal_ui
+
+FROM ${OS_RELEASE}
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+RUN mkdir -p \
+      ${CSGHUB_HOME}/etc/temporal/ \
+      ${CSGHUB_SRV_HOME}/temporal/bin \
+      ${CSGHUB_HOME}/etc/temporal_ui \
+      ${CSGHUB_SRV_HOME}/temporal_ui/bin
+
+## Install Temporal & temporal_ui
+COPY --from=temporal /usr/local/. ${CSGHUB_SRV_HOME}/temporal/
+COPY --from=temporal /etc/temporal/config/. ${CSGHUB_HOME}/etc/temporal/config/
+COPY --from=temporal /etc/temporal/schema/. ${CSGHUB_HOME}/etc/temporal/schema/.
+COPY --from=temporal_ui /home/ui-server/ui-server ${CSGHUB_SRV_HOME}/temporal_ui/bin/
+COPY --from=temporal_ui /home/ui-server/config/. ${CSGHUB_HOME}/etc/temporal_ui/config/
+COPY --from=temporal_ui /home/ui-server/config-template.yaml ${CSGHUB_HOME}/etc/temporal_ui/
+
+RUN find /opt/csghub/etc/temporal -type f -exec sed -i 's|/etc/temporal|/opt/csghub/etc/temporal|g' {} \;

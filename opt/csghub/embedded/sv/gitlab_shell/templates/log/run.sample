@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/gitlab_shell" }}
+{{- if has (datasource "config").gitlab_shell "logging" }}
+{{- if has (datasource "config").gitlab_shell.logging "dir" }}
+{{- if (datasource "config").gitlab_shell.logging.dir }}
+{{- $logDir = (datasource "config").gitlab_shell.logging.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

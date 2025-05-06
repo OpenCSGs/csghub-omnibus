@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/mirror" }}
+{{- if has (datasource "config").mirror "log" }}
+{{- if has (datasource "config").mirror.log "dir" }}
+{{- if (datasource "config").mirror.log.dir }}
+{{- $logDir = (datasource "config").mirror.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

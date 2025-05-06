@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/runner" }}
+{{- if has (datasource "config").runner "log" }}
+{{- if has (datasource "config").runner.log "dir" }}
+{{- if (datasource "config").runner.log.dir }}
+{{- $logDir = (datasource "config").runner.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

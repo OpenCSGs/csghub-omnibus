@@ -1,0 +1,23 @@
+ARG OS_RELEASE=ubuntu:22.04
+FROM ${OS_RELEASE}
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+RUN apt update && \
+    apt install -y --no-install-recommends \
+      wget build-essential ca-certificates && \
+    apt clean && \
+      rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
+
+## Install Redis
+ARG REDIS_VERSION=6.2.14
+RUN wget --no-check-certificate -O /redis.tar.gz https://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
+    mkdir /redis && tar --strip-components=1 -xzf /redis.tar.gz -C /redis && \
+    cd /redis/deps && make hiredis linenoise hdr_histogram lua jemalloc && \
+    cd /redis && make BUILD_TLS=no && make install PREFIX=${CSGHUB_SRV_HOME}/redis && \
+    rm -rf /redis*
+
+RUN chmod +x -R ${CSGHUB_SRV_HOME}/redis/bin

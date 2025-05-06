@@ -13,33 +13,28 @@ echo {{ $temporal.listen | default "127.0.0.1:7233" }} > {{ $envDir }}/TEMPORAL_
 echo {{ $temporal.retention | default "7d" }} > {{ $envDir }}/DEFAULT_NAMESPACE_RETENTION
 echo "/opt/csghub/etc/temporal" > {{ $envDir }}/TEMPORAL_HOME
 echo "http://localhost:3000" > {{ $envDir }}/TEMPORAL_CORS_ORIGINS
+echo "true" > {{ $envDir }}/TEMPORAL_CSRF_COOKIE_INSECURE
+echo "127.0.0.1" > {{ $envDir }}/BIND_ON_IP
 
 {{- $dbname := "temporal" }}
 {{- $password := crypto.PBKDF2 $dbname "opencsg" 2048 8 }}
 {{- if has $temporal "db" }}
 {{- $db := $temporal.db }}
 echo "postgres12" > {{ $envDir }}/DB
-{{- if $DB.name }}
-{{- $dbname := $DB.name }}
+{{- if $db.name }}
+{{- $dbname = $db.name }}
 {{- end }}
 echo {{ $dbname }} > {{ $envDir }}/DBNAME
-echo {{ $DB.host | default "127.0.0.1" }} > {{ $envDir }}/POSTGRES_SEEDS
-echo {{ $DB.port | default 5432 }} > {{ $envDir }}/DB_PORT
-echo {{ $DB.user | default "temporal" }} > {{ $envDir }}/POSTGRES_USER
-{{- if $DB.password }}
-{{- $password := $DB.password }}
+echo {{ $db.host | default "127.0.0.1" }} > {{ $envDir }}/POSTGRES_SEEDS
+echo {{ $db.port | default 5432 }} > {{ $envDir }}/DB_PORT
+echo {{ $db.user | default "temporal" }} > {{ $envDir }}/POSTGRES_USER
+{{- if $db.password }}
+{{- $password = $db.password }}
 {{- end }}
 echo {{ $password }} > {{ $envDir }}/POSTGRES_PWD
 {{- end }}
 # Create temporal database
 /opt/csghub/etc/postgresql/create_db.sh {{ $dbname }} {{ $password }}
-
-# Generate .htpasswd auth file
-{{- $auth := (datasource "config").temporal.auth }}
-{{- $user := $auth.user | default "temporal" }}
-{{- $password := $auth.password | default (crypto.PBKDF2 "temporal" "opencsg" 2048 8) }}
-{{- if and $auth.user $auth.password }}
-htpasswd -Bb -c {{ $envDir }}/.htpasswd {{ $user }} {{ $password }}
-{{- end }}
+/opt/csghub/etc/postgresql/create_db.sh "temporal_visibility" {{ $password }}
 
 exit 0

@@ -3,32 +3,36 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+{{- $envDir := "/opt/csghub/etc/server/env" }}
+mkdir -p {{ $envDir }} &>/dev/null
 
-{{- $configDir := "/opt/csghub/etc/dnsmasq" }}
-if [ ! -d {{ $configDir }} ]; then
-    mkdir -p {{ $configDir }}
+# Clear all environment variable files
+rm -rf {{ $envDir }}/* &>/dev/null
+
+echo "release" > {{ $envDir }}/GIN_MODE
+
+{{- $server := (datasource "config").server }}
+{{- $envDir := "/opt/csghub/etc/server/env" }}
+{{- $dataDir := $server.data | default "/var/opt/csghub/server" }}
+if [ ! -d {{ $dataDir }} ]; then
+    mkdir -p {{ $dataDir }}
 fi
 
-rm -f {{ $configDir }}/internal-domain.conf 2>/dev/null
-
-{{- $csghub := (datasource "config").csghub }}
-{{- $services := dict }}
-{{- $ns := "spaces" }}
-{{- if has $csghub "deployment" }}
-{{- if has $csghub.deployment "namespace" }}
-{{- $ns = $csghub.deployment.namespace }}
+{{- $dbname := "csghub_server" }}
+{{- $password := crypto.PBKDF2 $dbname "opencsg" 2048 8 }}
+{{- if has $server "db" }}
+{{- $db := $server.db }}
+{{- if $db.name }}
+{{- $dbname = $db.name }}
 {{- end }}
-{{- if has $csghub.deployment "knative" }}
-{{- if has $csghub.deployment.knative "services" }}
-{{- $services = $csghub.deployment.knative.services }}
+{{- if $db.password }}
+{{- $password = $db.password }}
 {{- end }}
 {{- end }}
-{{- end }}
-
-{{- range $services }}
-echo "address/{{ $ns }}.{{ .domain }}/127.0.0.1" >> {{ $configDir }}/internal-domain.conf
-{{- end }}
-
-sed -i '0,/nameserver/s//nameserver 127.0.0.1\n&/' /tmp/resolv.conf
+echo {{ $dbname }} > {{ $envDir }}/POSTGRES_USER
+echo {{ $password }} > {{ $envDir }}/POSTGRES_PASSWORD
+echo {{ $dbname }} > {{ $envDir }}/POSTGRES_DB
+# Create server database
+/opt/csghub/etc/postgresql/create_db.sh {{ $dbname }} {{ $password }}
 
 exit 0

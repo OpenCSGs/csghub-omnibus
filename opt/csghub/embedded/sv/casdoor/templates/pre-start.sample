@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+{{- $configDir := "/opt/csghub/etc/casdoor" }}
+{{- $casdoor := (datasource "config").casdoor }}
+{{- $dbname := "casdoor" }}
+{{- $password := crypto.PBKDF2 $dbname "opencsg" 2048 8 }}
+{{- if has $casdoor "db" }}
+{{- if $casdoor.db.name }}
+{{- $dbname = $casdoor.db.name }}
+{{- end }}
+{{- if $casdoor.db.password }}
+{{- $password = $casdoor.db.password }}
+{{- end }}
+{{- end }}
+# Create casdoor database
+/opt/csghub/etc/postgresql/create_db.sh {{ $dbname }} {{ $password }}
+
+{{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
+if [ -f {{ $dataDir }}/app.conf ]; then
+  mkdir -p {{ $dataDir }}/conf 2>/dev/null
+  mv {{ $dataDir }}/app.conf {{ $dataDir }}/conf
+fi
+
+exit 0

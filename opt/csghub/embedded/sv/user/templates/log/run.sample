@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/user" }}
+{{- if has (datasource "config").user "log" }}
+{{- if has (datasource "config").user.log "dir" }}
+{{- if (datasource "config").user.log.dir }}
+{{- $logDir = (datasource "config").user.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -U root:root \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

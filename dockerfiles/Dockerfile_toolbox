@@ -1,0 +1,71 @@
+ARG OS_RELEASE=ubuntu:22.04
+FROM ${OS_RELEASE} AS builder
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+ENV GOPROXY=https://goproxy.cn,direct
+
+RUN apt update && \
+    apt install -y --no-install-recommends \
+      wget \
+      golang \
+      apache2-utils \
+      openssh-client \
+      build-essential \
+      ca-certificates && \
+    apt clean && \
+      rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* && \
+    mkdir -p ${CSGHUB_HOME}/bin ${CSGHUB_EMBEDDED}/bin ${CSGHUB_SRV_HOME}/dnsmasq
+
+## Generate ssh key pairs
+RUN ssh-keygen -A
+
+## Install gompalte
+ARG GOMPLATE_VERSION=v4.3.2
+ARG TARGETPLATFORM
+RUN case ${TARGETPLATFORM} in \
+        "linux/amd64") \
+            wget --no-check-certificate -O ${CSGHUB_EMBEDDED}/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64 \
+            ;; \
+        "linux/arm64") \
+            wget --no-check-certificate -O ${CSGHUB_EMBEDDED}/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-arm64 \
+            ;; \
+        *) \
+            echo "Unsupported platform: ${TARGETPLATFORM}" && \
+            exit 1 \
+            ;; \
+     esac
+
+## Install csghub-ctl
+COPY ./cli/. ./cli/
+RUN cd /cli && \
+    mkdir -p ${CSGHUB_HOME}/bin && \
+    go build -buildvcs=false -o ${CSGHUB_HOME}/bin/csghub-ctl
+
+## Install htpasswd
+RUN cp /usr/bin/htpasswd ${CSGHUB_EMBEDDED}/bin/
+
+ARG DNSMASQ_VERSION=2.91
+RUN wget --no-check-certificate -O /dnsmasq.tar.xz https://thekelleys.org.uk/dnsmasq/dnsmasq-${DNSMASQ_VERSION}.tar.xz && \
+    mkdir /dnsmasq && tar --strip-components=1 -xJf /dnsmasq.tar.xz -C /dnsmasq && \
+    cd /dnsmasq && make && make install PREFIX=${CSGHUB_SRV_HOME}/dnsmasq && \
+    mv ${CSGHUB_SRV_HOME}/dnsmasq/sbin ${CSGHUB_SRV_HOME}/dnsmasq/bin && \
+    mkdir -p ${CSGHUB_HOME}/etc/dnsmasq && cp dnsmasq.conf.example ${CSGHUB_HOME}/etc/dnsmasq/ && \
+    rm -rf /dnsmasq*
+
+FROM ${OS_RELEASE}
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+COPY --from=builder /etc/ssh/ssh_host_* /etc/ssh/
+COPY --from=builder ${CSGHUB_HOME}/etc/. ${CSGHUB_HOME}/etc/
+COPY --from=builder ${CSGHUB_HOME}/bin/. ${CSGHUB_HOME}/bin/
+COPY --from=builder ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
+COPY --from=builder ${CSGHUB_SRV_HOME}/dnsmasq/. ${CSGHUB_SRV_HOME}/dnsmasq/
+
+RUN chmod +x -R /opt/csghub/bin /opt/csghub/embedded/bin /opt/csghub/embedded/sv/*/bin

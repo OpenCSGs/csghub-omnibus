@@ -11,7 +11,7 @@ fi
 {{- $auth := (datasource "config").registry.auth }}
 {{- $user := $auth.username | default "registry" }}
 {{- $password := $auth.password | default (crypto.PBKDF2 "registry" "opencsg" 2048 8) }}
-{{- if and ($auth.username | default) $auth.password }}
+{{- if and $auth.username $auth.password }}
 htpasswd -Bb -c {{ $dataDir }}/.htpasswd {{ $user }} {{ $password }}
 {{- end }}
 

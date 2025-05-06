@@ -6,6 +6,11 @@ exec 2>&1
 # fail on errors
 set -e
 
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
 {{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/casdoor/env -P \

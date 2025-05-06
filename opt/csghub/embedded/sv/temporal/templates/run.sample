@@ -11,10 +11,11 @@ fi
 # fail on errors
 set -e
 
-{{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
-cd {{ $dataDir }}
+{{- $configDir := "/opt/csghub/etc/temporal" }}
+chown -R temporal:temporal {{ $configDir }}
+cd {{ $configDir }}
+
 exec chpst -e /opt/csghub/etc/temporal/env -P \
   -U temporal:temporal \
   -u temporal:temporal \
-  /opt/csghub/etc/temporal/entrypoint.sh
-
+  /opt/csghub/etc/temporal/entrypoint.sh autosetup

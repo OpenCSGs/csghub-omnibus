@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Attempt to change ulimit before the set -e flag, ignore failures
+ulimit -n 15000
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# Exit if execute with any errors
+set -e
+
+echo "Initializing database migrations..."
+chpst -e /opt/csghub/etc/portal/env -P \
+  -U root:root \
+  -u root:root \
+  /opt/csghub/embedded/bin/csghub-portal migration init
+
+echo "Running database migrations..."
+chpst -e /opt/csghub/etc/portal/env -P \
+  -U root:root \
+  -u root:root \
+  /opt/csghub/embedded/bin/csghub-portal migration migrate
+
+echo "Starting portal..."
+exec chpst -e /opt/csghub/etc/portal/env -P \
+  -U root:root \
+  -u root:root \
+  /opt/csghub/embedded/bin/csghub-portal start server

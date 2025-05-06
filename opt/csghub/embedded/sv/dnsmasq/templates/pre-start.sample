@@ -3,13 +3,32 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-{{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
-if [ ! -s {{ $dataDir }}/praefect.pid ]; then
-  echo 0 > {{ $dataDir }}/praefect.pid
+
+{{- $configDir := "/opt/csghub/etc/dnsmasq" }}
+if [ ! -d {{ $configDir }} ]; then
+    mkdir -p {{ $configDir }}
 fi
 
-echo {{ $dataDir }}/praefect.pid > /opt/csghub/etc/praefect/env/GITALY_PID_FILE
+rm -f {{ $configDir }}/internal-domain.conf 2>/dev/null
 
-chown -R gitaly:gitaly {{ $dataDir }}
+{{- $runner := (datasource "config").runner }}
+{{- $services := dict }}
+{{- $ns := "spaces" }}
+{{- if has $runner "deploy" }}
+{{- if has $runner.deploy "namespace" }}
+{{- $ns = $runner.deploy.namespace }}
+{{- end }}
+{{- if has $runner.deploy "knative" }}
+{{- if has $runner.deploy.knative "services" }}
+{{- $services = $runner.deploy.knative.services }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- range $services }}
+echo "address=/{{ $ns }}.{{ .domain }}/127.0.0.1" >> {{ $configDir }}/internal-domain.conf
+{{- end }}
+
+sed -i '0,/nameserver/s//nameserver 127.0.0.1\n&/' /etc/resolv.conf
 
 exit 0

@@ -13,4 +13,4 @@ if [[ -n ${SERVICES} ]]; then
     for i in $SERVICES; do flags+=("--service=$i"); done
 fi
 
-exec temporal-server --env docker start "${flags[@]}"
+exec temporal-server --allow-no-auth --env docker start "${flags[@]}"

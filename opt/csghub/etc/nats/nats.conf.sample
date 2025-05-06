@@ -1,4 +1,5 @@
 {{- $nats := (datasource "config").nats }}
+{{- $dataDir := $nats.data | default "/var/opt/csghub/nats" }}
 {{- $auth := "" }}
 {{- if has $nats "auth" }}
 {{- $auth = $nats.auth }}
@@ -15,7 +16,7 @@ monitor_port: 8222
 jetstream: enabled
 
 jetstream {
-    store_dir: /var/opt/nats/data/jetstream
+    store_dir: {{ $dataDir }}/data/jetstream
     max_mem: 8G
     max_file: 10G
 }

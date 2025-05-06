@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Attempt to change ulimit before the set -e flag, ignore failures
+ulimit -n 15000
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# Exit if execute with any errors
+set -e
+
+KEYS_DIRECTORY="${KEYS_DIRECTORY:-/etc/ssh}"
+SSH_DAEMON="${SSH_DAEMON:-"gitlab-sshd"}"
+
+if ls $KEYS_DIRECTORY/ssh_host_* 1> /dev/null 2>&1; then
+  echo "Using existing Host Keys"
+  # copy from KEYS_DIRECTORY to /etc/ssh as needed
+  if [ "$KEYS_DIRECTORY" != "/etc/ssh" ]; then
+      cp $KEYS_DIRECTORY/ssh_host_* "/etc/ssh/"
+  fi
+else
+  echo "Generating Host Keys"
+  # generate host keys, placed into `/etc/ssh`
+  ssh-keygen -A
+fi
+
+# Allow user git access ssh host key pairs
+chmod 0664 /etc/ssh/ssh_host_*
+
+{{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
+if [ "${SSH_DAEMON}" == "gitlab-sshd" ]; then
+  exec chpst -e /opt/csghub/etc/gitlab_shell/env -P \
+    -U git:git \
+    -u git:git \
+    /opt/csghub/embedded/bin/gitlab-sshd -config-dir {{ $dataDir }}
+else
+  if [ "${USE_GITLAB_LOGGER-0}" -eq 1 ]; then
+    /usr/bin/gitlab-logger /var/log/gitlab-shell &
+  else
+    if command -v xtail >/dev/null; then
+      xtail /var/log/gitlab-shell &
+    else
+      touch /var/log/gitlab-shell/gitlab-shell.log
+      tail -f /var/log/gitlab-shell/* &
+    fi
+  fi
+
+  exec /usr/sbin/sshd -D -E /var/log/gitlab-shell/gitlab-shell.log
+fi

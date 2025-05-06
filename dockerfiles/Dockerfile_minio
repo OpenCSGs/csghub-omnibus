@@ -1,0 +1,36 @@
+ARG OS_RELEASE=ubuntu:22.04
+ARG MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
+ARG MC_VERSION=RELEASE.2025-03-12T17-29-24Z
+FROM ${OS_RELEASE} AS minio-logger
+WORKDIR /
+
+RUN apt update && \
+    apt install -y --no-install-recommends golang && \
+    apt clean && \
+      rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
+
+COPY ./logger/. /logger/
+## Install logger
+RUN cd /logger && go build -buildvcs=false -o /logger
+
+## Install minio
+FROM minio/minio:${MINIO_VERSION} AS minio-server
+
+FROM minio/mc:${MC_VERSION} AS minio-client
+
+FROM ${OS_RELEASE}
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+
+SHELL ["/bin/bash", "-c"]
+
+RUN mkdir -p ${CSGHUB_SRV_HOME}/{minio,logger}/bin
+
+COPY --from=minio-server /usr/bin/minio ${CSGHUB_SRV_HOME}/minio/bin/
+COPY --from=minio-client /usr/bin/mc ${CSGHUB_SRV_HOME}/minio/bin/
+COPY --from=minio-logger /logger ${CSGHUB_SRV_HOME}/logger/bin/
+
+RUN chmod +x -R ${CSGHUB_SRV_HOME}/minio/bin ${CSGHUB_SRV_HOME}/logger/bin

@@ -2,10 +2,145 @@
 csghub:
   ## The external URL for accessing CSGHub
   external_url: http://csghub.example.com
-  ## The secret file
+  ## Gitaly configuration
+  gitaly:
+  ## Path to the secret file for authentication
   # secret_file: "/var/opt/csghub/gitaly/.csghub_secret"
-  ## The secret key
+  ## Secret key used for signing
   # secret: "signing-key"
+
+server:
+  ## Database configuration for csghub-server
+  db:
+    ## Database name
+    name: "csghub_server"
+    ## Database host address
+    host: "127.0.0.1"
+    ## Database port number
+    port: 5432
+    ## Database username
+    user: "csghub_server"
+    ## Database password
+    password: "6567703a99e22124"
+    ## Database timezone
+    timezone: "Asia/Shanghai"
+  redis:
+    endpoint: "127.0.0.1:6379"
+    password: "47260d0e6523e59f"
+  gitaly:
+    address: "tcp://127.0.0.1:8075"
+    storage: "default"
+    token: "79a93a9a40f83c41"
+    jwt_secret: "signing-key"
+  s3:
+    ## Default value from internal Minio
+    ## AWS access key ID
+    accesskey: "minio"
+    ## AWS secret access key
+    secretkey: "927df20a3382c14d"
+    ## AWS region name
+    region: "cn-north-1"
+    ## Custom endpoint URL (for non-AWS S3 compatible services)
+    regionendpoint: "127.0.0.1:9000"
+    ## Force path-style URLs for S3 (true/false)
+    forcepathstyle: "false"
+    ## S3 bucket name
+    bucket: "csghub-server"
+    ## Server-side encryption (true/false)
+    encrypt: "false"
+    ## Use HTTPS (true/false)
+    secure: "false"
+  mirror:
+    listen_port: 8085
+    worker_number: 5
+    lfs_concurrency: 5
+    part_size: 100
+  model:
+    ## In minutes
+    deploy_timeout: 30
+    download_endpoint: "https://hub.opencsg.com"
+    docker_reg_base: "opencsg-registry.cn-beijing.cr.aliyuncs.com/public/"
+  dataflow:
+    address: "http://127.0.0.1:8001"
+
+runner:
+  enable: false
+  listen_port: 8082
+  ## deploy configuration settings
+  deploy:
+    ## Kubernetes namespace where resources will be deployed
+    namespace: "spaces"
+    timeout: 60
+    ## Knative service configuration
+    knative:
+      ## List of service configurations
+      services:
+        ## Service type configuration
+        - type: NodePort
+          ## Knative serving internal domain name for the service
+          domain: app.internal
+          ## Host IP address for the service
+          host: "192.168.18.10"
+          ## Port number for the service
+          port: "30213"
+  image_builder:
+    namespace: "spaces"
+    git_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/alpine/git:2.36.2"
+    kaniko_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/public/kaniko-project-executor:v1.23.2"
+    job_ttl: 120
+    status_ttl: 300
+  registry:
+    prefix: "registry.example.com:5000/csghub/"
+    pull_secret: "csghub-docker-credential"
+  gpu_label: "nvidia.com/nvidia_name"
+  pip_index_url: "https://pypi.tuna.tsinghua.edu.cn/simple/"
+
+proxy:
+  listen_port: 8083
+
+accounting: { }
+
+dataviewer: { }
+
+dnsmasq: { }
+
+mirror_lfs: { }
+
+mirror_repo: { }
+
+user: { }
+
+portal:
+  ## Database configuration for csghub-server
+  db:
+    ## Database name
+    name: "csghub_portal"
+    ## Database host address
+    host: "127.0.0.1"
+    ## Database port number
+    port: 5432
+    ## Database username
+    user: "csghub_portal"
+    ## Database password
+    password: "5525302e980d431e"
+  s3:
+    ## Default value from internal Minio
+    ## AWS access key ID
+    accesskey: "minio"
+    ## AWS secret access key
+    secretkey: "927df20a3382c14d"
+    ## AWS region name
+    region: "cn-north-1"
+    ## Custom endpoint URL (for non-AWS S3 compatible services)
+    regionendpoint: "127.0.0.1:9000"
+    ## Force path-style URLs for S3 (true/false)
+    forcepathstyle: "false"
+    ## S3 bucket name
+    bucket: "csghub-server"
+    ## Server-side encryption (true/false)
+    encrypt: "false"
+    ## Use HTTPS (true/false)
+    secure: "false"
 
 ##########################################################################
 # Gitaly Configuration
@@ -118,6 +253,14 @@ gitaly:
     ignore_gitconfig: true # 忽略系统 Git 配置
     bin_path: "/opt/gitlab/embedded/bin/git" # Git二进制文件路径
     catfile_cache_size: 100 # catfile缓存大小
+
+gitlab_shell:
+  ssh_port: 2222
+  log:
+    dir: "/var/log/csghub/gitlab_shell"
+    level: "INFO"
+    ## json, text
+    format: "json"
 
 ##########################################################################
 # Praefect Configuration
@@ -396,7 +539,7 @@ redis:
 ##########################################################################
 registry:
   ## Network address and port to listen on
-  listen: ":5000"
+  listen: "127.0.0.1:5000"
   ## Directory for Registry data persistence
   data: "/var/opt/csghub/registry"
   ## Authentication
@@ -496,11 +639,14 @@ temporal:
   retention: "7d"
 
 ## Web UI configuration
-temporal-ui:
+temporal_ui:
   ## Enable or disable Temporal UI
   enable: true
   ## Public URL path for Temporal UI
   public_path: "/temporal-ui"
+  auth:
+    user: "temporal"
+    password: "f7ebfa1e128adfd2"
 
 ##########################################################################
 # Casdoor Configuration
@@ -509,6 +655,12 @@ temporal-ui:
 #   TOTP, MFA, Face ID, RADIUS, Google Workspace, Active Directory and Kerberos
 ##########################################################################
 casdoor:
+  ## Authentication for admin user
+  auth:
+    ## Username for Casdoor authentication
+    username: "admin"
+    ## Password for Casdoor authentication
+    password: "e53dbaaf364390f1"
   ## Database configuration for Casdoor
   db:
     ## Database name

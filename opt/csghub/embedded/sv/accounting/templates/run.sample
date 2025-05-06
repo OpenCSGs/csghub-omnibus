@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+{{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
+echo "Start server..."
+CONFIG_FILE={{ $dataDir }}/config.toml
+
+# Check if the config file exists and use it if it does, otherwise start without it
+if [ -f "$CONFIG_FILE" ]; then
+  exec chpst -e /opt/csghub/etc/server/env -P \
+    -U root:root \
+    -u root:root \
+    /opt/csghub/embedded/bin/csghub-server accounting launch --config=$CONFIG_FILE
+else
+  echo "Config file not found, starting without config"
+  exec chpst -e /opt/csghub/etc/server/env -P \
+      -U root:root \
+      -u root:root \
+      /opt/csghub/embedded/bin/csghub-server accounting launch
+fi

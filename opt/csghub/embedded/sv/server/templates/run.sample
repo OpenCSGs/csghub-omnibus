@@ -11,7 +11,29 @@ fi
 # fail on errors
 set -e
 
-exec chpst -e /opt/csghub/etc/dnsmasq/env -P \
-  -U dnsmasq:dnsmasq \
-  -u dnsmasq:dnsmasq \
-  /opt/csghub/embedded/bin/dnsmasq --conf-dir=/opt/csghub/etc/dnsmasq --no-daemon
+{{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
+{{- $configFile := printf "%s/config.toml" $dataDir }}
+
+COMMAND="/opt/csghub/embedded/bin/csghub-server"
+if [ -f "{{ $configFile }}" ]; then
+  COMMAND="$COMMAND --config={{ $configFile }}"
+fi
+
+echo "Database setup..."
+echo "Migration init"
+chpst -e /opt/csghub/etc/server/env -P \
+    -U root:root \
+    -u root:root \
+    $COMMAND migration init
+
+echo "Migration migrate"
+chpst -e /opt/csghub/etc/server/env -P \
+    -U root:root \
+    -u root:root \
+    $COMMAND migration migrate
+
+echo "Start server..."
+exec chpst -e /opt/csghub/etc/server/env -P \
+    -U root:root \
+    -u root:root \
+    $COMMAND start server

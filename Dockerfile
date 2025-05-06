@@ -13,6 +13,9 @@ ARG TEMPORAL_VERSION=1.25.1
 ARG NATS_VERSION=2.10.16
 ARG CASDOOR_VERSION=v1.733.0
 ARG DNSMASQ_VERSION=2.91
+ARG NGINX_VERSION=1.22.1
+ARG CSGHUB_SERVER_VERSION=v1.6.0
+ARG CSGHUB_PORTAL_VERSION=v1.6.0
 
 ## Install Runit Service Daemon
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-${RUNIT_VERSION} AS runit
@@ -50,8 +53,14 @@ FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_nats:${NA
 ## Install Casdoor
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/casbin/casdoor:${CASDOOR_VERSION} AS casdoor
 
-## Install Dnsmasq
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/dockurr/dnsmasq:${DNSMASQ_VERSION} AS dnsmasq
+## Install Nginx
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:nginx-${NGINX_VERSION} AS nginx
+
+## Install csghub-server
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_server:${CSGHUB_SERVER_VERSION} AS server
+
+## Install csghub-portal
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_portal:${CSGHUB_PORTAL_VERSION} AS portal
 
 FROM ${OS_RELEASE}
 WORKDIR /
@@ -67,9 +76,9 @@ ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
 SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p \
-      ${CSGHUB_HOME}/{LICENSES,bin,services} \
+      ${CSGHUB_HOME}/{LICENSES,bin} \
       ${CSGHUB_EMBEDDED}/{bin,lib,sv} \
-      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal-ui,casdoor,dnsmasq,consul}/bin
+      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal}/bin
 
 ## Install Runit Service Daemon
 COPY --from=runit ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
@@ -78,6 +87,7 @@ COPY --from=runit ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
 COPY --from=toolbox /etc/ssh/ssh_host_* /etc/ssh/
 COPY --from=toolbox ${CSGHUB_HOME}/bin/. ${CSGHUB_HOME}/bin/
 COPY --from=toolbox ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
+COPY --from=toolbox ${CSGHUB_SRV_HOME}/dnsmasq/. ${CSGHUB_SRV_HOME}/dnsmasq/
 
 ## Install Consul
 COPY --from=consul /bin/consul ${CSGHUB_SRV_HOME}/consul/bin/
@@ -101,26 +111,44 @@ COPY --from=registry /bin/busybox ${CSGHUB_SRV_HOME}/registry/bin/
 COPY --from=gitaly /usr/local/. ${CSGHUB_SRV_HOME}/gitaly/
 
 ## Install Gitlab-Shell
-COPY --from=gitlab-shell /srv/gitlab-shell/. ${CSGHUB_SRV_HOME}/gitlab-shell/
+COPY --from=gitlab-shell /srv/gitlab-shell/. ${CSGHUB_SRV_HOME}/gitlab_shell/
 
 ## Install Temporal & Temporal-ui
 COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_HOME}/etc/temporal/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal/
-COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_HOME}/etc/temporal-ui/
-COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal-ui/
+COPY --from=temporal ${CSGHUB_HOME}/etc/temporal_ui/. ${CSGHUB_HOME}/etc/temporal_ui/
+COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal_ui/. ${CSGHUB_SRV_HOME}/temporal_ui/
+
+# Using 8182 as temporal-ui default listen port
+RUN sed -i 's/8080/8182/g' ${CSGHUB_HOME}/etc/temporal_ui/config-template.yaml
 
 ## Install NATS
 COPY --from=nats /nats-server ${CSGHUB_SRV_HOME}/nats/bin/
 
 ## Install Casdoor
-COPY --from=casdoor /server ${CSGHUB_SRV_HOME}/casdoor/bin/
+COPY --from=casdoor /server ${CSGHUB_SRV_HOME}/casdoor/bin/casdoor
 COPY --from=casdoor /web ${CSGHUB_HOME}/etc/casdoor/
 
-## Install Dnsmasq
-COPY --from=dnsmasq /usr/sbin/dnsmasq ${CSGHUB_SRV_HOME}/dnsmasq/bin/
+## Install Nginx
+COPY --from=nginx /opt/csghub/. /opt/csghub/
+COPY ./opt/csghub/etc/nginx/. /opt/csghub/etc/nginx/
+
+## Install csghub-server
+ENV GIN_MODE=release \
+    DUCKDB_HOME=/opt/csghub/embedded/sv/server
+COPY --from=server /starhub-bin/starhub ${CSGHUB_SRV_HOME}/server/bin/csghub-server
+COPY --from=server /starhub-bin/. ${CSGHUB_HOME}/etc/server/
+COPY --from=server /root/.duckdb ${CSGHUB_SRV_HOME}/server/.duckdb
+
+RUN rm ${CSGHUB_HOME}/etc/server/starhub
+
+## Install csghub-portal
+COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/server/bin/
+
+ENV PATH=$PATH:/opt/csghub/embedded/bin
 
 RUN apt update && \
-    apt install -y --no-install-recommends libicu70 && \
+    apt install -y --no-install-recommends ca-certificates libicu70 libreadline8 netcat libaprutil1 && \
     apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
 RUN chmod +x -R /opt/csghub/bin && \

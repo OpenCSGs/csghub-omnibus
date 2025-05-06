@@ -2,7 +2,7 @@
 
 set -eu -o pipefail
 
-: "${TEMPORAL_HOME:=/etc/temporal}"
+: "${TEMPORAL_HOME:=/opt/csghub/etc/temporal}"
 export TEMPORAL_HOME
 
 : "${BIND_ON_IP:=$(getent hosts "$(hostname)" | awk '{print $1;}')}"
