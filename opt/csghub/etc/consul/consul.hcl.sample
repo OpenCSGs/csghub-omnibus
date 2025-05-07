@@ -9,7 +9,7 @@
 # it defaults to "dc1". Consul has first-class support for multiple datacenters, but
 # it relies on proper configuration. Nodes in the same datacenter should be on a
 # single LAN.
-datacenter = {{ $consul.datacenter | default "" | quote }}
+datacenter = {{ $consul.datacenter | quote }}
 
 # data_dir
 # This flag provides a data directory for the agent to store state. This is required
@@ -18,28 +18,22 @@ datacenter = {{ $consul.datacenter | default "" | quote }}
 # cluster state. Additionally, the directory must support the use of filesystem
 # locking, meaning some types of mounted folders (e.g. VirtualBox shared folders) may
 # not be suitable.
-data_dir = {{ $consul.data_dir | default "/var/opt/csghub/consul" | quote }}
+data_dir = {{ $consul.data_dir | quote }}
 
 # client_addr
 # The address to which Consul will bind client interfaces, including the HTTP and DNS
 # servers. By default, this is "127.0.0.1", allowing only loopback connections. In
 # Consul 1.0 and later this can be set to a space-separated list of addresses to bind
 # to, or a go-sockaddr template that can potentially resolve to multiple addresses.
-client_addr = {{ $consul.client_addr | default "0.0.0.0" | quote }}
+client_addr = {{ $consul.client_addr | quote }}
 
 # ui
 # Enables the built-in web UI server and the required HTTP routes. This eliminates
 # the need to maintain the Consul web UI files separately from the binary.
 # Version 1.10 deprecated ui=true in favor of ui_config.enabled=true
-{{- if has $consul "ui_config" }}
 ui_config{
-{{- if has $consul.ui_config "enabled" }}
-{{- if $consul.ui_config.enabled }}
-  enabled = true
-{{- end }}
-{{- end }}
+  enabled = {{ $consul.ui_config.enabled }}
 }
-{{- end }}
 
 # server
 # This flag is used to control if an agent is in server or client mode. When provided,
@@ -50,15 +44,15 @@ ui_config{
 # ensure availability in the case of node failure. Server nodes also participate in a
 # WAN gossip pool with server nodes in other datacenters. Servers act as gateways to
 # other datacenters and forward traffic as appropriate.
-server = {{ $consul.server | default false }}
+server = {{ $consul.server }}
 
 # Bind addr
 # You may use IPv4 or IPv6 but if you have multiple interfaces you must be explicit.
 #bind_addr = "[::]" # Listen on all IPv6
-bind_addr = {{ $consul.bind_addr | default "0.0.0.0" | quote }}
+bind_addr = {{ $consul.bind_addr | quote }}
 
 # Advertise addr - if you want to point clients to a different address than bind or LB.
-advertise_addr = {{ $consul.advertise_addr | default "127.0.0.1" | quote }}
+advertise_addr = {{ $consul.advertise_addr | quote }}
 
 # Enterprise License
 # As of 1.10, Enterprise requires a license_path and does not have a short trial.
@@ -72,7 +66,7 @@ advertise_addr = {{ $consul.advertise_addr | default "127.0.0.1" | quote }}
 # bootstraps the cluster. This allows an initial leader to be elected automatically.
 # This cannot be used in conjunction with the legacy -bootstrap flag. This flag requires
 # -server mode.
-bootstrap_expect={{ $consul.bootstrap_expect | default 3 }}
+bootstrap_expect={{ $consul.bootstrap_expect }}
 {{- end }}
 
 # encrypt

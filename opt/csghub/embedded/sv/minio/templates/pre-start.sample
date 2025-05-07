@@ -13,9 +13,7 @@ rm -rf {{ $envDir }}/* &>/dev/null
 {{- if .user }}
 echo {{ .user }} > {{ $envDir }}/MINIO_ROOT_USER
 {{- end }}
-{{- if .password }}
-echo {{ .password }} > {{ $envDir }}/MINIO_ROOT_PASSWORD
-{{- end }}
+echo {{ .password | default (crypto.PBKDF2 .user "opencsg" 2048 8) }} > {{ $envDir }}/MINIO_ROOT_PASSWORD
 {{- end }}
 
 {{- if has (datasource "config") "logger" }}

@@ -46,18 +46,15 @@ secret: "signing-key"
 
 # Log file.
 # Default is gitlab-shell.log in the root directory.
-{{- $log := dict }}
-{{- if has $gitlabShell "log" }}
-{{- $log = $gitlabShell.log }}
-{{- end }}
-{{- $logDir := $log.dir | default "/var/log/csghub/gitlab_shell" }}
+{{- $log := $gitlabShell.log }}
+{{- $logDir := $log.dir }}
 log_file: {{ filepath.Join $logDir "gitlab-shell.log" }}
 
 # Log level. INFO by default
-log_level: {{ $log.level | default "INFO" }}
+log_level: {{ $log.level }}
 
 # Log format. 'json' by default, can be changed to 'text' if needed
-log_format: {{ $log.format | default "json" }}
+log_format: {{ $log.format }}
 
 # Audit usernames.
 # Set to true to see real usernames in the logs instead of key ids, which is easier to follow, but
@@ -71,7 +68,7 @@ audit_usernames: false
 # This section configures the built-in SSH server. Ignored when running on OpenSSH.
 sshd:
   # Address which the SSH server listens on. Defaults to [::]:22.
-  listen: "[::]:22"
+  listen: {{ printf "[::]:%d" $gitlabShell.listen_port | quote }}
   # Set to true if gitlab-sshd is being fronted by a load balancer that implements
   # the PROXY protocol.
   proxy_protocol: false

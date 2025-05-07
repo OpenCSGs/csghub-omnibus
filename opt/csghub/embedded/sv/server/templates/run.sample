@@ -12,8 +12,10 @@ fi
 set -e
 
 {{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
+{{- $configDir := "/opt/csghub/etc/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}
 
+cd {{ $configDir }}
 COMMAND="/opt/csghub/embedded/bin/csghub-server"
 if [ -f "{{ $configFile }}" ]; then
   COMMAND="$COMMAND --config={{ $configFile }}"

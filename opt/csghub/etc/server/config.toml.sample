@@ -1,18 +1,27 @@
-{{- $seedFile := "/opt/csghub/etc/server/seed" -}}
-{{- $seed := file.Read $seedFile -}}
-{{- if not $seed -}}
-{{- $seed = random.Alpha 48 | file.Write $seedFile -}}
-{{- end -}}
-
-{{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 -}}
-
 {{- $csghub := (datasource "config").csghub -}}
 {{- $server := (datasource "config").server -}}
 {{- $gitlabShell := (datasource "config").gitlab_shell -}}
 
 {{- $url := conv.URL $csghub.external_url -}}
 {{- $urlParts := $url.Host | strings.Split ":" -}}
-{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
+{{- $host := index $urlParts 0 -}}
+{{- $port := "" -}}
+{{- if gt (len $urlParts) 1 -}}
+  {{- $port = index $urlParts 1 -}}
+{{- else -}}
+  {{- if eq $url.Scheme "https" -}}
+    {{- $port = "443" -}}
+  {{- else -}}
+    {{- $port = "80" -}}
+  {{- end -}}
+{{- end -}}
+{{- $csghub := (datasource "config").csghub -}}
+{{- $server := (datasource "config").server -}}
+{{- $gitlabShell := (datasource "config").gitlab_shell -}}
+
+{{- $url := conv.URL $csghub.external_url -}}
+{{- $urlParts := $url.Host | strings.Split ":" -}}
+{{- $host := index $urlParts 0 -}}
 {{- $port := "" -}}
 {{- if gt (len $urlParts) 1 -}}
   {{- $port = index $urlParts 1 -}}
@@ -24,201 +33,182 @@
   {{- end -}}
 {{- end -}}
 
-saas = {{ $server.saas | default false }}
+saas = {{ $server.saas }}
 instance_id = ""
-enable_swagger = {{ $server.enable_swagger | default false }}
-enable_https = {{ $server.enable_https | default false }}
+enable_swagger = {{ $server.enable_swagger }}
+enable_https = {{ $server.enable_https }}
+{{ $seedFile := "/opt/csghub/etc/server/seed" }}
+{{- $seed := file.Read $seedFile -}}
+{{- if not $seed -}}
+{{- $seed = random.Alpha 48 | file.Write $seedFile -}}
+{{- end -}}
+{{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 -}}
 api_token = {{ $apiToken | quote }}
 docs_host = {{ printf "%s://%s:6636" $url.Scheme $host | quote }}
 
 [api_server]
-port = {{ $server.listen | default 8080 }}
+port = {{ $server.listen_port }}
 public_domain = {{ $csghub.external_url | quote }}
-{{- $shell_port := $gitlabShell.ssh_port | default 2222 }}
+{{- $shell_port := $gitlabShell.ssh_port }}
 {{- if eq $shell_port 22 }}
-ssh_domain = {{ printf "git@%s:%d" $host $server.shell_port | quote }}
+ssh_domain = {{ printf "git@%s:%d" $host $shell_port | quote }}
 {{- else }}
-ssh_domain = {{ printf "ssh://git@%s:%d" $host ($server.shell_port | default 2222) | quote }}
+ssh_domain = {{ printf "ssh://git@%s:%d" $host $shell_port | quote }}
 {{- end }}
 
-{{ $mirror := dict }}
-{{- if has $server "mirror" -}}
-{{- $mirror = $server.mirror -}}
-{{- end -}}
+{{ $mirrorRepo := (datasource "config").mirror_repo }}
+{{- $mirrorLfs := (datasource "config").mirror_lfs -}}
 [mirror]
-url = {{ printf "http://localhost:%d" ($mirror.listen_port | default 8085) | quote }}
+url = {{ printf "http://localhost:%d" $mirrorRepo.listen_port | quote }}
 token = ""
-port = {{ $mirror.listen_port | default 8085 }}
+port = {{ $mirrorRepo.listen_port }}
 session_secret_key = "mirror"
-worker_number = {{ $mirror.worker_number | default 5 }}
-lfs_concurrency = {{ $mirror.lfs_concurrency | default 5 }}
-part_size = {{ $mirror.part_size | default 100 }}
+worker_number = {{ $mirrorRepo.worker_number }}
+lfs_concurrency = {{ $mirrorLfs.lfs_concurrency }}
+part_size = {{ $mirrorLfs.part_size  }}
 
-{{ $db := dict }}
-{{- if has $server "db" -}}
-{{- $db = $server.db -}}
-{{- end -}}
-{{- $user := $db.user | default "csghub_server" -}}
-{{- $password := $db.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) -}}
-{{- $name := $db.name | default "csghub_server" -}}
-{{- $host := $db.host | default "127.0.0.1" -}}
-{{- $port := $db.port | default 5432 -}}
+{{ $postgresql := $server.postgresql }}
+{{- $pgUser := $postgresql.user -}}
+{{- $pgPassword := $postgresql.password | default (crypto.PBKDF2 $pgUser "opencsg" 2048 8) -}}
 [database]
 driver = "pg"
-dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" $db.user $db.password $db.host $db.port $db.name | quote }}
-timezone = {{ $db.timezone | default "Asia/Shanghai" | quote }}
+dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" $pgUser $pgPassword $postgresql.host $postgresql.port $postgresql.name | quote }}
+timezone = {{ $postgresql.timezone | quote }}
 
-{{ $redis := dict }}
-{{- if has $server "redis" -}}
-{{- $redis = $server.redis -}}
-{{- end -}}
+{{ $redis := $server.redis }}
+{{- $redisUser := $redis.auth.user -}}
+{{- $redisPassword := $redis.auth.password | default (crypto.PBKDF2 $redisUser "opencsg" 2048 8) -}}
 [redis]
-endpoint = {{ $redis.endpoint | default "127.0.0.1:6379" | quote }}
-max_retries = {{ $redis.max_retries | default 3 }}
-min_idle_connections = {{ $redis.min_idle_connections | default 0 }}
-user = {{ $redis.user | default "default" | quote }}
-password = {{ $redis.password | quote }}
-sentinel_mode = false
-sentinel_master = ""
-sentinel_endpoint = ""
+endpoint = {{ $redis.endpoint | quote }}
+max_retries = {{ $redis.max_retries }}
+min_idle_connections = {{ $redis.min_idle_connections }}
+user = {{ $redisUser | quote }}
+password = {{ $redisPassword | quote }}
+sentinel_mode = {{ $redis.sentinel.mode }}
+sentinel_endpoint = {{ $redis.sentinel.endpoint | quote }}
+sentinel_master = {{ $redis.sentinel.master | quote }}
 
 [git_server]
-url = "http://localhost:3000"
 type = "gitaly"
-host = "http://localhost:3000"
-secret_key = "619c849c49e03754454ccd4cda79a209ce0b30b3"
-username = "root"
-password = "password123"
-timeout_sec = 5
 
-{{ $gitaly := dict }}
-{{- if has $server "gitaly" }}
-{{- $gitaly = $server.gitaly }}
-{{- end -}}
+{{ $gitaly := $server.gitaly }}
+{{- $gitalyToken := $gitaly.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) -}}
 [gitaly_server]
-address = {{ $gitaly.address | default "tcp://127.0.0.1:8075" | quote }}
-storge = {{ $gitaly.storage | default "default" | quote }}
-token = {{ $gitaly.token | default "abc123secret" | quote }}
-jwt_secret ={{ $gitaly.jwt_secret | default "signing-key" | quote }}
+address = {{ $gitaly.address | quote }}
+storge = {{ $gitaly.storage | quote }}
+token = {{ $gitalyToken | quote }}
+jwt_secret ={{ $gitaly.jwt_secret | quote }}
 
 [frontend]
 url = {{ $csghub.external_url | quote }}
 
-{{ $s3 := dict }}
-{{- if has $server "s3" -}}
-{{- $s3 = $server.s3 -}}
-{{- end -}}
-{{- $accessKeyId := $s3.accesskey | default "minio" -}}
+{{ $s3 := $server.s3 }}
+{{- $accessKeyId := $s3.access_key -}}
+{{- $secretKey := $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) -}}
 [s3]
 access_key_id = {{ $accessKeyId | quote }}
-access_key_secret = {{ $s3.secretkey | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) | quote }}
-region = {{ $s3.region | default "cn-north-1" | quote }}
-endpoint = {{ $s3.endpoint | default "127.0.0.1:9000" | quote }}
+access_key_secret = {{ $secretKey | quote }}
+region = {{ $s3.region | quote }}
+endpoint = {{ $s3.endpoint | quote }}
 internal_endpoint = {{ $s3.internal_endpoint | quote }}
-bucket = {{ $s3.bucket | default "csghub-server" | quote }}
-enable_ssl = {{ $s3.encrypt | default false }}
+bucket = {{ $s3.bucket | quote }}
+enable_ssl = {{ $s3.encrypt }}
+bucket_lookup = {{ $s3.bucket_lookup | quote }}
 
 [jwt]
-signing_key = "signing-key"
+signing_key = {{ $gitaly.jwt_secret | quote }}
 valid_hour = 24
 
 {{ $runner := (datasource "config").runner }}
-{{- $deploy := dict "namespace" "spaces" "domain" "app.internal" -}}
-{{- if has $runner "deploy" -}}
-{{- $deploy = $runner.deploy -}}
-{{- end -}}
+{{- $deploy := $runner.deploy -}}
 {{- $runnerRegistry := dict -}}
-{{- if has $runner "registry" -}}
 {{- $runnerRegistry = $runner.registry -}}
-{{- end -}}
 {{- $proxy := (datasource "config").proxy -}}
 {{- $registry := (datasource "config").registry -}}
 {{- $registryPort := $registry.listen | regexp.Find ":([0-9]+)/" | strings.TrimSuffix "/" | strings.TrimPrefix ":" -}}
-{{- $spaceRegistry := $runnerRegistry.prefix | default (printf "%s%s/" $host ($registryPort | default 5000)) -}}
 [space]
-builder_endpoint = "http://localhost:8082"
-runner_endpoint = {{ printf "http://localhost:%d" ($runner.listen_port | default 8082) | quote }}
-runner_server_port = {{ $runner.listen_port | default 8082 }}
+builder_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
+runner_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
+runner_server_port = {{ $runner.listen_port }}
 internal_root_domain = {{ printf "%s.app.internal" $deploy.namespace | quote }}
 public_root_domain = ""
-docker_reg_base = {{ $spaceRegistry | quote }}
+docker_reg_base = {{ $runnerRegistry.prefix | quote }}
 image_pull_secret = {{ $runnerRegistry.pull_secret | quote }}
-rproxy_server_port = {{ $proxy.listen_port | default 8083 }}
+rproxy_server_port = {{ $proxy.listen_port }}
 session_secret_key = "secret"
-deploy_timeout_in_min = {{ $deploy.timeout | default 30 }}
-gpu_model_label = {{ $runner.gpu_label | default "nvidia.com/nvidia_name" | quote }}
-readness_delay_seconds = {{ $runner.readness_delay_seconds | default 120 }}
-readness_period_seconds = {{ $runner.readness_period_seconds | default 10 }}
-readness_failure_threshold = {{ $runner.readness_failure_threshold | default 3 }}
-pypi_index_url = {{ $runner.pip_index_url | default "https://pypi.tuna.tsinghua.edu.cn/simple/" | quote }}
+deploy_timeout_in_min = {{ $deploy.timeout }}
+gpu_model_label = {{ $runner.gpu_label | quote }}
+readness_delay_seconds = {{ $runner.readness_delay_seconds }}
+readness_period_seconds = {{ $runner.readness_period_seconds }}
+readness_failure_threshold = {{ $runner.readness_failure_threshold }}
+pypi_index_url = {{ $runner.pip_index_url| quote }}
 
-{{ $model := dict }}
-{{- if has $server "model" -}}
-{{- $model = $server.model -}}
-{{- end -}}
+{{ $model := $server.model }}
 [model]
-deploy_timeout_in_min = {{ $model.deploy_timeout | default 30 }}
-download_endpoint = {{ $model.download_endpoint | default "https://hub.opencsg.com" | quote }}
-docker_reg_base = {{ $model.docker_reg_base | default "opencsg-registry.cn-beijing.cr.aliyuncs.com/public/" | quote }}
+deploy_timeout_in_min = {{ $model.deploy_timeout }}
+download_endpoint = {{ $model.download_endpoint | quote }}
+docker_reg_base = {{ $model.docker_reg_base | quote }}
 nim_docker_secret_name = "ngc-secret"
 nim_ngc_secret_name = "nvidia-nim-secrets"
 
 [event]
-sync_interval = 1
+sync_interval = {{ $mirrorRepo.sync_interval }}
 
-{{ $casdoor := dict }}
-{{- if has $server "casdoor" -}}
-{{- $casdoor = $server.casdoor -}}
-{{- end -}}
+{{ $casdoor := $server.casdoor }}
 [casdoor]
-client_id = {{ $casdoor.client_id | default "7a97bc5168cb75ffc514" | quote }}
-client_secret = {{ $casdoor.client_secret | default "33bd85106818efd90c57fb35ffc787aabbff6f7a" | quote }}
-endpoint = {{ $casdoor.endpoint | default (printf "http://%s:8000" $host) | quote }}
-certificate = {{ $casdoor.certificate | default "/opt/csghub/etc/casdoor/token_jwt_key.pem" | quote }}
-organization_name = {{ $casdoor.organization_name | default "OpenCSG" | quote }}
-application_name = {{ $casdoor.application_name | default "CSGHub" | quote }}
+client_id = {{ $casdoor.client_id | quote }}
+client_secret = {{ $casdoor.client_secret | quote }}
+endpoint = {{ $casdoor.endpoint | quote }}
+certificate = {{ $casdoor.certificate | quote }}
+organization_name = {{ $casdoor.organization_name | quote }}
+application_name = {{ $casdoor.application_name | quote }}
 
 {{ $nats := (datasource "config").nats }}
 {{- $natsUser := "natsadmin" -}}
 {{- $natsPassword := crypto.PBKDF2 $natsUser "opencsg" 2048 8 -}}
-{{- if has $nats "auth" -}}
-{{- if $nats.user -}}
-{{- $natsUser = $nats.user -}}
-{{- end -}}
-{{- if $nats.password -}}
-{{- $natsPassword = $nats.password -}}
-{{- end -}}
-{{- end -}}
+{{- $serverNats := $server.nats }}
 [nats]
-url = {{ printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword | quote }}
-msg_fetch_timeout_in_sec = 5
-meter_request_subject = "accounting.metering.>"
-meter_duration_send_subject = "accounting.metering.duration"
-meter_token_send_subject = "accounting.metering.token"
-meter_quota_send_subject = "accounting.metering.quota"
+url = {{ $serverNats.url | default (printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword) | quote }}
+msg_fetch_timeout_in_sec = {{ $serverNats.msg_fetch_timeout_in_sec }}
+meter_request_subject = {{ $serverNats.meter_request_subject | quote }}
+meter_duration_send_subject = {{ $serverNats.meter_duration_send_subject | quote }}
+meter_token_send_subject = {{ $serverNats.meter_token_send_subject | quote }}
+meter_quota_send_subject = {{ $serverNats.meter_quota_send_subject | quote }}
 
+{{ $accounting := (datasource "config").accounting }}
+{{- $actParts := $accounting.listen | strings.Split ":" -}}
+{{- $actHost := index $actParts 0 -}}
+{{- $actPort := "" -}}
+{{- if gt (len $actParts) 1 -}}
+    {{- $actPort = index $actParts 1 -}}
+{{- else -}}
+    {{- $actPort = "8086" -}}
+{{- end -}}
 [accounting]
-host = "http://localhost"
-port = 8086
+host = {{ printf "http://%s" $actHost | quote }}
+port = {{ $actPort }}
 
+{{ $user := (datasource "config").user }}
+{{- $userParts := $user.listen | strings.Split ":" -}}
+{{- $userHost := index $userParts 0 -}}
+{{- $userPort := "" -}}
+{{- if gt (len $userParts) 1 -}}
+    {{- $userPort = index $userParts 1 -}}
+{{- else -}}
+    {{- $actPort = "8088" -}}
+{{- end -}}
 [user]
-host = "http://localhost"
-port = 8088
+host = {{ printf "http://%s" $userHost | quote }}
+port = {{ $userPort }}
 signin_success_redirect_url = {{ printf "%s/server/callback" $csghub.external_url | quote }}
 
-{{ $multi_sync := dict }}
-{{- if has $server "multi_sync" -}}
-{{- $multi_sync = $server.multi_sync -}}
-{{- end -}}
+{{ $multi_sync := $server.multi_sync }}
 [multi_sync]
-enabled = {{ $multi_sync.enabled | default true }}
+enabled = {{ $multi_sync.enabled }}
 saas_api_domain = "https://hub.opencsg.com"
 saas_sync_domain = "https://sync.opencsg.com"
 
-{{ $telemetry := dict }}
-{{- if has $server "telemetry" -}}
-{{- $telemetry = $server.telemetry -}}
-{{- end -}}
+{{ $telemetry := $server.telemetry }}
 [telemetry]
 enable = {{ $telemetry.enabled | default true }}
 report_url = "http://hub.opencsg.com/api/v1/telemetry"
@@ -226,80 +216,61 @@ report_url = "http://hub.opencsg.com/api/v1/telemetry"
 [auto_clean]
 instance = false
 
-{{ $dataset := dict }}
-{{- if has $server "dataset" -}}
-{{- $dataset = $server.dataset -}}
-{{- end -}}
+{{ $dataset := $server.dataset }}
 [dataset]
-prompt_max_jsonl_file_size = {{ $dataset.prompt_max_jsonl_file_size | default 1048576 }}
+prompt_max_jsonl_file_size = {{ $dataset.prompt_max_jsonl_file_size }}
 
 {{ $moderation := dict }}
-{{- if has $server "moderation" -}}
-  {{- $moderation = $server.moderation -}}
-{{- end -}}
-
-{{- $moderationAddress := "http://127.0.0.1:8089" -}}
-{{- if has $moderation "address" -}}
-  {{- $moderationAddress = $moderation.address -}}
-{{- end -}}
+{{- $moderation := $server.moderation -}}
+{{- $moderationAddress := $moderation.address -}}
 
 {{- $moderationUrl := conv.URL $moderationAddress -}}
 {{- $moderationParts := $moderationUrl.Host | strings.Split ":" -}}
 
 {{- $moderationHost := index $moderationParts 0 | default "127.0.0.1" -}}
 {{- $moderationPort := "" -}}
-
 {{ if gt (len $moderationParts) 1 }}
   {{- $moderationPort = index $moderationParts 1 -}}
 {{- else -}}
-  {{- /* 根据协议自动设置默认端口 */ -}}
-  {{- if eq $moderationUrl.Scheme "https" -}}
-    {{- $moderationPort = "443" -}}
-  {{- else -}}
-    {{- $moderationPort = "80" -}}
-  {{- end -}}
+    {{- $moderationPort = "8089" -}}
 {{- end -}}
 [moderation]
 host = {{ printf "%s://%s" $moderationUrl.Scheme $moderationHost | quote }}
 port = {{ $moderationPort }}
-encoded_sensitive_words = {{ $moderation.encoded_sensitive_words | default "5Lmg6L+R5bmzLHhpamlucGluZw==" | quote }}
+encoded_sensitive_words = {{ $moderation.encoded_sensitive_words | quote }}
 
+{{ $workflow := $server.workflow }}
 [workflow]
-endpoint = "localhost:7233"
+endpoint = {{ $workflow.endpoint | quote }}
 
 [cron_job]
-sync_as_client_cron_expression = {{ $multi_sync.sync_as_client_cron_expression | default "0 * * * *" | quote }}
-calc_recom_score_cron_expression = {{ $multi_sync.calc_recom_score_cron_expression | default "1 * * * *" | quote }}
+sync_as_client_cron_expression = {{ $multi_sync.sync_as_client_cron_expression | quote }}
+calc_recom_score_cron_expression = {{ $multi_sync.calc_recom_score_cron_expression | quote }}
 
+{{ $proxy := $server.proxy }}
 [proxy]
-hosts = ["opencsg.com", "sync.opencsg.com"]
+hosts = [{{- range $k, $v := $proxy.hosts }}{{if $k}}, {{end}}{{$v | quote }}{{- end }}]
 
-{{ $instrumentation := dict }}
-{{- if has $server "instrumentation" -}}
-{{- $instrumentation = $server.instrumentation -}}
-{{- end -}}
+{{ $instrumentation := $server.instrumentation }}
 [instrumentation]
-otlp_logging = {{ $instrumentation.oltp_logging | default false }}
-otlp_endpoint = {{ $instrumentation.oltp_endpoint | default "http://localhost:4317" | quote }}
+otlp_logging = {{ $instrumentation.otlp_logging }}
+otlp_endpoint = {{ $instrumentation.otlp_endpoint | quote }}
 
-{{ $image_builder := dict "namespace" "spaces" }}
-{{- if has $runner "image_builder" -}}
-{{- $image_builder = $runner.image_builder -}}
-{{- end -}}
+{{ $image_builder := $runner.image_builder }}
 [runner]
-image_builder_namespace = {{ $image_builder.namespace | default "image-factory" | quote }}
-image_builder_git_image = {{ $image_builder.git_image | default "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/alpine/git:2.36.2" | quote }}
-image_builder_kaniko_image = {{ $image_builder.kaniko_image | default "opencsg-registry.cn-beijing.cr.aliyuncs.com/public/kaniko-project-executor:v1.23.2" | quote }}
-image_builder_job_ttl = {{ $image_builder.job_ttl | default 120 }}
-image_builder_status_ttl = {{ $image_builder.status_ttl | default 300 }}
-{{- if $spaceRegistry | regexp.Match $host }}
+image_builder_namespace = {{ $image_builder.namespace | quote }}
+image_builder_git_image = {{ $image_builder.git_image | quote }}
+image_builder_kaniko_image = {{ $image_builder.kaniko_image | quote }}
+image_builder_job_ttl = {{ $image_builder.job_ttl }}
+image_builder_status_ttl = {{ $image_builder.status_ttl }}
+{{- if $runnerRegistry.prefix | regexp.Match $host }}
 image_builder_kaniko_args = ["--skip-tls-verify","--insecure","--compressed-caching=false","--single-snapshot","--build-arg=PyPI={{ $runner.pip_index_url }}","--build-arg=HF_ENDPOINT={{ printf "%s/hf" $csghub.external_url }}"]
 {{- else }}
 image_builder_kaniko_args = ["--compressed-caching=false","--single-snapshot","--build-arg=PyPI={{ $runner.pip_index_url }}","--build-arg=HF_ENDPOINT={{ printf "%s/hf" $csghub.external_url }}"]
 {{- end }}
 # Kaniko arguments to configure logging and registry access.
 # See official flags: https://github.com/GoogleContainerTools/kaniko?tab=readme-ov-file#additional-flags
-# --log-format=json : Output logs in JSON format for structured parsing.
+# --log-format=json : Output logs in JSON format for strcuctured parsing.
 # --log-timestamp=true : Include timestamps in log entries.
 # --insecure : Allow connections to HTTP registries (non-HTTPS).
 # --skip-tls-verify : Disable TLS certificate validation for registries.

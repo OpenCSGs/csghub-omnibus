@@ -6,107 +6,79 @@
 
 {{- $praefect := (datasource "config").praefect }}
 # TCP address to listen on
-listen_addr = "{{ $praefect.listen_addr | default "127.0.0.1:2305" }}"
+listen_addr = {{ $praefect.listen_addr | quote }}
 
 {{- if $praefect.tls_listen_addr }}
 # Secured TCP address to listen on.
-tls_listen_addr = "{{ $praefect.tls_listen_addr }}"
+tls_listen_addr = {{ $praefect.tls_listen_addr | quote }}
 {{- end }}
 
 {{- if has $praefect "tls" }}
 # Path to the certificate and its key used for TLS listening address.
 [tls]
 {{- if $praefect.tls.certificate_path }}
-certificate_path = "{{ $praefect.tls.certificate_path }}"
+certificate_path = {{ $praefect.tls.certificate_path | quote }}
 {{- end }}
 {{- if $praefect.tls.key_path }}
-key_path = "{{ $praefect.tls.key_path }}"
+key_path = {{ $praefect.tls.key_path | quote }}
 {{- end }}
 {{- end }}
 
 # Optional: grace period before a praefect process is forcibly terminated (duration)
 # Defaults to "1m"
-graceful_stop_timeout = "{{ $praefect.graceful_stop_timeout | default "30s" }}"
+graceful_stop_timeout = {{ $praefect.graceful_stop_timeout | quote }
 
 # Optional: export metrics via Prometheus
-prometheus_listen_addr = "{{ $praefect.prometheus_listen_addr | default "127.0.0.1:9652" }}"
+prometheus_listen_addr = {{ $praefect.prometheus_listen_addr | quote }}
 
-{{- if has $praefect "logging" }}
 # You can optionally configure Praefect to output JSON-formatted log messages to stdout
 [logging]
-format = "{{ $praefect.logging.format | default "json" }}"
+format = {{ $praefect.logging.format | quote }}
 # Optional: Set log level to only log entries with that severity or above
 # One of, in order: debug, info, warn, error, fatal, panic
 # Defaults to "info"
-level = "{{ $praefect.logging.level | default "warn" }}"
-{{ end }}
+level = {{ $praefect.logging.level | quote }}
 
-{{ if has $praefect "prometheus" }}
 [prometheus]
-{{- if $praefect.prometheus.grpc_latency_buckets }}
-grpc_latency_buckets = [ {{ $praefect.prometheus.grpc_latency_buckets | default }} ]
-{{- else }}
-grpc_latency_buckets = [ 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0 ]
-{{- end }}
-{{ end }}
+grpc_latency_buckets = {{ $praefect.prometheus.grpc_latency_buckets }}
 
-{{- if has $praefect "sentry" }}
 [sentry]
-{{- if $praefect.sentry.sentry_environment }}
-sentry_environment = "{{ $praefect.sentry.sentry_environment | default "" }}"
-{{- end }}
-{{- if $praefect.sentry.sentry_dsn }}
-sentry_dsn = "{{ $praefect.sentry.sentry_dsn | default "" }}"
-{{- end }}
-{{ end }}
+sentry_environment = {{ $praefect.sentry.sentry_environment | quote }}
+sentry_dsn = {{ $praefect.sentry.sentry_dsn | quote }}
 
-{{- if has $praefect "database" }}
+{{ $pgUser := $praefect.database.user }}
+{{- $pgPassword := $praefect.database.password | default (crypto.PBKDF2 $pgUser "opencsg" 2048 8) }}
 [database]
-host = "{{ $praefect.database.host | default "127.0.0.1" }}"
-port = {{ $praefect.database.port | default 5432 }}
-user = "{{ $praefect.database.user | default "praefect" }}"
-password = "{{ $praefect.database.password | default "" }}"
-dbname = "{{ $praefect.database.dbname | default "praefect_production" }}"
-{{ end }}
+host = {{ $praefect.database.host | quote }}
+port = {{ $praefect.database.port }}
+user = {{ $pgUser | quote }}
+password = {{ $pgPassword | quote }}
+dbname = {{ $praefect.database.dbname | quote }}
 
-{{- if has $praefect "auth" }}
 # Optional: authenticate Gitaly requests using a shared secret. This token works the same way as a gitaly token
 [auth]
-token = "{{ $praefect.auth.token | default "abc123secret" }}"
-{{ end }}
+token = {{ $praefect.auth.token | default (crypto.PBKDF2 "praefect" "opencsg" 2048 8) | quote }}
 
-{{- if has $praefect "replication" }}
 # One or more Gitaly servers need to be configured to be managed. The names
 # of each server are used to link multiple nodes, or `gitaly_server`s together
 # as shard. listen_addr should be unique for all nodes.
 # Requires the protocol to be defined, e.g. tcp://host.tld:1234
 [replication]
-batch_size = {{ $praefect.replication.batch_size | default 10 }}
-{{ end }}
+batch_size = {{ $praefect.replication.batch_size }}
 
-{{- if has $praefect "reconciliation" }}
 [reconciliation]
 # Duration value specifying an interval at which to run the automatic repository reconciler.
 # Automatic reconciliation is disabled if set to 0. Example: "1m" for reconciliation every minute.
-scheduling_interval = "{{ $praefect.reconciliation.scheduling_interval | default "1m" }}"
+scheduling_interval = "{{ $praefect.reconciliation.scheduling_interval }}"
 # Scheduling duration histogram buckets.
-{{- if $praefect.reconciliation.histogram_buckets }}
-histogram_buckets = [{{- range $i, $v := $praefect.reconciliation.histogram_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
-{{- else }}
-histogram_buckets = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
-{{- end }}
-{{ end }}
+histogram_buckets = {{ $praefect.reconciliation.histogram_buckets }}
 
-{{- if has $praefect "failover" }}
 [failover]
-enabled = {{ $praefect.failover.enabled | default true }}
-{{ end }}
+enabled = {{ $praefect.failover.enabled }}
 
-{{- if has $praefect "delete_invalid_records" }}
 [background_verification]
-delete_invalid_records = {{ $praefect.background_verification.delete_invalid_records | default false }}
-verification_interval = "{{ $praefect.background_verification.verification_interval | default "72h" }}"
-{{ end }}
+delete_invalid_records = {{ $praefect.background_verification.delete_invalid_records }}
+verification_interval = "{{ $praefect.background_verification.verification_interval | quote }}"
 
 {{- if has $praefect "virtual_storage" }}
 {{- range $vs := $praefect.virtual_storage }}
@@ -120,7 +92,7 @@ default_replication_factor = {{ $vs.default_replication_factor }}
 [[virtual_storage.node]]
 storage = "{{ $node.storage }}"
 address = "{{ $node.address }}"
-token = "{{ $node.token }}"
+token = "{{ $node.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) }}"
 {{ end }}
 {{- end }}
 {{- end }}

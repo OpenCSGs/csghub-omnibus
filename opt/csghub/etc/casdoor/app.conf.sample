@@ -1,15 +1,14 @@
 {{- $casdoor := (datasource "config").casdoor }}
-{{- $db := dict }}
-{{- if has $casdoor "db" }}
-{{- $db = $casdoor.db }}
-{{- end }}
-{{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
+{{- $db := $casdoor.db }}
+{{- $pgUser := $db.user }}
+{{- $pgPassword := crypto.PBKDF2 $pgUser "opencsg" 2048 8 }}
+{{- $dataDir := (datasource "config").casdoor.data }}
 appname = casdoor
 httpport = 8087
 runmode = prod
 copyrequestbody = true
 driverName = postgres
-dataSourceName = "user={{ $db.user | default "casdoor" }} password={{ $db.password | default (crypto.PBKDF2 "casdoor" "opencsg" 2048 8) }} host={{ $db.host | default "127.0.0.1" }} port={{ $db.port | default 5432 }} sslmode=disable dbname={{ $db.name | default "casdoor" }}"
+dataSourceName = "user={{ $pgUser }} password={{ $pgPassword }} host={{ $db.host }} port={{ $db.port }} sslmode=disable dbname={{ $db.name }}"
 dbName =
 tableNamePrefix =
 showSql = false

@@ -21,15 +21,15 @@ echo {{ $dataDir }}/gitaly.pid > {{ $envDir }}/GITALY_PID_FILE
 
 # Add secret key file
 {{- $secret := "signing-key" }}
-{{- if has (datasource "config").csghub "gitaly" }}
-{{- if has (datasource "config").csghub.gitaly "secret" }}
-{{- $secret = (datasource "config").csghub.gitaly.secret }}
+{{- if has (datasource "config").server "gitaly" }}
+{{- if has (datasource "config").server.gitaly "secret" }}
+{{- $secret = (datasource "config").server.gitaly.secret }}
 {{- end }}
 {{- end }}
 {{- $secretFile := printf "%s/.csghub_secret" $dataDir }}
-{{- if has (datasource "config").csghub "gitaly" }}
-{{- if has (datasource "config").csghub.gitaly "secret_file" }}
-{{- $secretFile = (datasource "config").csghub.gitaly.secret_file }}
+{{- if has (datasource "config").server "gitaly" }}
+{{- if has (datasource "config").server.gitaly "secret_file" }}
+{{- $secretFile = (datasource "config").server.gitaly.secret_file }}
 {{- end }}
 {{- end }}
 {{- if and $secret $secretFile }}

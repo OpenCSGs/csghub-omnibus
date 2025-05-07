@@ -69,11 +69,11 @@ echo "{{ $url.Scheme }}://{{ $host }}:{{ $casdoorPort }}/login/oauth/authorize?c
 {{- if has $portal "s3" }}
 {{- $s3 = $portal.s3 }}
 {{- end }}
-{{- $accessKeyId := $s3.accesskey | default "minio" }}
+{{- $accessKeyId := $s3.access_key | default "minio" }}
 echo {{ $s3.encrypt | default false }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ENABLE_SSL
 echo {{ $s3.region | default "cn-north-1" }} > {{ $envDir }}/CSGHUB_PORTAL_S3_REGION
 echo {{ $accessKeyId }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ACCESS_KEY_ID
-echo {{ $s3.secretkey | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ACCESS_KEY_SECRET
+echo {{ $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ACCESS_KEY_SECRET
 echo {{ $s3.bucket | default "csghub-portal" }} > {{ $envDir }}/CSGHUB_PORTAL_S3_BUCKET
 echo {{ $s3.endpoint | default "127.0.0.1:9000" }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ENDPOINT
 

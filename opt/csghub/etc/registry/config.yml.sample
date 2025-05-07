@@ -1,16 +1,8 @@
 {{- $registry := (datasource "config").registry -}}
-{{- $dataDir := $registry.data | default "/var/opt/csghub/registry" -}}
+{{- $dataDir := $registry.data -}}
 {{- $minio := (datasource "config").minio -}}
-{{- $user := "minio" -}}
-{{- $password := crypto.PBKDF2 $user "opencsg" 2048 8 -}}
-{{- if has $minio "auth" -}}
-{{- if $minio.auth.user -}}
-{{- $user = $minio.auth.user -}}
-{{- end -}}
-{{- if $minio.auth.password -}}
-{{- $password = $minio.auth.password -}}
-{{- end -}}
-{{- end -}}
+{{- $user := $minio.auth.user -}}
+{{- $password := $minio.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) -}}
 version: 0.1
 log:
   {{- $logLevel := "info" -}}
@@ -26,7 +18,6 @@ log:
 storage:
   cache:
     blobdescriptor: inmemory
-  {{- if has $registry "storage" -}}
   {{- if has $registry.storage "filesystem" -}}
   filesystem:
     rootdirectory: {{ $registry.storage.filesystem.rootdirectory }}
@@ -36,9 +27,9 @@ storage:
   {{- $auth := $registry.storage.s3 }}
   s3:
     accesskey: {{ $auth.accesskey | default $user }}
-    secretkey: {{ $auth.secretkey | default $password }}
+    secretkey: {{ $auth.accesskey | default $password }}
     region: {{ $auth.region | default "cn-north-1" }}
-    regionendpoint: {{ $auth.region | default "http://127.0.0.1:9000" }}
+    regionendpoint: {{ $auth.regionendpoint | default "http://127.0.0.1:9000" }}
     forcepathstyle: {{ $auth.forcepathstyle | default false }}
     bucket: {{ $auth.bucket | default "csghub-registry" }}
     encrypt: {{ $auth.encrypt | default false }}
@@ -47,9 +38,8 @@ storage:
     skipverify: {{ $auth.skipverify | default true }}
   {{- end }}
   {{- end }}
-  {{- end }}
 http:
-  addr: {{ $registry.listen | default "127.0.0.1:5000" }}
+  addr: {{ $registry.listen }}
   headers:
     X-Content-Type-Options: [nosniff]
 auth:
