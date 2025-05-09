@@ -18,7 +18,7 @@ htpasswd -Bb -c {{ $dataDir }}/.htpasswd {{ $user }} {{ $password }}
 
 # Create bucket
 if [ -f "/opt/csghub/service/minio/create_bucket" ]; then
-    /opt/csghub/service/minio/create_bucket {{ $registry.s3.bucket }}
+    /opt/csghub/service/minio/create_bucket {{ $registry.storage.s3.bucket }}
 fi
 
 chown -R registry:registry {{ $dataDir }}
