@@ -33,7 +33,7 @@ echo {{ $dbname }} > {{ $envDir }}/POSTGRES_USER
 echo {{ $password }} > {{ $envDir }}/POSTGRES_PASSWORD
 echo {{ $dbname }} > {{ $envDir }}/POSTGRES_DB
 # Create server database
-/opt/csghub/etc/postgresql/create_db.sh {{ $dbname }} {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
 
 # Create bucket
 if [ -f "/opt/csghub/service/minio/create_bucket" ]; then

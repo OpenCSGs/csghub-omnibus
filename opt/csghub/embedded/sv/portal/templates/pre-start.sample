@@ -48,7 +48,7 @@ echo "false" > {{ $envDir }}/CSGHUB_PORTAL_ENABLE_HTTPS
 {{- $host := $db.host | default "127.0.0.1" }}
 {{- $port := $db.port | default 5432 }}
 echo "postgresql://{{ $user }}:{{ $password }}@{{ $host }}:{{ $port }}/{{ $name }}?sslmode=disable" > {{ $envDir }}/CSGHUB_PORTAL_DATABASE_DSN
-/opt/csghub/etc/postgresql/create_db.sh {{ $name }} {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $name }} {{ $password }}
 
 {{- $urlParts := $url.Host | strings.Split ":" }}
 {{- $host := index $urlParts 0 | default "csghub.example.com" }}

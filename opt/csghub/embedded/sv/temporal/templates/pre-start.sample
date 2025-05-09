@@ -34,7 +34,7 @@ echo {{ $db.user | default "temporal" }} > {{ $envDir }}/POSTGRES_USER
 echo {{ $password }} > {{ $envDir }}/POSTGRES_PWD
 {{- end }}
 # Create temporal database
-/opt/csghub/etc/postgresql/create_db.sh {{ $dbname }} {{ $password }}
-/opt/csghub/etc/postgresql/create_db.sh "temporal_visibility" {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
+/opt/csghub/service/postgresql/create_database "temporal_visibility" {{ $password }}
 
 exit 0

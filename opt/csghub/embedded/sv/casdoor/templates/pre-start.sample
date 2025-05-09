@@ -16,7 +16,7 @@ exec 2>&1
 {{- end }}
 {{- end }}
 # Create casdoor database
-/opt/csghub/etc/postgresql/create_db.sh {{ $dbname }} {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
 
 {{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
 if [ -f {{ $dataDir }}/app.conf ]; then
