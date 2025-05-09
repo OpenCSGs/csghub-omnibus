@@ -43,6 +43,9 @@ fi
 # Configure MinIO alias if not already set
 if ! "$MC_PATH" alias list | grep -q "$MINIO_ALIAS"; then
     "$MC_PATH" alias set "$MINIO_ALIAS" "$MINIO_ENDPOINT" "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY"
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
 fi
 
 # Check if bucket already exists
