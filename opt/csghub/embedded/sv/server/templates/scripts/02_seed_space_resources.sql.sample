@@ -35,8 +35,8 @@ WITH selected_cluster AS (
     LIMIT 1)
     INSERT INTO public.space_resources (id, name, resources, cluster_id)
         VALUES
-        (1, 'CPU basic · 0.5 vCPU · 1 GB', '{ "cpu": { "type": "Intel", "num": "0.5" }, "memory": "1Gi" }', ( SELECT cluster_id FROM selected_cluster)),
-        (2, 'CPU basic · 2 vCPU · 4 GB', '{ "cpu": { "type": "Intel", "num": "2" }, "memory": "4Gi" }', ( SELECT cluster_id FROM selected_cluster))
+        (1, 'CPU basic · 0.5 vCPU · 1 GB', '{ "cpu": { "type": "Intel", "num": "0.5" }, "memory": "1Gi" }', COALESCE((SELECT cluster_id FROM selected_cluster), '')),
+        (2, 'CPU basic · 2 vCPU · 4 GB', '{ "cpu": { "type": "Intel", "num": "2" }, "memory": "4Gi" }', COALESCE((SELECT cluster_id FROM selected_cluster), ''))
 ON CONFLICT (id)
     DO UPDATE SET
         name = EXCLUDED.name,
