@@ -1,4 +1,5 @@
 {{- $csghub := (datasource "config").csghub }}
+{{- $casdoor := (datasource "config").casdoor }}
 --
 -- Record Timestamp
 --
@@ -28,7 +29,7 @@ SELECT pg_catalog.set_config('search_path', 'public', false);
 -- Name: application; Type: TABLE; Schema: public; Owner: csghub
 --
 -- Connect to casdoor management database
-\connect csghub_casdoor
+\connect {{ $casdoor.db.name }}
 
 -- Update RedirectURLs
 UPDATE
