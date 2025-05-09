@@ -114,9 +114,9 @@ http {
 
     server {
         {{- if eq $url.Scheme "https" }}
-        listen {{ $port }} ssl;
+        listen 443 ssl;
         {{- else }}
-        listen {{ $port }};
+        listen 80;
         {{- end }}
         server_name {{ $host }};
 
