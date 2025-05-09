@@ -8,10 +8,11 @@ csghub:
   ## External URL for accessing CSGHub (must be reachable by users)
   external_url: "http://csghub.example.com"
 
-  # Nginx configuration
-  nginx:
-    ssl_certificate: "/etc/csghub/ssl/csghub.example.com.crt"
-    ssl_certificate_key: "/etc/csghub/ssl/csghub.example.com.key"
+# Nginx configuration
+nginx:
+  data: "/var/opt/csghub/nginx"
+  ssl_certificate: "/etc/csghub/ssl/csghub.example.com.crt"
+  ssl_certificate_key: "/etc/csghub/ssl/csghub.example.com.key"
 
 ##########################################################################
 # CSGHub Server Configuration
@@ -181,7 +182,7 @@ runner:
 
   # Container registry settings
   registry:
-    prefix: "registry.example.com:5000/csghub/"  # Image prefix
+    prefix: "127.0.0.1:5000/csghub/"  # Image prefix
     pull_secret: "csghub-docker-credential"  # Pull secret name
 
   # GPU resource configuration
@@ -255,7 +256,7 @@ portal:
     region: "cn-north-1"        # AWS region
     endpoint: "127.0.0.1:9000"  # S3 endpoint
     force_path_style: false       # Path-style access
-    bucket: "csghub-server"     # Bucket name
+    bucket: "csghub-portal"     # Bucket name
     encrypt: false              # Server-side encryption
     secure: false               # Use HTTPS
 
@@ -343,7 +344,7 @@ gitaly:
 gitlab_shell:
   enable: true
   data: "/var/opt/csghub/gitlab_shell"
-  listen_port: 2222             # SSH listen port
+  listen_port: 22             # SSH listen port
   ssh_port: 2222
   log:
     dir: "/var/log/csghub/gitlab_shell"  # Log directory
@@ -430,7 +431,7 @@ minio:
 
   # Environment variables
   environments:
-    MINIO_OPTS: " --console-address=:9001"  # Console options
+    MINIO_OPTS: " --console-address=:9002"  # Console options
 
 # Logger configuration section
 logger:
