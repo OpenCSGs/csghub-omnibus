@@ -52,10 +52,10 @@ catfile_cache_size = {{ $gitaly.git.catfile_cache_size }}
 signing_key = "{{ $gitaly.git.signing_key }}"
 
 # Git configuration
-{{- range $key, $value := $gitaly.git.config }}
+{{- range $config := $gitaly.git.config }}
 [[git.config]]
-key = {{ $key | quote }}
-value = {{ $value }}
+key = {{ $config.key | quote }}
+value = {{ $config.value | quote }}
 {{ end }}
 
 # Storages configuration
@@ -98,12 +98,11 @@ interval = {{ $gitaly.rate_limiting.interval | quote }}
 burst = {{ $gitaly.rate_limiting.burst }}
 
 [daily_maintenance]
-disabled = {{ $gitaly.daily_maintenance.disabled }}
+disabled = {{ $gitaly.daily_maintenance.disable }}
 start_hour = {{ $gitaly.daily_maintenance.start_hour }}
 start_minute = {{ $gitaly.daily_maintenance.start_minute }}
 duration = {{ $gitaly.daily_maintenance.duration | quote }}
-storages = {{ $gitaly.daily_maintenance.storages }}
-disabled = {{ $gitaly.daily_maintenance.disabled }}
+storages = [{{- range $i, $v := $gitaly.daily_maintenance.storages }}{{if $i}}, {{end}}{{ $v | quote }}{{- end }}]
 
 {{- if has $gitaly "cgroups" }}
 [cgroups]
