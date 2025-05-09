@@ -1,10 +1,10 @@
 #!/bin/bash
 
-{{- $logDir := "/var/log/csghub/proxy" }}
-{{- if has (datasource "config").proxy "log" }}
-{{- if has (datasource "config").proxy.log "dir" }}
-{{- if (datasource "config").proxy.log.dir }}
-{{- $logDir = (datasource "config").proxy.log.dir }}
+{{- $logDir := "/var/log/csghub/nginx" }}
+{{- if has (datasource "config").nginx "log" }}
+{{- if has (datasource "config").nginx.log "dir" }}
+{{- if (datasource "config").nginx.log.dir }}
+{{- $logDir = (datasource "config").nginx.log.dir }}
 {{- end }}
 {{- end }}
 {{- end }}

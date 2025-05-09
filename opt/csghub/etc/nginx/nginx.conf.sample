@@ -11,6 +11,7 @@ events {
     use epoll;                   # Use epoll for scalable I/O
 }
 
+{{- $nginx := (datasource "config").nginx }}
 {{- $gitlabShell := (datasource "config").gitlab_shell }}
 # Stream configuration for TCP/UDP traffic
 stream {
@@ -43,8 +44,6 @@ http {
                          'upstream_addr=$upstream_addr upstream_status=$upstream_status '
                          'request_time=$request_time upstream_response_time=$upstream_response_time';
 
-    access_log /var/log/nginx/access.log debug_log;
-
     # Gzip compression settings
     gzip on;
     gzip_disable "msie6";
@@ -61,8 +60,9 @@ http {
     proxy_buffer_size 128k;
     proxy_busy_buffers_size 256k;
 
-    client_body_temp_path /var/nginx/client_body_temp 1 2;   # Recommend using SSD storage
+    client_body_temp_path /tmp/client_body_temp 1 2;   # Recommend using SSD storage
     proxy_max_temp_file_size 150000M;               # Avoid large temporary files
+    proxy_temp_path /tmp/proxy_temp 1 2;
     client_max_body_size 0;                         # No limit for client request body size
 
     # Global timeout settings (explicit units)
@@ -97,9 +97,10 @@ http {
     {{- end -}}
 
     {{- $server := (datasource "config").server -}}
+    {{- $nginx := (datasource "config").nginx -}}
 
-    {{- $csghubCert := $csghub.nginx.ssl_certificate }};
-    {{- $csghubCertKey := $csghub.nginx.ssl_certificate_key }}
+    {{- $csghubCert := $nginx.ssl_certificate }}
+    {{- $csghubCertKey := $nginx.ssl_certificate_key }}
 
     {{- if eq $url.Scheme "https" -}}
     # Main server configurations
@@ -209,13 +210,13 @@ http {
     {{- if gt (len $registryParts) 0 -}}
       {{- if eq (len $registryParts) 1 -}}
         {{- if hasPrefix (index $registryParts 0) ":" -}}
-          {{- $registryPort = trimPrefix (index $registryParts 0) ":" | int -}}
+          {{- $registryPort = strings.trimPrefix (index $registryParts 0) ":" -}}
         {{- else if (index $registryParts 0) -}}
           {{- $registryHost = index $registryParts 0 -}}
         {{- end -}}
       {{- else -}}
         {{- $registryHost = index $registryParts 0 -}}
-        {{- $registryPort = index $registryParts 1 | int -}}
+        {{- $registryPort = index $registryParts 1 -}}
       {{- end -}}
     {{- end -}}
     # Docker registry service
@@ -230,7 +231,7 @@ http {
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
-        listen: {{ $registryPort }};
+        listen {{ $registryPort }};
         server_name {{ $host }};
         {{- end }}
 
@@ -242,7 +243,7 @@ http {
                 return 404;  # Block unsupported Docker clients
             }
 
-            proxy_pass http://{{ $registryHost }}:{{ $registryPort }};
+            proxy_pass http://127.0.0.1:5001;
             proxy_set_header Host $http_host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -260,7 +261,7 @@ http {
     server {
         {{- if eq $url.Scheme "https" }}
         listen {{ $casdoorPort }} ssl;
-        server_name {{ $casdoorHost }};
+        server_name {{ $host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
@@ -268,12 +269,12 @@ http {
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
-        listen: {{ $casdoorPort }};
-        server_name {{ $casdoorHost }};
+        listen {{ $casdoorPort }};
+        server_name {{ $host }};
         {{- end }}
 
         location / {
-            proxy_pass http://{{ $casdoorHost }}:{{ $casdoorPort }};
+            proxy_pass http://127.0.0.1:8087;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -284,39 +285,6 @@ http {
         error_page 500 502 503 504 /50x.html;
         location = /50x.html {
             root  /usr/share/nginx/html;
-        }
-    }
-
-    # MinIO service configuration
-    server {
-        listen 9000;
-        server_name {{ $host }};
-
-        ignore_invalid_headers off;
-        client_max_body_size 0;
-
-        client_header_timeout 7200s;
-        client_body_timeout 7200s;
-        proxy_read_timeout 7200s;
-        proxy_send_timeout 7200s;
-
-        proxy_request_buffering on;
-        proxy_buffering on;
-        proxy_buffers 32 256k;
-        proxy_buffer_size 512k;
-        proxy_busy_buffers_size 1m;
-
-        location / {
-            proxy_set_header Host $http_host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_connect_timeout 300s;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            chunked_transfer_encoding off;
-
-            proxy_pass http://127.0.0.1:9000;
         }
     }
 
@@ -363,7 +331,7 @@ http {
             proxy_set_header Connection "upgrade";
             chunked_transfer_encoding off;
 
-            proxy_pass http://129.0.0.1:9001;
+            proxy_pass http://127.0.0.1:9002;
         }
     }
 
