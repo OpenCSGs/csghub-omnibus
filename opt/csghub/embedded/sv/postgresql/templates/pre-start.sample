@@ -39,4 +39,8 @@ if [ ! -f "$PGDATA/PG_VERSION" ]; then
     fi
 fi
 
+if [ -f "{{ $dataDir }}/postmaster.pid" ]; then
+    rm -f {{ $dataDir }}/postmaster.pid
+fi
+
 exit 0

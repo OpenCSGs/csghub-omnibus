@@ -1,0 +1,9 @@
+#!/bin/sh
+{{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
+echo "Service stopped with exit code $1 at $(date)"
+
+# Clean up temporary files
+rm -rf {{ $dataDir }}/postmaster.*
+
+# Force end of process
+pkill -9 -f "postgresql"
