@@ -13,7 +13,7 @@ RUN apt update && \
     mkdir -p ${CSGHUB_EMBEDDED}/bin
 
 ## Install Runit Service Daemon
-ARG RUNIT_VERSION=2.2.0
+ARG RUNIT_VERSION=2.1.2
 RUN wget --no-check-certificate https://smarden.org/runit/runit-${RUNIT_VERSION}.tar.gz && \
     tar -zxf runit-${RUNIT_VERSION}.tar.gz && \
     cd /admin/runit-${RUNIT_VERSION} && package/install && \

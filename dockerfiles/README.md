@@ -9,15 +9,15 @@ In order to improve the building efficiency of the omnibus image, multiple compo
 ### Runit
 
 ```shell
-# Runit-2.2.0
+# Runit-2.1.2
 OS_RELEASE=ubuntu:22.04
-RUNIT_VERSION=2.2.0
+RUNIT_VERSION=2.1.2
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg RUNIT_VERSION=${RUNIT_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-jammy-${RUNIT_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-${RUNIT_VERSION} \
   --file dockerfiles/Dockerfile_runit \
   --push .
 ```
