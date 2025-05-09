@@ -20,7 +20,7 @@ if [ -f "$CONFIG_FILE" ]; then
   exec chpst -e /opt/csghub/etc/server/env -P \
     -U root:root \
     -u root:root \
-    /opt/csghub/embedded/bin/csghub-server mirror lfs-sync --config=$CONFIG_FILE
+    /opt/csghub/embedded/bin/csghub-server --config=$CONFIG_FILE mirror lfs-sync
 else
   echo "Config file not found, starting without config"
   exec chpst -e /opt/csghub/etc/server/env -P \

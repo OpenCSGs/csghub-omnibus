@@ -20,11 +20,11 @@ if [ -f "$CONFIG_FILE" ]; then
   exec chpst -e /opt/csghub/etc/server/env -P \
     -U root:root \
     -u root:root \
-    /opt/csghub/embedded/bin/csghub-server --config=$CONFIG_FILE accounting launch
+    /opt/csghub/embedded/bin/csghub-server dataviewer launch --config=$CONFIG_FILE
 else
   echo "Config file not found, starting without config"
   exec chpst -e /opt/csghub/etc/server/env -P \
       -U root:root \
       -u root:root \
-      /opt/csghub/embedded/bin/csghub-server accounting launch
+      /opt/csghub/embedded/bin/csghub-server dataviewer launch
 fi

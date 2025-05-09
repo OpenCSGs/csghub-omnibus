@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# MinIO bucket creation script
+# Usage: ./create_bucket <bucket_name>
+
+{{- $minio := (datasource "config").minio }}
+{{- $user := $minio.auth.user }}
+{{- $password := $minio.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
+
+# Configuration
+MC_PATH="/opt/csghub/embedded/bin/mc"          # Path to mc client
+MINIO_ALIAS="myMinio"                          # MinIO alias name
+MINIO_ENDPOINT="http://127.0.0.1:9000"         # MinIO server endpoint
+MINIO_ACCESS_KEY={{ $user }}                   # Access key
+MINIO_SECRET_KEY={{ $password }}               # Secret key
+
+# Validate argument count
+if [ "$#" -ne 1 ]; then
+    echo "Error: Script requires exactly one argument - bucket name"
+    echo "Usage: $0 <bucket_name>"
+    exit 1
+fi
+
+BUCKET_NAME=$1
+
+# Validate bucket name format
+if [[ ! "$BUCKET_NAME" =~ ^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$ ]]; then
+    echo "Error: Invalid bucket name"
+    echo "Bucket names must:"
+    echo "1. Be 3-63 characters long"
+    echo "2. Contain only lowercase letters, numbers, and hyphens"
+    echo "3. Start and end with a letter or number"
+    exit 1
+fi
+
+# Check if mc client is installed
+if ! command -v "$MC_PATH" &> /dev/null; then
+    echo "Error: MinIO client (mc) not found or not in PATH"
+    echo "Please download and install mc from https://min.io/download"
+    exit 1
+fi
+
+# Configure MinIO alias if not already set
+if ! "$MC_PATH" alias list | grep -q "$MINIO_ALIAS"; then
+    "$MC_PATH" alias set "$MINIO_ALIAS" "$MINIO_ENDPOINT" "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY"
+fi
+
+# Check if bucket already exists
+if "$MC_PATH" ls "$MINIO_ALIAS/$BUCKET_NAME" &> /dev/null; then
+    echo "Error: Bucket '$BUCKET_NAME' already exists"
+    exit 0
+fi
+
+# Create the bucket
+echo "Creating bucket: $BUCKET_NAME"
+if "$MC_PATH" mb "$MINIO_ALIAS/$BUCKET_NAME"; then
+    echo "Successfully created bucket: $BUCKET_NAME"
+else
+    echo "Failed to create bucket"
+    exit 1
+fi

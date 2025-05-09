@@ -20,11 +20,11 @@ if [ -f "$CONFIG_FILE" ]; then
   exec chpst -e /opt/csghub/etc/server/env -P \
     -U root:root \
     -u root:root \
-    /opt/csghub/embedded/bin/csghub-server start rproxy --config=$CONFIG_FILE
+    /opt/csghub/embedded/bin/csghub-server --config=$CONFIG_FILE dataviewer launch
 else
   echo "Config file not found, starting without config"
   exec chpst -e /opt/csghub/etc/server/env -P \
       -U root:root \
       -u root:root \
-      /opt/csghub/embedded/bin/csghub-server start rproxy
+      /opt/csghub/embedded/bin/csghub-server dataviewer launch
 fi
