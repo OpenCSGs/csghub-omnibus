@@ -18,6 +18,9 @@ exec 2>&1
 # Create casdoor database
 /opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
 
+# Load local sql scripts
+/opt/csghub/service/postgresql/exec_pg_scripts {{ $dbname }} {{ $password }}
+
 {{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
 if [ -f {{ $dataDir }}/app.conf ]; then
   mkdir -p {{ $dataDir }}/conf 2>/dev/null

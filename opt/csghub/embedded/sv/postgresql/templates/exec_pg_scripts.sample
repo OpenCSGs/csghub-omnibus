@@ -1,0 +1,53 @@
+#!/bin/bash
+# Purpose: Automatically execute PostgreSQL SQL scripts on specified database
+# Usage: ./exec_pg_scripts.sh <database_name> <password>
+
+set -euo pipefail  # Strict error handling
+
+export PATH=/opt/csghub/embedded/bin/:$PATH
+
+# Validate input parameters
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo -e "\033[31mError: Database name and password required!\033[0m"
+  echo "Usage: $0 <database_name> <password> [directory_path]"
+  echo "Note: Default directory is ./scripts if not specified"
+  exit 1
+fi
+
+DB_NAME="$1"
+DB_PASSWORD="$2"
+SCRIPT_DIR=${3:-"./scripts"}
+
+# Check if directory exists
+if [ ! -d "$SCRIPT_DIR" ]; then
+  echo -e "\033[31mError: Directory '$SCRIPT_DIR' not found!\033[0m"
+  exit 0
+fi
+
+# Get list of SQL files
+SQL_FILES=$(find "$SCRIPT_DIR" -type f -name "*.sql" | sort)
+
+if [ -z "$SQL_FILES" ]; then
+  echo -e "\033[34mNotice: No SQL files found in '$SCRIPT_DIR'\033[0m"
+  exit 0
+fi
+
+export PGDATABASE="$DB_NAME"
+# Export password for psql
+export PGPASSWORD="$DB_PASSWORD"
+
+# Execute each SQL file
+for SQL_FILE in $SQL_FILES; do
+  echo -e "\033[32mExecuting $SQL_FILE on database $DB_NAME\033[0m"
+  if ! psql -U $DB_NAME -f "$SQL_FILE"; then
+    echo -e "\033[31mError: Failed to execute $SQL_FILE\033[0m"
+    exit 1
+  fi
+done
+
+echo -e "\n\033[32mSuccessfully executed all SQL files!\033[0m"
+echo "-------------------------------------"
+echo "Database: $DB_NAME"
+echo "Total files executed: $(echo "$SQL_FILES" | wc -l)"
+echo "Directory: $SCRIPT_DIR"
+echo "-------------------------------------"

@@ -35,6 +35,9 @@ echo {{ $dbname }} > {{ $envDir }}/POSTGRES_DB
 # Create server database
 /opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
 
+# Load local sql scripts
+/opt/csghub/service/postgresql/exec_pg_scripts {{ $dbname }} {{ $password }}
+
 # Create bucket
 if [ -f "/opt/csghub/service/minio/create_bucket" ]; then
     /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }}
