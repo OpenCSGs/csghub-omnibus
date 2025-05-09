@@ -127,7 +127,7 @@ COPY --from=nats /nats-server ${CSGHUB_SRV_HOME}/nats/bin/
 
 ## Install Casdoor
 COPY --from=casdoor /server ${CSGHUB_SRV_HOME}/casdoor/bin/casdoor
-COPY --from=casdoor /web ${CSGHUB_HOME}/etc/casdoor/
+COPY --from=casdoor /web ${CSGHUB_HOME}/etc/casdoor/web
 
 ## Install Nginx
 COPY --from=nginx /opt/csghub/. /opt/csghub/
@@ -159,4 +159,5 @@ RUN chmod +x -R /opt/csghub/bin && \
     ln -s /opt/csghub/bin/* /usr/bin/ && \
     find /opt/csghub/etc/ -type f -name "*.sh" -exec chmod +x {} \;
 
+EXPOSE 80 443 2222 5000 8000 9000 9001
 ENTRYPOINT ["/scripts/entrypoint.sh"]

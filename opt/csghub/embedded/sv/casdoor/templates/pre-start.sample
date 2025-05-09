@@ -22,6 +22,7 @@ exec 2>&1
 if [ -f {{ $dataDir }}/app.conf ]; then
   mkdir -p {{ $dataDir }}/conf 2>/dev/null
   mv {{ $dataDir }}/app.conf {{ $dataDir }}/conf
+  cp -a {{ $configDir }}/{web,files} {{ $dataDir }}/
 fi
 
 exit 0
