@@ -8,12 +8,18 @@ if [ ! -d {{ $dataDir }} ]; then
     mkdir -p {{ $dataDir }}
 fi
 
-{{- $auth := (datasource "config").registry.auth }}
+{{- $registry := (datasource "config").registry }}
+{{- $auth := $registry.auth }}
 {{- $user := $auth.username | default "registry" }}
 {{- $password := $auth.password | default (crypto.PBKDF2 "registry" "opencsg" 2048 8) }}
 {{- if and $auth.username $auth.password }}
 htpasswd -Bb -c {{ $dataDir }}/.htpasswd {{ $user }} {{ $password }}
 {{- end }}
+
+# Create bucket
+if [ -f "/opt/csghub/service/minio/create_bucket" ]; then
+    /opt/csghub/service/minio/create_bucket {{ $registry.s3.bucket }}
+fi
 
 chown -R registry:registry {{ $dataDir }}
 

@@ -77,4 +77,9 @@ echo {{ $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) }
 echo {{ $s3.bucket | default "csghub-portal" }} > {{ $envDir }}/CSGHUB_PORTAL_S3_BUCKET
 echo {{ $s3.endpoint | default "127.0.0.1:9000" }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ENDPOINT
 
+# Create bucket
+if [ -f "/opt/csghub/service/minio/create_bucket" ]; then
+    /opt/csghub/service/minio/create_bucket {{ $portal.s3.bucket }}
+fi
+
 exit 0

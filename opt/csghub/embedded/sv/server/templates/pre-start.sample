@@ -35,4 +35,9 @@ echo {{ $dbname }} > {{ $envDir }}/POSTGRES_DB
 # Create server database
 /opt/csghub/etc/postgresql/create_db.sh {{ $dbname }} {{ $password }}
 
+# Create bucket
+if [ -f "/opt/csghub/service/minio/create_bucket" ]; then
+    /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }}
+fi
+
 exit 0
