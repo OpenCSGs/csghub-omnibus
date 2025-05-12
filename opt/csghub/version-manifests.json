@@ -1,0 +1,109 @@
+{
+  "version_manifest": {
+    "metadata": {
+      "application_name": "CSGHub",
+      "description": "Version manifest for tracking components and dependencies.",
+      "generated_date": "2025-05-12",
+      "author": "OpenCSG Infra Team",
+      "version": "1.6.0"
+    },
+    "components": [
+      {
+        "name": "runit",
+        "description": "A UNIX init scheme with service supervision",
+        "version": "2.1.2",
+        "repository": "http://smarden.org/runit/"
+      },
+      {
+        "name": "toolbox",
+        "description": "Containerized tooling for system operations",
+        "version": "1.0.0",
+        "repository": ""
+      },
+      {
+        "name": "consul",
+        "description": "Consul offers a fully-featured service mesh solution that solves the networking and security challenges of operating microservices in multi-cloud and hybrid-cloud environment.",
+        "version": "1.20.5",
+        "repository": "https://github.com/hashicorp/consul"
+      },
+      {
+        "name": "minio",
+        "description": "High-performance object storage system compatible with S3",
+        "version": "RELEASE.2025-03-12T18-04-18Z",
+        "repository": "https://github.com/minio/minio"
+      },
+      {
+        "name": "postgresql",
+        "description": "PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance.",
+        "version": "16.8",
+        "repository": "https://www.postgresql.org/"
+      },
+      {
+        "name": "redis",
+        "description": "Redis is an open source, in-memory data structure store, used as a database, cache and message broker.",
+        "version": "6.2.14",
+        "repository": "https://github.com/redis/redis"
+      },
+      {
+        "name": "registry",
+        "description": "Docker Registry is a stateless, highly scalable server side application that stores and lets you distribute Docker images.",
+        "version": "2.8.3",
+        "repository": "https://github.com/distribution/distribution"
+      },
+      {
+        "name": "gitaly",
+        "description": "Service for dealing with Git repositories access and operations",
+        "version": "17.5.0",
+        "repository": "https://gitlab.com/gitlab-org/gitaly"
+      },
+      {
+        "name": "gitlab-shell",
+        "description": "GitLab Shell handles git commands for GitLab",
+        "version": "17.5.0",
+        "repository": "https://gitlab.com/gitlab-org/gitlab-shell"
+      },
+      {
+        "name": "temporal",
+        "description": "Temporal is a microservice orchestration platform which enables developers to build scalable applications without sacrificing productivity or reliability.",
+        "version": "1.25.1",
+        "repository": "https://github.com/temporalio/temporal"
+      },
+      {
+        "name": "nats",
+        "description": "NATS is a simple, secure and performant communications system for digital systems, services and devices.",
+        "version": "2.10.16",
+        "repository": "https://github.com/nats-io/nats-server"
+      },
+      {
+        "name": "casdoor",
+        "description": "An open-source Identity and Access Management (IAM) / Single-Sign-On (SSO) platform with web UI supporting OAuth 2.0, OIDC, SAML and CAS.",
+        "version": "1.733.0",
+        "repository": "https://github.com/casdoor/casdoor"
+      },
+      {
+        "name": "dnsmasq",
+        "description": "Lightweight DNS forwarder and DHCP server",
+        "version": "2.91",
+        "repository": "http://www.thekelleys.org.uk/dnsmasq/"
+      },
+      {
+        "name": "nginx",
+        "description": "HTTP and reverse proxy server, a mail proxy server, and a generic TCP/UDP proxy server",
+        "version": "1.22.1",
+        "repository": "https://hg.nginx.org/nginx"
+      },
+      {
+        "name": "csghub-server",
+        "description": "CSGHub backend service",
+        "version": "1.6.0",
+        "repository": ""
+      },
+      {
+        "name": "csghub-portal",
+        "description": "CSGHub frontend portal",
+        "version": "1.6.0",
+        "repository": ""
+      }
+    ]
+  }
+}
