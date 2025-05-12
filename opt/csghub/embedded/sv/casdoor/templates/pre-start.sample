@@ -15,6 +15,10 @@ exec 2>&1
 {{- $password = $casdoor.db.password }}
 {{- end }}
 {{- end }}
+
+# exit on error
+set -e
+
 # Create casdoor database
 /opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
 

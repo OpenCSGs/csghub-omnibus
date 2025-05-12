@@ -21,19 +21,6 @@ if [ -f "{{ $configFile }}" ]; then
   COMMAND="$COMMAND --config={{ $configFile }}"
 fi
 
-echo "Database setup..."
-echo "Migration init"
-chpst -e /opt/csghub/etc/server/env -P \
-    -U root:root \
-    -u root:root \
-    $COMMAND migration init
-
-echo "Migration migrate"
-chpst -e /opt/csghub/etc/server/env -P \
-    -U root:root \
-    -u root:root \
-    $COMMAND migration migrate
-
 echo "Start server..."
 exec chpst -e /opt/csghub/etc/server/env -P \
     -U root:root \

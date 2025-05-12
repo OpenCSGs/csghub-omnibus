@@ -31,19 +31,41 @@ SELECT pg_catalog.set_config('search_path', 'public', false);
 -- Connect to casdoor management database
 \connect {{ $casdoor.db.name }}
 
--- Update RedirectURLs
-UPDATE
-    application
-SET
-    redirect_uris = '["{{ $csghub.external_url }}/api/v1/callback/casdoor"]'
-WHERE
-    name = 'CSGHub';
+-- Dynamically update redirect_uris in application table (only if table exists)
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'application'
+    ) THEN
+        EXECUTE format('
+            UPDATE
+                application
+            SET
+                redirect_uris = ''["%s/api/v1/callback/casdoor"]''
+            WHERE
+                name = ''CSGHub''
+        ', current_setting('csghub.external_url', true));
+    END IF;
+END
+$$;
 
--- Reset admin user default password
-UPDATE
-    "user"
-SET
-    password = 'Root@1234'
-WHERE
-    name = 'admin'
-    AND password = '123';
+-- Dynamically update admin password in user table (only if table exists)
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'user'
+    ) THEN
+        EXECUTE '
+            UPDATE
+                "user"
+            SET
+                password = ''Root@1234''
+            WHERE
+                name = ''admin''
+                AND password = ''123''
+        ';
+    END IF;
+END
+$$;

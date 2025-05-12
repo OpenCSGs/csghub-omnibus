@@ -32,9 +32,36 @@ fi
 echo {{ $dbname }} > {{ $envDir }}/POSTGRES_USER
 echo {{ $password }} > {{ $envDir }}/POSTGRES_PASSWORD
 echo {{ $dbname }} > {{ $envDir }}/POSTGRES_DB
+
 # Create server database
 /opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
 
+# exit when error
+set -e
+
+{{- $configDir := "/opt/csghub/etc/server" }}
+{{- $configFile := printf "%s/config.toml" $dataDir }}
+
+cd {{ $configDir }}
+COMMAND="/opt/csghub/embedded/bin/csghub-server"
+if [ -f "{{ $configFile }}" ]; then
+  COMMAND="$COMMAND --config={{ $configFile }}"
+fi
+
+echo "Database setup..."
+echo "Migration init"
+chpst -e /opt/csghub/etc/server/env -P \
+    -U root:root \
+    -u root:root \
+    $COMMAND migration init
+
+echo "Migration migrate"
+chpst -e /opt/csghub/etc/server/env -P \
+    -U root:root \
+    -u root:root \
+    $COMMAND migration migrate
+
+cd -
 # Load local sql scripts
 /opt/csghub/service/postgresql/exec_pg_scripts {{ $dbname }} {{ $password }}
 
