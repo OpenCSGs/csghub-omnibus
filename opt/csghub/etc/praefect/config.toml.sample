@@ -26,7 +26,7 @@ key_path = {{ $praefect.tls.key_path | quote }}
 
 # Optional: grace period before a praefect process is forcibly terminated (duration)
 # Defaults to "1m"
-graceful_stop_timeout = {{ $praefect.graceful_stop_timeout | quote }
+graceful_stop_timeout = {{ $praefect.graceful_stop_timeout | quote }}
 
 # Optional: export metrics via Prometheus
 prometheus_listen_addr = {{ $praefect.prometheus_listen_addr | quote }}
@@ -40,7 +40,7 @@ format = {{ $praefect.logging.format | quote }}
 level = {{ $praefect.logging.level | quote }}
 
 [prometheus]
-grpc_latency_buckets = {{ $praefect.prometheus.grpc_latency_buckets }}
+grpc_latency_buckets = [{{- range $i, $v := $praefect.prometheus.grpc_latency_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
 
 [sentry]
 sentry_environment = {{ $praefect.sentry.sentry_environment | quote }}
@@ -71,7 +71,7 @@ batch_size = {{ $praefect.replication.batch_size }}
 # Automatic reconciliation is disabled if set to 0. Example: "1m" for reconciliation every minute.
 scheduling_interval = "{{ $praefect.reconciliation.scheduling_interval }}"
 # Scheduling duration histogram buckets.
-histogram_buckets = {{ $praefect.reconciliation.histogram_buckets }}
+histogram_buckets = [{{- range $i, $v := $praefect.reconciliation.histogram_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
 
 [failover]
 enabled = {{ $praefect.failover.enabled }}
@@ -80,25 +80,23 @@ enabled = {{ $praefect.failover.enabled }}
 delete_invalid_records = {{ $praefect.background_verification.delete_invalid_records }}
 verification_interval = "{{ $praefect.background_verification.verification_interval | quote }}"
 
-{{- if has $praefect "virtual_storage" }}
+{{ if has $praefect "virtual_storage" }}
 {{- range $vs := $praefect.virtual_storage }}
 [[virtual_storage]]
 name = "{{ $vs.name }}"
 {{- if $vs.default_replication_factor }}
 default_replication_factor = {{ $vs.default_replication_factor }}
 {{- end }}
-{{- if $vs.nodes }}
 {{- range $node := $vs.nodes }}
 [[virtual_storage.node]]
 storage = "{{ $node.storage }}"
 address = "{{ $node.address }}"
 token = "{{ $node.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) }}"
-{{ end }}
 {{- end }}
 {{- end }}
-{{ end }}
+{{- end }}
 
-{{- if has $praefect "yamux" }}
+{{ if has $praefect "yamux" }}
 [yamux]
 # MaximumStreamWindowSizeBytes sets the maximum window size in bytes used for yamux streams.
 # Higher value can increase throughput at the cost of more memory usage.
