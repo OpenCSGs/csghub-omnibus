@@ -1,0 +1,150 @@
+{{- $temporal := (datasource "config").temporal -}}
+log:
+  stdout: true
+  level: {{ $temporal.log.level }}
+
+persistence:
+  numHistoryShards: {{ $temporal.persistence.num_history_shards }}
+  defaultStore: {{ $temporal.persistence.default_store }}
+  visibilityStore: {{ $temporal.persistence.visibility_store }}
+  datastores:
+      {{- $sql := $temporal.persistence.datastores.default.sql }}
+      default:
+        {{- $db := $temporal.db }}
+        sql:
+          pluginName: "postgres12"
+          databaseName: {{ $db.name | quote }}
+          connectAddr: {{ printf "%s:%d" $db.host $db.port | quote }}
+          connectProtocol: "tcp"
+          user: {{ $db.user | quote }}
+          password: {{ $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) | quote }}
+          maxConns: {{ $sql.max_conns }}
+          maxIdleConns: {{ $sql.max_idle_conns }}
+          maxConnLifetime: {{ $sql.max_conn_lifetime }}
+          tls:
+            enabled: false
+      visibility:
+        sql:
+          pluginName: "postgres12"
+          databaseName: {{ printf "%s_visibility" $db.name | quote }}
+          connectAddr: {{ printf "%s:%d" $db.host $db.port | quote }}
+          connectProtocol: "tcp"
+          user: {{ $db.user | quote }}
+          password: {{ $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8)  | quote }}
+          maxConns: {{ $sql.max_conns }}
+          maxIdleConns: {{ $sql.max_idle_conns }}
+          maxConnLifetime: {{ $sql.max_conn_lifetime }}
+          tls:
+            enabled: false
+
+global:
+  membership:
+    maxJoinDuration: 30s
+    broadcastAddress: ""
+  pprof:
+    port: 0
+  tls:
+    refreshInterval: "0s"
+    expirationChecks:
+      warningWindow: "0s"
+      errorWindow: "0s"
+      checkInterval: "0s"
+    internode:
+      # This server section configures the TLS certificate that internal temporal
+      # cluster nodes (history, matching, and internal-frontend) present to other
+      # clients within the Temporal Cluster.
+      server:
+        requireClientAuth: false
+
+      # This client section is used to configure the TLS clients within
+      # the Temporal Cluster that connect to an Internode (history, matching, or
+      # internal-frontend)
+      client:
+        serverName:
+        disableHostVerification: false
+    frontend:
+      # This server section configures the TLS certificate that the Frontend
+      # server presents to external clients.
+      server:
+        requireClientAuth: false
+
+      # This client section is used to configure the TLS clients within
+      # the Temporal Cluster (specifically the Worker role) that connect to the Frontend service
+      client:
+        serverName:
+        disableHostVerification: false
+  authorization:
+    jwtKeyProvider:
+      keySourceURIs:
+      refreshInterval: 1m
+    permissionsClaimName: permissions
+    authorizer:
+    claimMapper:
+
+services:
+  frontend:
+    rpc:
+      {{- $rpc := $temporal.rpc }}
+      grpcPort: {{ $rpc.grpc_port }}
+      membershipPort: {{ $rpc.membership_port }}
+      bindOnIP: {{ $rpc.bind_on_ip | quote }}
+      httpPort: {{ $rpc.http_port }}
+
+  matching:
+    rpc:
+      grpcPort: 7235
+      membershipPort: 6935
+      bindOnIP: {{ $rpc.bind_on_ip | quote }}
+
+  history:
+    rpc:
+      grpcPort: 7234
+      membershipPort: 6934
+      bindOnIP: {{ $rpc.bind_on_ip | quote }}
+
+  worker:
+    rpc:
+      grpcPort: 7239
+      membershipPort: 6939
+      bindOnIP: {{ $rpc.bind_on_ip | quote }}
+
+clusterMetadata:
+  enableGlobalNamespace: false
+  failoverVersionIncrement: 10
+  masterClusterName: "active"
+  currentClusterName: "active"
+  clusterInformation:
+    active:
+      enabled: true
+      initialFailoverVersion: 1
+      rpcName: "frontend"
+      rpcAddress: {{ printf "%s:%d" $rpc.bind_on_ip $rpc.grpc_port | quote }}
+      httpAddress: {{ printf "%s:%d" $rpc.bind_on_ip $rpc.http_port | quote }}
+
+dcRedirectionPolicy:
+  policy: "noop"
+
+archival:
+  history:
+    state: "enabled"
+    enableRead: true
+    provider:
+      filestore:
+        fileMode: "0666"
+        dirMode: "0766"
+  visibility:
+    state: "enabled"
+    enableRead: true
+    provider:
+      filestore:
+        fileMode: "0666"
+        dirMode: "0766"
+
+namespaceDefaults:
+  archival:
+    history:
+      state: "disabled"
+      URI: "file:///tmp/temporal_archival/development"
+    visibility:
+      state: "disabled"
+      URI: "file:///tmp/temporal_vis_archival/development"

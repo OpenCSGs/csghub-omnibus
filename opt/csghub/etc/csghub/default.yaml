@@ -633,7 +633,7 @@ nats:
 # - Workflow orchestration engine
 ##########################################################################
 temporal:
-  enable: true
+  enable: true                  # Enable or disable Temporal server
   listen: "127.0.0.1:7233"      # Listen address
 
   ## Authentication configuration for Temporal (leave empty if not used)
@@ -652,13 +652,43 @@ temporal:
   # Retention period for workflow history (e.g., "7d" for 7 days)
   retention: "7d"               # Workflow history retention
 
+  # Log configuration
+  log:
+    # Valid values - debug, info, warn, error or fatal, default to info.
+    level: "info"
+
+  # Persistence configuration for workflow state storage
+  persistence:
+    num_history_shards: 4             # Number of history shards for partitioning data
+    default_store: "default"          # Default datastore name
+    visibility_store: "visibility"    # Visibility datastore name
+    datastores:
+      default:
+        sql:
+          max_conns: 20               # Maximum number of database connections
+          max_idle_conns: 20          # Maximum number of idle connections
+          max_conn_lifetime: "1h"     # Maximum connection lifetime
+
+  # RPC configuration for network communication
+  rpc:
+    grpc_port: 7233           # gRPC API port
+    http_port: 7243           # HTTP API port
+    membership_port: 6933     # Cluster membership port
+    bind_on_ip: "127.0.0.1"   # IP address to bind RPC services
+
 ## Web UI configuration
 temporal_ui:
   enable: false                 # Enable or disable Temporal UI
+  listen_port: 8182             # Port for Temporal UI web server
   public_path: "/temporal-ui"   # Public URL path for Temporal UI
   auth:
-    user: "temporal"
-    password: ""
+    user: "temporal"            # Username for UI authentication
+    password: ""                # Password for UI authentication
+  cors:
+    cookie_insecure: false      # Disable secure cookies for development
+    allow_origins:              # Allowed CORS origins
+      - http://localhost:8182
+  hideLogs: false               # Show or hide logs in the UI
 
 ##########################################################################
 # Casdoor Configuration

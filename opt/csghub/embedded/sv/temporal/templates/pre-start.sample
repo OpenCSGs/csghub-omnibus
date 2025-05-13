@@ -3,19 +3,16 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-{{- $envDir := "/opt/csghub/etc/temporal/env" }}
+{{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
+{{- $envDir := printf "%s/env" $dataDir }}
 
+if [ ! -d "{{ $envDir }}" ]; then
+    mkdir -p {{ $envDir }} &>/dev/null
+fi
 # Clear all environment variable files
 rm -rf {{ $envDir }}/* &>/dev/null
 
 {{- $temporal := (datasource "config").temporal }}
-echo {{ $temporal.listen | default "127.0.0.1:7233" }} > {{ $envDir }}/TEMPORAL_ADDRESS
-echo {{ $temporal.retention | default "7d" }} > {{ $envDir }}/DEFAULT_NAMESPACE_RETENTION
-echo "/opt/csghub/etc/temporal" > {{ $envDir }}/TEMPORAL_HOME
-echo "http://localhost:3000" > {{ $envDir }}/TEMPORAL_CORS_ORIGINS
-echo "true" > {{ $envDir }}/TEMPORAL_CSRF_COOKIE_INSECURE
-echo "127.0.0.1" > {{ $envDir }}/BIND_ON_IP
-
 {{- $dbname := "temporal" }}
 {{- $password := crypto.PBKDF2 $dbname "opencsg" 2048 8 }}
 {{- if has $temporal "db" }}
@@ -33,8 +30,10 @@ echo {{ $db.user | default "temporal" }} > {{ $envDir }}/POSTGRES_USER
 {{- end }}
 echo {{ $password }} > {{ $envDir }}/POSTGRES_PWD
 {{- end }}
+
+{{- $visibilityDB := printf "%s_%s" $dbname $temporal.persistence.visibility_store }}
 # Create temporal database
 /opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
-/opt/csghub/service/postgresql/create_database "temporal_visibility" {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $visibilityDB }} {{ $password }}
 
 exit 0

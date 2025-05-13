@@ -8,14 +8,27 @@ if [ -x ./pre-start ]; then
   ./pre-start
 fi
 
+: "${TEMPORAL_HOME:=/opt/csghub/etc/temporal}"
+export TEMPORAL_HOME
+
+{{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
+cd {{ $dataDir }}
+
+# Setup temporal database
+chpst -e /opt/csghub/etc/temporal/env -P \
+  -U temporal:temporal \
+  -u temporal:temporal \
+  "${TEMPORAL_HOME}"/auto-setup.sh
+
 # fail on errors
 set -e
-
-{{- $configDir := "/opt/csghub/etc/temporal" }}
-chown -R temporal:temporal {{ $configDir }}
-cd {{ $configDir }}
 
 exec chpst -e /opt/csghub/etc/temporal/env -P \
   -U temporal:temporal \
   -u temporal:temporal \
-  /opt/csghub/etc/temporal/entrypoint.sh autosetup
+  /opt/csghub/embedded/bin/temporal-server \
+    --allow-no-auth \
+    --env docker \
+    --root {{ $dataDir }}/env \
+    --config ../ \
+    start

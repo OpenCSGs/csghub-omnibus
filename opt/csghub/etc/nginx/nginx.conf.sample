@@ -160,7 +160,7 @@ http {
         {{- $temporalUI := (datasource "config").temporal_ui -}}
         {{ if $temporalUI.enable }}
         # Temporal UI route with basic auth
-        location /temporal-ui/ {
+        location {{ printf "%s/" $temporalUI.public_path }} {
             auth_basic "Please login with your account:";
             auth_basic_user_file /opt/csghub/etc/temporal_ui/.htpasswd;
 

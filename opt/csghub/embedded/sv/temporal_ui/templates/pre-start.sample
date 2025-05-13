@@ -3,15 +3,7 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-{{- $envDir := "/opt/csghub/etc/temporal_ui/env" }}
 {{- $configDir := "/opt/csghub/etc/temporal_ui" }}
-
-# Clear all environment variable files
-rm -rf {{ $envDir }}/* &>/dev/null
-
-{{- $temporal := (datasource "config").temporal }}
-echo {{ $temporal.public_path | default "/temporal-ui" }} > {{ $envDir }}/TEMPORAL_UI_PUBLIC_PATH
-
 {{ $temporalUI := (datasource "config").temporal_ui }}
 {{- $user := "temporal" }}
 {{- $password := crypto.PBKDF2 $user "opencsg" 2048 8 }}
@@ -23,6 +15,6 @@ echo {{ $temporal.public_path | default "/temporal-ui" }} > {{ $envDir }}/TEMPOR
 {{- $password := $temporalUI.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
 {{- end }}
 
-echo {{ printf "%s:%s" $user ($password | crypto.Bcrypt) }} > {{ $configDir }}/.htpasswd
+echo '{{ printf "%s:%s" $user ($password | crypto.Bcrypt) }}' > {{ $configDir }}/.htpasswd
 
 exit 0
