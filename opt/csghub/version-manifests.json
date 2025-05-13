@@ -89,7 +89,7 @@
       {
         "name": "nginx",
         "description": "HTTP and reverse proxy server, a mail proxy server, and a generic TCP/UDP proxy server",
-        "version": "1.22.1",
+        "version": "1.27.5",
         "repository": "https://hg.nginx.org/nginx"
       },
       {

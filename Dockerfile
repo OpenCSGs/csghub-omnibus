@@ -13,7 +13,7 @@ ARG TEMPORAL_VERSION=1.25.1
 ARG NATS_VERSION=2.10.16
 ARG CASDOOR_VERSION=v1.733.0
 ARG DNSMASQ_VERSION=2.91
-ARG NGINX_VERSION=1.22.1
+ARG NGINX_VERSION=1.27.5
 ARG CSGHUB_SERVER_VERSION=v1.6.0
 ARG CSGHUB_PORTAL_VERSION=v1.6.0
 
@@ -148,7 +148,16 @@ COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/server/bin/
 ENV PATH=$PATH:/opt/csghub/embedded/bin
 
 RUN apt update && \
-    apt install -y --no-install-recommends ca-certificates libicu70 libreadline8 netcat libaprutil1 && \
+    apt install -y --no-install-recommends \
+      ca-certificates \
+      libicu70 \
+      libreadline8  \
+      netcat \
+      libaprutil1 \
+      libgeoip1 \
+      libgd3 \
+      libxml2 \
+      libxslt1.1 && \
     apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
 RUN chmod +x -R /opt/csghub/bin && \
