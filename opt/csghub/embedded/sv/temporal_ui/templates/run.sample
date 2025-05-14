@@ -8,19 +8,20 @@ if [ -x ./pre-start ]; then
   ./pre-start
 fi
 
+{{- $configDir := "/opt/csghub/etc/temporal_ui" }}
+cd {{ $configDir }}
+{{ $temporalUI := (datasource "config").temporal_ui }}
+{{- $user := $temporalUI.auth.user }}
+{{- $password := $temporalUI.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
+{{- file.Write (printf "%s/.htpasswd" $configDir) (printf "%s:%s" $user ($password | crypto.Bcrypt)) }}
+
 # fail on errors
-set -eu -o pipefail
+set -e
 
 {{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal_ui" }}
 {{- $temporalDataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
 cd {{ $dataDir }}
-
 exec chpst -P \
   -e {{ $temporalDataDir }}/env \
-  -U temporal:temporal \
   -u temporal:temporal \
-  /opt/csghub/embedded/bin/ui-server \
-    --env docker \
-    --root {{ $dataDir }}/env \
-    --config .. \
-    start
+  /opt/csghub/embedded/bin/ui-server --env docker --root {{ $dataDir }}/env --config .. start

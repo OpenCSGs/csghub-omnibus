@@ -3,40 +3,31 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-{{- $envDir := "/opt/csghub/etc/gitaly/env" }}
-mkdir -p {{ $envDir }} &>/dev/null
-
-# Clear all environment variable files
-# rm -rf {{ $envDir }}/* &>/dev/null
-
 # Define the repository parent directory
-{{- $dataDir := (datasource "config").gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
-mkdir -p {{ $dataDir }}/run {{ $dataDir }}/repositories &>/dev/null
+{{- $gitaly := (datasource "config").gitaly }}
+{{- $dataDir := $gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
+mkdir -p {{ $dataDir }}/run {{ $dataDir }}/repositories || true
+chown -R git:git {{ $dataDir }}/run {{ $dataDir }}/repositories
 
 # Create pid file and variable file
-if [ ! -s {{ $dataDir }}/gitaly.pid ]; then
-  echo -n 0 > {{ $dataDir }}/gitaly.pid
+{{- $pidFile := printf "%s/gitaly.pid" $dataDir }}
+if [ ! -s {{ $pidFile }} ]; then
+  echo -n 0 > {{ $pidFile }}
 fi
-echo {{ $dataDir }}/gitaly.pid > {{ $envDir }}/GITALY_PID_FILE
+
+{{- $envDir := "/opt/csghub/etc/gitaly/env" }}
+cd {{ $envDir }}
+{{- $pidFileEnv := printf "%s/GITALY_PID_FILE" $envDir }}
+{{- file.Write $pidFileEnv $pidFile }}
 
 # Add secret key file
-{{- $secret := "signing-key" }}
-{{- if has (datasource "config").server "gitaly" }}
-{{- if has (datasource "config").server.gitaly "secret" }}
-{{- $secret = (datasource "config").server.gitaly.secret }}
-{{- end }}
-{{- end }}
-{{- $secretFile := printf "%s/.csghub_secret" $dataDir }}
-{{- if has (datasource "config").server "gitaly" }}
-{{- if has (datasource "config").server.gitaly "secret_file" }}
-{{- $secretFile = (datasource "config").server.gitaly.secret_file }}
-{{- end }}
-{{- end }}
-{{- if and $secret $secretFile }}
-mkdir -p {{ path.Dir $secretFile }} &>/dev/null
-echo {{ $secret }} > {{ $secretFile }}
-{{- end }}
+{{- $server := (datasource "config").server }}
+{{- $secret := $server.gitaly.secret | default "signing-key" }}
+{{- $secretFile := $server.gitaly.secret_file | default (printf "%s/.csghub_secret" $dataDir) }}
 
-chown -R git:git {{ $dataDir }}/run {{ $dataDir }}/repositories
+{{- if and $secret $secretFile }}
+mkdir -p {{ path.Dir $secretFile }} || true
+{{- file.Write $secretFile $secret }}
+{{- end }}
 
 exit 0

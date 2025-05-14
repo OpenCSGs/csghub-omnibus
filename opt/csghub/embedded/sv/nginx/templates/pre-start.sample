@@ -5,7 +5,6 @@ exec 2>&1
 
 {{- $configDir := "/opt/csghub/etc/nginx" }}
 {{- $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
-
 find {{ $configDir }} -type f ! -name '*.default' ! -name '*.sample' ! -name 'nginx.conf' ! -name 'env' ! -name '*.so' -exec cp -p {} {{ $dataDir }} \;
 
 exit 0

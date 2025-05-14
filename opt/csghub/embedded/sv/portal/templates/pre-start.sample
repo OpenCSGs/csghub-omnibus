@@ -4,20 +4,18 @@
 exec 2>&1
 
 {{- $envDir := "/opt/csghub/etc/portal/env" }}
-mkdir -p {{ $envDir }} &>/dev/null
+cd {{ $envDir }}
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* &>/dev/null
+rm -rf {{ $envDir }}/* || true
 
 # Define the repository parent directory
-{{- $dataDir := (datasource "config").portal.data | default "/var/opt/csghub/portal" }}
+{{- $portal := (datasource "config").portal }}
+{{- $dataDir := $portal.data | default "/var/opt/csghub/portal" }}
 
-echo "production" > {{ $envDir }}/CSGHUB_PORTAL_APP_ENV
-echo "true" > {{ $envDir }}/CSGHUB_PORTAL_ON_PREMISE
-echo "false" > {{ $envDir }}/CSGHUB_PORTAL_SENSITIVE_CHECK
-
-# Switch Workdir
-cd /
+{{- file.Write (printf "%s/CSGHUB_PORTAL_APP_ENV" $envDir) "production" }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_ON_PREMISE" $envDir) "true" }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_SENSITIVE_CHECK" $envDir) "false" }}
 
 {{- $seedFile := "/opt/csghub/etc/server/seed" -}}
 {{- $seed := "" -}}
@@ -28,62 +26,50 @@ cd /
   {{- $seed = random.Alpha 48 -}}
   {{- file.Write $seedFile $seed -}}
 {{- end -}}
-
 {{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 -}}
 
 {{- $csghub := (datasource "config").csghub }}
-{{- $portal := (datasource "config").portal }}
 {{- $url := conv.URL $csghub.external_url }}
-echo {{ $url }} > {{ $envDir }}/CSGHUB_PORTAL_STARHUB_BASE_URL
-echo {{ $apiToken }} > {{ $envDir }}/CSGHUB_PORTAL_STARHUB_API_KEY
+{{- file.Write (printf "%s/CSGHUB_PORTAL_STARHUB_BASE_URL" $envDir) $url }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_STARHUB_API_KEY" $envDir) $apiToken }}
 
 {{- if eq $url.Scheme "https" }}
-echo "true" > {{ $envDir }}/CSGHUB_PORTAL_ENABLE_HTTPS
+{{- file.Write (printf "%s/CSGHUB_PORTAL_ENABLE_HTTPS" $envDir) "true" }}
 {{- else }}
-echo "false" > {{ $envDir }}/CSGHUB_PORTAL_ENABLE_HTTPS
+{{- file.Write (printf "%s/CSGHUB_PORTAL_ENABLE_HTTPS" $envDir) "false" }}
 {{- end }}
 
-{{- $db := dict }}
-{{- if has $portal "db" }}
-{{- $db = $portal.db }}
-{{- end }}
-{{- $user := $db.user | default "csghub_portal" }}
+{{- $db := $portal.db }}
+{{- $user := $db.user }}
 {{- $password := $db.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
-{{- $name := $db.name | default "csghub_portal" }}
-{{- $host := $db.host | default "127.0.0.1" }}
-{{- $port := $db.port | default 5432 }}
-echo "postgresql://{{ $user }}:{{ $password }}@{{ $host }}:{{ $port }}/{{ $name }}?sslmode=disable" > {{ $envDir }}/CSGHUB_PORTAL_DATABASE_DSN
-/opt/csghub/service/postgresql/create_database {{ $name }} {{ $password }}
+{{- $dsn := printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" $user $password $db.host $db.port $db.name }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_DATABASE_DSN" $envDir) $dsn }}
+
+/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $password }}
 
 {{- $urlParts := $url.Host | strings.Split ":" }}
 {{- $host := index $urlParts 0 | default "csghub.example.com" }}
-{{- $casdoor := (datasource "config").casdoor -}}
-{{- $casdoorListen := "127.0.0.1:8000" -}}
-{{- if has $casdoor "listen" -}}
-{{- if $casdoor.listen -}}
-{{- $casdoorListen = $casdoor.listen -}}
-{{- end -}}
-{{- end -}}
+{{- $casdoor := (datasource "config").casdoor }}
+{{- $casdoorListen := $casdoor.listen }}
 {{- $casdoorParts := $casdoorListen | strings.Split ":" }}
 {{- $casdoorHost := index $casdoorParts 0 }}
 {{- $casdoorPort := index $casdoorParts 1 }}
 {{- $casdoorClientId := $casdoor.client_id | default "7a97bc5168cb75ffc514" }}
-echo "{{ $url.Scheme }}://{{ $host }}:{{ $casdoorPort }}/login/oauth/authorize?client_id={{ $casdoorClientId }}&response_type=code&redirect_uri={{ $csghub.external_url }}/api/v1/callback/casdoor&scope=read&state=casdoor" > {{ $envDir }}/CSGHUB_PORTAL_LOGIN_URL
+{{- $callback := printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/callback/casdoor&scope=read&state=casdoor" $url.Scheme $host $casdoorPort $casdoorClientId $csghub.external_url }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_LOGIN_URL" $envDir) $callback }}
 
-{{- $s3 := dict }}
-{{- if has $portal "s3" }}
-{{- $s3 = $portal.s3 }}
-{{- end }}
-{{- $accessKeyId := $s3.access_key | default "minio" }}
-echo {{ $s3.encrypt | default false }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ENABLE_SSL
-echo {{ $s3.region | default "cn-north-1" }} > {{ $envDir }}/CSGHUB_PORTAL_S3_REGION
-echo {{ $accessKeyId }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ACCESS_KEY_ID
-echo {{ $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ACCESS_KEY_SECRET
-echo {{ $s3.bucket | default "csghub-portal" }} > {{ $envDir }}/CSGHUB_PORTAL_S3_BUCKET
-echo {{ $s3.endpoint | default "127.0.0.1:9000" }} > {{ $envDir }}/CSGHUB_PORTAL_S3_ENDPOINT
+{{- $s3 := $portal.s3 }}
+{{- $accessKeyId := $s3.access_key }}
+{{- $accessSecretKey := $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ENABLE_SSL" $envDir) $s3.secure }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_REGION" $envDir) $s3.region }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ACCESS_KEY_ID" $envDir) $accessKeyId }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ACCESS_KEY_SECRET" $envDir) $accessSecretKey }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_BUCKET" $envDir) $s3.bucket }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ENDPOINT" $envDir) $s3.endpoint }}
 
 # Create bucket
-if [ -f "/opt/csghub/service/minio/create_bucket" ]; then
+if [ -x "/opt/csghub/service/minio/create_bucket" ]; then
     /opt/csghub/service/minio/create_bucket {{ $portal.s3.bucket }}
 fi
 

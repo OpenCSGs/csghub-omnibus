@@ -14,20 +14,20 @@ fi
 # Exit if execute with any errors
 set -e
 
+readonly PORTAL_BIN="/opt/csghub/embedded/bin/csghub-portal"
+readonly ENV_DIR="/opt/csghub/etc/portal/env"
+
 echo "Initializing database migrations..."
-chpst -e /opt/csghub/etc/portal/env -P \
-  -U root:root \
+chpst -e "$ENV_DIR" -P \
   -u root:root \
-  /opt/csghub/embedded/bin/csghub-portal migration init
+  "$PORTAL_BIN" migration init
 
 echo "Running database migrations..."
-chpst -e /opt/csghub/etc/portal/env -P \
-  -U root:root \
+chpst -e "$ENV_DIR" -P \
   -u root:root \
-  /opt/csghub/embedded/bin/csghub-portal migration migrate
+  "$PORTAL_BIN" migration migrate
 
 echo "Starting portal..."
-exec chpst -e /opt/csghub/etc/portal/env -P \
-  -U root:root \
+exec chpst -e "$ENV_DIR" -P \
   -u root:root \
-  /opt/csghub/embedded/bin/csghub-portal start server
+  "$PORTAL_BIN" start server

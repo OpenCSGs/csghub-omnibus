@@ -6,16 +6,12 @@ exec 2>&1
 # Exit if execute with any errors
 set -e
 
-{{- $dataDir := "/var/opt/csghub/consul" }}
-{{- if (datasource "config").consul.data }}
-{{- $dataDir = (datasource "config").consul.data }}
-{{- end }}
-
+{{- $dataDir := (datasource "config").consul.data | default "/var/opt/csghub/consul" }}
 if [ -e {{ $dataDir }}/server_metadata.json ]; then
   rm {{ $dataDir }}/server_metadata.json || true
 fi
 
+cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/consul/env -P \
-  -U consul:consul \
   -u consul:consul \
   /opt/csghub/embedded/bin/consul agent -config-dir={{ $dataDir }}

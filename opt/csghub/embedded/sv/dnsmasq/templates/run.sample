@@ -12,6 +12,5 @@ fi
 set -e
 
 exec chpst -e /opt/csghub/etc/dnsmasq/env -P \
-  -U dnsmasq:dnsmasq \
   -u dnsmasq:dnsmasq \
   /opt/csghub/embedded/bin/dnsmasq --conf-dir=/opt/csghub/etc/dnsmasq --no-daemon

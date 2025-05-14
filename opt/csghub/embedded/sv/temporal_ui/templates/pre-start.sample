@@ -4,17 +4,10 @@
 exec 2>&1
 
 {{- $configDir := "/opt/csghub/etc/temporal_ui" }}
+cd {{ $configDir }}
 {{ $temporalUI := (datasource "config").temporal_ui }}
-{{- $user := "temporal" }}
-{{- $password := crypto.PBKDF2 $user "opencsg" 2048 8 }}
-{{- $auth := dict }}
-{{- if has $temporalUI "auth" }}
-{{- if $temporalUI.auth.user }}
 {{- $user := $temporalUI.auth.user }}
-{{- end }}
 {{- $password := $temporalUI.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
-{{- end }}
-
-echo '{{ printf "%s:%s" $user ($password | crypto.Bcrypt) }}' > {{ $configDir }}/.htpasswd
+{{- file.Write (printf "%s/.htpasswd" $configDir) (printf "%s:%s" $user ($password | crypto.Bcrypt)) }}
 
 exit 0

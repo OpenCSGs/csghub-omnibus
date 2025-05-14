@@ -4,34 +4,21 @@
 exec 2>&1
 
 {{- $envDir := "/opt/csghub/etc/server/env" }}
-mkdir -p {{ $envDir }} &>/dev/null
+cd {{ $envDir }}
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* &>/dev/null
+rm -rf {{ $envDir }}/* || true
 
-echo "release" > {{ $envDir }}/GIN_MODE
+{{- file.Write (printf "%s/GIN_MODE" $envDir) "release" }}
 
 {{- $server := (datasource "config").server }}
-{{- $envDir := "/opt/csghub/etc/server/env" }}
 {{- $dataDir := $server.data | default "/var/opt/csghub/server" }}
-if [ ! -d {{ $dataDir }} ]; then
-    mkdir -p {{ $dataDir }}
-fi
-
-{{- $dbname := "csghub_server" }}
-{{- $password := crypto.PBKDF2 $dbname "opencsg" 2048 8 }}
-{{- if has $server "db" }}
-{{- $db := $server.db }}
-{{- if $db.name }}
-{{- $dbname = $db.name }}
-{{- end }}
-{{- if $db.password }}
-{{- $password = $db.password }}
-{{- end }}
-{{- end }}
-echo {{ $dbname }} > {{ $envDir }}/POSTGRES_USER
-echo {{ $password }} > {{ $envDir }}/POSTGRES_PASSWORD
-echo {{ $dbname }} > {{ $envDir }}/POSTGRES_DB
+{{- $db := $server.postgresql }}
+{{- $dbname := $db.name }}
+{{- $password := $db.password | default (crypto.PBKDF2 $dbname "opencsg" 2048 8) }}
+{{- file.Write (printf "%s/POSTGRES_USER" $envDir) $dbname }}
+{{- file.Write (printf "%s/POSTGRES_PASSWORD" $envDir) $password }}
+{{- file.Write (printf "%s/POSTGRES_DB" $envDir) $dbname }}
 
 # Create server database
 /opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
@@ -42,31 +29,27 @@ set -e
 {{- $configDir := "/opt/csghub/etc/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}
 
-cd {{ $configDir }}
-COMMAND="/opt/csghub/embedded/bin/csghub-server"
-if [ -f "{{ $configFile }}" ]; then
-  COMMAND="$COMMAND --config={{ $configFile }}"
-fi
+# Define constants
+readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
+readonly ENV_DIR="/opt/csghub/etc/server/env"
+
+# Build command arguments
+args=("start" "server")
+[[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 echo "Database setup..."
 echo "Migration init"
-chpst -e /opt/csghub/etc/server/env -P \
-    -U root:root \
-    -u root:root \
-    $COMMAND migration init
+chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration init "${args[@]}"
 
 echo "Migration migrate"
-chpst -e /opt/csghub/etc/server/env -P \
-    -U root:root \
-    -u root:root \
-    $COMMAND migration migrate
+chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration migrate "${args[@]}"
 
 cd -
 # Load local sql scripts
 /opt/csghub/service/postgresql/exec_pg_scripts {{ $dbname }} {{ $password }}
 
 # Create bucket
-if [ -f "/opt/csghub/service/minio/create_bucket" ]; then
+if [ -x "/opt/csghub/service/minio/create_bucket" ]; then
     /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }}
 fi
 

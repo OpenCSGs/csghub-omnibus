@@ -7,9 +7,10 @@ exec 2>&1
 ulimit -n 15000
 
 # Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
+cd /opt/csghub
+{{- $gitaly := (datasource "config").gitaly }}
+{{- $token := $gitaly.auth.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) }}
+{{- file.Write "/opt/csghub/etc/gitlab_shell/.gitlab_shell_secret" $token }}
 
 # Exit if execute with any errors
 set -e
@@ -35,7 +36,6 @@ chmod 0664 /etc/ssh/ssh_host_*
 {{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
 if [ "${SSH_DAEMON}" == "gitlab-sshd" ]; then
   exec chpst -e /opt/csghub/etc/gitlab_shell/env -P \
-    -U git:git \
     -u git:git \
     /opt/csghub/embedded/bin/gitlab-sshd -config-dir {{ $dataDir }}
 else

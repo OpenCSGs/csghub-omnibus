@@ -3,32 +3,18 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-
 {{- $configDir := "/opt/csghub/etc/dnsmasq" }}
-if [ ! -d {{ $configDir }} ]; then
-    mkdir -p {{ $configDir }}
-fi
-
-rm -f {{ $configDir }}/internal-domain.conf 2>/dev/null
-
+cd {{ $configDir }}
 {{- $runner := (datasource "config").runner }}
-{{- $services := dict }}
-{{- $ns := "spaces" }}
-{{- if has $runner "deploy" }}
-{{- if has $runner.deploy "namespace" }}
-{{- $ns = $runner.deploy.namespace }}
-{{- end }}
-{{- if has $runner.deploy "knative" }}
-{{- if has $runner.deploy.knative "services" }}
-{{- $services = $runner.deploy.knative.services }}
-{{- end }}
-{{- end }}
-{{- end }}
-
+{{- $configFile := printf "%s/internal-domain.conf" $configDir }}
+{{- $ns := $runner.deploy.namespace }}
+{{- $services := $runner.deploy.knative.services }}
 {{- range $services }}
-echo "address=/{{ $ns }}.{{ .domain }}/127.0.0.1" >> {{ $configDir }}/internal-domain.conf
+{{- $entry := printf "address=/%s.%s/127.0.0.1" $ns .domain }}
+{{- file.Write $configFile $entry }}
 {{- end }}
 
+# Enable local resolution
 sed -i '0,/nameserver/s//nameserver 127.0.0.1\n&/' /etc/resolv.conf
 
 exit 0

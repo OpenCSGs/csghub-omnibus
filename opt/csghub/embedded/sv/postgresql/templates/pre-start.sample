@@ -4,24 +4,20 @@
 exec 2>&1
 
 {{- $envDir := "/opt/csghub/etc/postgresql/env" }}
+cd {{ $envDir }}
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* &>/dev/null
+rm -rf {{ $envDir }}/* || true
 
-{{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
+{{- $postgresql := (datasource "config").postgresql }}
+{{- $dataDir := $postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
+chown -R postgres:postgres {{ $dataDir }} || true
 
-export PGHOME=/opt/csghub/embedded/sv/postgresql
-export PGDATA={{ $dataDir }}
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PGHOME/lib
-export PATH=$PGHOME/bin:$PATH
-export MANPATH=$MANPATH:$PGHOME/share/man
-
-echo $PGHOME > {{ $envDir }}/PGHOME
-echo $PGDATA > {{ $envDir }}/PGDATA
-echo $LD_LIBRARY_PATH > {{ $envDir }}/LD_LIBRARY_PATH
-echo $PATH > {{ $envDir }}/PATH
-
-chown -R postgres:postgres {{ $dataDir }}
+{{- file.Write (printf "%s/PGHOME" $envDir) "/opt/csghub/embedded/sv/postgresql" }}
+{{- file.Write (printf "%s/PGDATA" $envDir) $dataDir }}
+{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "$LD_LIBRARY_PATH:$PGHOME/lib" }}
+{{- file.Write (printf "%s/MANPATH" $envDir) "$MANPATH:$PGHOME/share/man" }}
+{{- file.Write (printf "%s/PATH" $envDir) "$PGHOME/bin:$PATH" }}
 
 if [ ! -f "$PGDATA/PG_VERSION" ]; then
     if [ -f {{ $dataDir }}/postgresql.conf ]; then
@@ -29,18 +25,13 @@ if [ ! -f "$PGDATA/PG_VERSION" ]; then
     fi
 
     echo "Initializing database cluster..."
-    chpst -e /opt/csghub/etc/postgresql/env -P \
-      -U postgres:postgres \
+    chpst -e {{ $envDir }} -P \
       -u postgres:postgres \
       /opt/csghub/embedded/bin/initdb --encoding=UTF8 -D {{ $dataDir }}
 
     if [ -f {{ $dataDir }}/../postgresql.conf ]; then
         mv {{ $dataDir }}/../*.conf {{ $dataDir }}/
     fi
-fi
-
-if [ -f "{{ $dataDir }}/postmaster.pid" ]; then
-    rm -f {{ $dataDir }}/postmaster.pid
 fi
 
 exit 0

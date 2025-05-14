@@ -9,7 +9,5 @@ set -e
 {{- $dataDir := (datasource "config").nats.data | default "/var/opt/csghub/nats" }}
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/nats/env -P \
-  -U nats:nats \
   -u nats:nats \
   /opt/csghub/embedded/bin/nats-server -c {{ $dataDir }}/nats.conf
-

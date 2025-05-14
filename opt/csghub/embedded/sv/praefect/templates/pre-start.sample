@@ -3,13 +3,15 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+{{- $envDir := "/opt/csghub/etc/praefect/env" }}
+cd {{ $envDir }}
 {{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
-if [ ! -s {{ $dataDir }}/praefect.pid ]; then
-  echo 0 > {{ $dataDir }}/praefect.pid
+chown -R git:git {{ $dataDir }} || true
+
+{{- $pidFile := printf "%s/praefect.pid" $dataDir }}
+if [ ! -s {{ $pidFile }} ]; then
+  echo 0 > {{ $pidFile }}
 fi
-
-echo {{ $dataDir }}/praefect.pid > /opt/csghub/etc/praefect/env/GITALY_PID_FILE
-
-chown -R gitaly:gitaly {{ $dataDir }}
+{{- file.Write (printf "%s/GITALY_PID_FILE" $envDir) $pidFile }}
 
 exit 0

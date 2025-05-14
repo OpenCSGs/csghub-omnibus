@@ -4,32 +4,28 @@
 exec 2>&1
 
 {{- $envDir := "/opt/csghub/etc/minio/env" }}
+cd {{ $envDir }}
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* &>/dev/null
+rm -rf {{ $envDir }}/* || true
 
 # Render environments
-{{- with (datasource "config").minio.auth }}
-{{- if .user }}
-echo {{ .user }} > {{ $envDir }}/MINIO_ROOT_USER
-{{- end }}
-echo {{ .password | default (crypto.PBKDF2 .user "opencsg" 2048 8) }} > {{ $envDir }}/MINIO_ROOT_PASSWORD
-{{- end }}
-
-{{- if has (datasource "config") "logger" }}
-{{- if has (datasource "config").logger "enable" }}
-{{- if (datasource "config").logger.enable }}
-{{- $webhook_endpoint := "http://localhost:9002/minio-logger" }}
-{{- $auth_token := "Bearer MTIzYWJj" }}
-echo "on" > {{ $envDir }}/MINIO_AUDIT_WEBHOOK_ENABLE_PRIMARY
-echo {{ $webhook_endpoint }} > {{ $envDir }}/MINIO_AUDIT_WEBHOOK_ENDPOINT_PRIMARY
-echo {{ $auth_token }} > {{ $envDir }}/MINIO_AUDIT_WEBHOOK_AUTH_TOKEN_PRIMARY
-{{- end }}
-{{- end }}
+{{- $minio := (datasource "config").minio }}
+{{- with $minio.auth }}
+{{- file.Write (printf "%s/MINIO_ROOT_USER" $envDir) .user }}
+{{- file.Write (printf "%s/MINIO_ROOT_PASSWORD" $envDir) (.password | default (crypto.PBKDF2 .user "opencsg" 2048 8)) }}
 {{- end }}
 
-{{- range $env, $value := (datasource "config").minio.environments }}
-echo {{ $value | quote }} > {{ $envDir }}/{{ $env }}
+{{- $logger := (datasource "config").logger }}
+{{- if $logger.enable }}
+{{- file.Write (printf "%s/MINIO_AUDIT_WEBHOOK_ENABLE_PRIMARY" $envDir) "on" }}
+{{- file.Write (printf "%s/MINIO_AUDIT_WEBHOOK_ENDPOINT_PRIMARY" $envDir) "http://localhost:9002/minio-logger" }}
+{{- file.Write (printf "%s/MINIO_AUDIT_WEBHOOK_AUTH_TOKEN_PRIMARY" $envDir) (printf "Bearer %s" $logger.auth_token) }}
+{{- end }}
+
+{{- range $env, $value := $minio.environments }}
+{{- $envFile := printf "%s/%s" $envDir $env }}
+{{- file.Write $envFile $value }}
 {{- end }}
 
 exit 0

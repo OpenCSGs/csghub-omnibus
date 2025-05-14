@@ -5,33 +5,23 @@ exec 2>&1
 
 {{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
 {{- $envDir := printf "%s/env" $dataDir }}
+cd {{ $envDir }}
 
-if [ ! -d "{{ $envDir }}" ]; then
-    mkdir -p {{ $envDir }} &>/dev/null
-fi
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* &>/dev/null
+rm -rf {{ $envDir }}/* || true
 
 {{- $temporal := (datasource "config").temporal }}
-{{- $dbname := "temporal" }}
-{{- $password := crypto.PBKDF2 $dbname "opencsg" 2048 8 }}
-{{- if has $temporal "db" }}
 {{- $db := $temporal.db }}
-echo "postgres12" > {{ $envDir }}/DB
-{{- if $db.name }}
-{{- $dbname = $db.name }}
-{{- end }}
-echo {{ $dbname }} > {{ $envDir }}/DBNAME
-echo {{ $db.host | default "127.0.0.1" }} > {{ $envDir }}/POSTGRES_SEEDS
-echo {{ $db.port | default 5432 }} > {{ $envDir }}/DB_PORT
-echo {{ $db.user | default "temporal" }} > {{ $envDir }}/POSTGRES_USER
-{{- if $db.password }}
-{{- $password = $db.password }}
-{{- end }}
-echo {{ $password }} > {{ $envDir }}/POSTGRES_PWD
-{{- end }}
-
+{{- $dbname := $db.name }}
+{{- $password := $db.password | default (crypto.PBKDF2 $dbname "opencsg" 2048 8) }}
+{{- file.Write (printf "%s/DB" $envDir) "postgres12" }}
+{{- file.Write (printf "%s/DBNAME" $envDir) $dbname }}
+{{- file.Write (printf "%s/POSTGRES_SEEDS" $envDir) $db.host }}
+{{- file.Write (printf "%s/DB_PORT" $envDir) $db.port }}
+{{- file.Write (printf "%s/POSTGRES_USER" $envDir) $db.user }}
+{{- file.Write (printf "%s/POSTGRES_PWD" $envDir) $password }}
 {{- $visibilityDB := printf "%s_%s" $dbname $temporal.persistence.visibility_store }}
+
 # Create temporal database
 /opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
 /opt/csghub/service/postgresql/create_database {{ $visibilityDB }} {{ $password }}

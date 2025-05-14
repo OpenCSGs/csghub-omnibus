@@ -7,10 +7,10 @@ exec 2>&1
 if [ -x ./pre-start ]; then
   ./pre-start
 fi
-# Redirect stderr -> stdout
-exec 2>&1
+
+# Exit if execute with any errors
+set -e
 
 exec chpst -e /opt/csghub/etc/minio/env -P \
-  -U root:root \
   -u root:root \
   /opt/csghub/embedded/bin/logger

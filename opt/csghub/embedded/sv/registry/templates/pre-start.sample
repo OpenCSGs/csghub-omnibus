@@ -4,23 +4,22 @@
 exec 2>&1
 
 {{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
-if [ ! -d {{ $dataDir }} ]; then
-    mkdir -p {{ $dataDir }}
-fi
+chown -R registry:registry {{ $dataDir }}
 
+cd {{ $dataDir }}
 {{- $registry := (datasource "config").registry }}
 {{- $auth := $registry.auth }}
 {{- $user := $auth.username | default "registry" }}
 {{- $password := $auth.password | default (crypto.PBKDF2 "registry" "opencsg" 2048 8) }}
-{{- if and $auth.username $auth.password }}
-htpasswd -Bb -c {{ $dataDir }}/.htpasswd {{ $user }} {{ $password }}
+{{- if and $user $password}}
+{{- $htpasswdFile := printf "%s/.htpasswd" $dataDir }}
+{{- $encrypt := printf "%s:%s" $user (crypto.Bcrypt $password) }}
+{{- file.Write $htpasswdFile $encrypt }}
 {{- end }}
 
 # Create bucket
-if [ -f "/opt/csghub/service/minio/create_bucket" ]; then
+if [ -x "/opt/csghub/service/minio/create_bucket" ]; then
     /opt/csghub/service/minio/create_bucket {{ $registry.storage.s3.bucket }}
 fi
-
-chown -R registry:registry {{ $dataDir }}
 
 exit 0

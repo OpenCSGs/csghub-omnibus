@@ -16,15 +16,10 @@ cd {{ $dataDir }}
 
 # Setup temporal database
 chpst -e {{ $dataDir }}/env -P \
-  -U temporal:temporal \
   -u temporal:temporal \
   "${TEMPORAL_HOME}"/auto-setup.sh
 
-# fail on errors
-set -e
-
 exec chpst -e {{ $dataDir }}/env -P \
-  -U temporal:temporal \
   -u temporal:temporal \
   /opt/csghub/embedded/bin/temporal-server \
     --allow-no-auth \

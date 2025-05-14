@@ -13,10 +13,11 @@ set -e
 
 {{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
 cd {{ $dataDir }}
-/opt/csghub/embedded/bin/praefect --config {{ $dataDir }}/config.toml sql-migrate
+chpst -e /opt/csghub/etc/praefect/env -P \
+  -u git:git \
+    /opt/csghub/embedded/bin/praefect --config {{ $dataDir }}/config.toml sql-migrate
 
 exec chpst -e /opt/csghub/etc/praefect/env -P \
-  -U gitaly:gitaly \
-  -u gitaly:gitaly \
+  -u git:git \
   /opt/csghub/embedded/bin/gitaly-wrapper /opt/csghub/embedded/bin/praefect -config {{ $dataDir }}/config.toml
 

@@ -14,7 +14,5 @@ set -e
 {{- $dataDir := (datasource "config").redis.data | default "/var/opt/csghub/redis" }}
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/redis/env -P \
-  -U redis:redis \
   -u redis:redis \
   /opt/csghub/embedded/bin/redis-server {{ $dataDir }}/redis.conf
-

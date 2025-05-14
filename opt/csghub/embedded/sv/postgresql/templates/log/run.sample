@@ -8,6 +8,5 @@
 {{- end }}
 
 exec chpst -P \
-  -U root:root \
   -u root:root \
   svlogd -tt {{ $logDir }}

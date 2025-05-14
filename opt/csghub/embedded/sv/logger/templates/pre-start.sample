@@ -4,13 +4,13 @@
 exec 2>&1
 
 {{- $envDir := "/opt/csghub/etc/minio/env" }}
-{{- $webhook_listen_port := "9002" }}
-{{- $webhook_auth_token := "MTIzYWJj" }}
-
-echo {{ $webhook_listen_port }} > {{ $envDir }}/WEBHOOK_LISTEN_PORT
-echo {{ $webhook_auth_token }} > {{ $envDir }}/WEBHOOK_AUTH_TOKEN
+cd {{ $envDir }}
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* &>/dev/null
+rm -rf {{ $envDir }}/* || true
+
+{{- $logger := (datasource "config").logger }}
+{{- file.Write (printf "%s/WEBHOOK_LISTEN_PORT" $envDir) $logger.listen_port }}
+{{- file.Write (printf "%s/WEBHOOK_AUTH_TOKEN" $envDir) $logger.auth_token }}
 
 exit 0

@@ -14,7 +14,6 @@ set -e
 {{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/registry/env -P \
-  -U registry:registry \
   -u registry:registry \
   /opt/csghub/embedded/bin/registry serve {{ $dataDir }}/config.yml
 

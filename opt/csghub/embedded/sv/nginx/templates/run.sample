@@ -12,7 +12,7 @@ fi
 set -e
 
 {{- $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
+cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/nginx/env -P \
-    -U root:root \
     -u root:root \
     /opt/csghub/embedded/bin/nginx -c {{ $dataDir }}/nginx.conf -g "daemon off;"

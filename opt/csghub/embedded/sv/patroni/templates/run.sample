@@ -8,10 +8,11 @@ if [ -x ./pre-start ]; then
   ./pre-start
 fi
 
-{{- $configDir := (datasource "config").patroni.config_dir | default "/var/opt/csghub/patroni" }}
-{{- $embedded := "/opt/csghub/embedded" }}
+# fail on errors
+set -e
 
+{{- $configDir := (datasource "config").patroni.config_dir | default "/var/opt/csghub/patroni" }}
+cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/patroni/env -P \
-  -U postgres:postgres \
   -u postgres:postgres \
-  {{ $embedded }}/bin/python3.13 {{ $embedded }}/bin/patroni {{ $configDir }}/patroni.yaml
+  /opt/csghub/embedded/bin/python3.13 /opt/csghub/embedded/bin/patroni {{ $configDir }}/patroni.yaml

@@ -12,17 +12,16 @@ fi
 set -e
 
 {{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
-{{- $configDir := "/opt/csghub/etc/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}
 
-cd {{ $configDir }}
-COMMAND="/opt/csghub/embedded/bin/csghub-server"
-if [ -f "{{ $configFile }}" ]; then
-  COMMAND="$COMMAND --config={{ $configFile }}"
-fi
+# Define constants
+readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
+readonly ENV_DIR="/opt/csghub/etc/server/env"
 
-echo "Start server..."
-exec chpst -e /opt/csghub/etc/server/env -P \
-    -U root:root \
-    -u root:root \
-    $COMMAND start server
+# Build command arguments
+args=("start" "server")
+[[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
+
+echo "Starting server..."
+cd {{ $dataDir }}
+exec chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}"
