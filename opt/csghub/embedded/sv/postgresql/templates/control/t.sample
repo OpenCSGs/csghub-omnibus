@@ -1,0 +1,38 @@
+#!/bin/sh
+exec 1>&2
+
+{{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
+if [ -f "{{ $dataDir }}/postmaster.pid" ]; then
+    chpst -e /opt/csghub/etc/postgresql/env -P \
+      -U postgres:postgres \
+      -u postgres:postgres \
+        /opt/csghub/embedded/bin/pg_ctl stop -D "{{ $dataDir }}" -m fast
+fi
+
+if pgrep postgres >/dev/null; then
+    echo "Stopping PostgreSQL processes..."
+
+    # First try graceful termination
+    pkill -TERM postgres
+
+    # Wait for processes to exit
+    sleep 2
+
+    # Check if any processes remain
+    if pgrep postgres >/dev/null; then
+        echo "Force killing remaining PostgreSQL processes..."
+        pkill -KILL postgres 2>/dev/null
+    fi
+
+    # Final verification
+    if pgrep postgres >/dev/null; then
+        echo "Warning: Some PostgreSQL processes still running!"
+        exit 1
+    else
+        echo "PostgreSQL stopped successfully"
+    fi
+else
+    echo "No PostgreSQL processes running"
+fi
+
+exit 0

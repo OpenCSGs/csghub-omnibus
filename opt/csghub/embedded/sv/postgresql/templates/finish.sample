@@ -1,0 +1,7 @@
+#!/bin/sh
+exec 1>&2
+
+{{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
+rm -rf {{ $dataDir }}/postmaster.pid
+
+exit 0
