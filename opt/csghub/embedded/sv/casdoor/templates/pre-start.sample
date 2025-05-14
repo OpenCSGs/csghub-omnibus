@@ -9,13 +9,17 @@ set -e
 {{- $configDir := "/opt/csghub/etc/casdoor" }}
 {{- $casdoor := (datasource "config").casdoor }}
 {{- $db := $casdoor.db }}
-{{- $dbname := $db.name }}
-{{- $password := $db.password | default (crypto.PBKDF2 $dbname "opencsg" 2048 8) }}
+{{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
+
+{{- $postgresql := (datasource "config").postgresql }}
+{{- $patroni := (datasource "config").patroni }}
+{{- if or $postgresql.enable $patroni.enable }}
 # Create casdoor database
-/opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
+{{- end }}
 
 # Load local sql scripts
-/opt/csghub/service/postgresql/exec_pg_scripts {{ $dbname }} {{ $password }}
+/opt/csghub/service/postgresql/exec_pg_scripts {{ $db.name }} {{ $db.user }} {{ $password }}
 
 {{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
 if [ -f {{ $dataDir }}/app.conf ]; then

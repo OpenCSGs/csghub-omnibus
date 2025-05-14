@@ -40,12 +40,16 @@ rm -rf {{ $envDir }}/* || true
 {{- end }}
 
 {{- $db := $portal.db }}
-{{- $user := $db.user }}
-{{- $password := $db.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
-{{- $dsn := printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" $user $password $db.host $db.port $db.name }}
+{{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
+{{- $dsn := printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" $db.user $password $db.host $db.port $db.name }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_DATABASE_DSN" $envDir) $dsn }}
 
-/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $password }}
+{{- $postgresql := (datasource "config").postgresql }}
+{{- $patroni := (datasource "config").patroni }}
+{{- if or $postgresql.enable $patroni.enable }}
+# Create database and user
+/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
+{{- end }}
 
 {{- $urlParts := $url.Host | strings.Split ":" }}
 {{- $host := index $urlParts 0 | default "csghub.example.com" }}
@@ -68,9 +72,12 @@ rm -rf {{ $envDir }}/* || true
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_BUCKET" $envDir) $s3.bucket }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ENDPOINT" $envDir) $s3.endpoint }}
 
+{{- $minio := (datasource "config").minio }}
+{{- if $minio.enable }}
 # Create bucket
 if [ -x "/opt/csghub/service/minio/create_bucket" ]; then
     /opt/csghub/service/minio/create_bucket {{ $portal.s3.bucket }}
 fi
+{{- end }}
 
 exit 0

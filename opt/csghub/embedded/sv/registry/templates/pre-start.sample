@@ -17,9 +17,12 @@ cd {{ $dataDir }}
 {{- file.Write $htpasswdFile $encrypt }}
 {{- end }}
 
+{{- $minio := (datasource "config").minio }}
+{{- if $minio.enable }}
 # Create bucket
 if [ -x "/opt/csghub/service/minio/create_bucket" ]; then
     /opt/csghub/service/minio/create_bucket {{ $registry.storage.s3.bucket }}
 fi
+{{- end }}
 
 exit 0

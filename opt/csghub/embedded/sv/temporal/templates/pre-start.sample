@@ -12,18 +12,21 @@ rm -rf {{ $envDir }}/* || true
 
 {{- $temporal := (datasource "config").temporal }}
 {{- $db := $temporal.db }}
-{{- $dbname := $db.name }}
-{{- $password := $db.password | default (crypto.PBKDF2 $dbname "opencsg" 2048 8) }}
+{{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
 {{- file.Write (printf "%s/DB" $envDir) "postgres12" }}
-{{- file.Write (printf "%s/DBNAME" $envDir) $dbname }}
+{{- file.Write (printf "%s/DBNAME" $envDir) $db.name }}
 {{- file.Write (printf "%s/POSTGRES_SEEDS" $envDir) $db.host }}
 {{- file.Write (printf "%s/DB_PORT" $envDir) $db.port }}
 {{- file.Write (printf "%s/POSTGRES_USER" $envDir) $db.user }}
 {{- file.Write (printf "%s/POSTGRES_PWD" $envDir) $password }}
-{{- $visibilityDB := printf "%s_%s" $dbname $temporal.persistence.visibility_store }}
+{{- $visibilityDB := printf "%s_%s" $db.name $temporal.persistence.visibility_store }}
 
+{{- $postgresql := (datasource "config").postgresql }}
+{{- $patroni := (datasource "config").patroni }}
+{{- if or $postgresql.enable $patroni.enable }}
 # Create temporal database
-/opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
-/opt/csghub/service/postgresql/create_database {{ $visibilityDB }} {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $visibilityDB }} {{ $db.user }} {{ $password }}
+{{- end }}
 
 exit 0

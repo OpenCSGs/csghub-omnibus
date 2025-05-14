@@ -7,26 +7,19 @@ set -euo pipefail  # Strict error handling
 export PATH=/opt/csghub/embedded/bin/:$PATH
 
 # Validate input parameter
-if [ -z "$1" ]; then
-  echo -e "\033[31mError: Database name required!\033[0m"
-  echo "Usage: $0 <database_name> [password]"
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo -e "\033[31mError: Database name and user or password required!\033[0m"
+  echo "Usage: $0 <database_name> <user> [password]"
   echo "Note: If password not provided, a random one will be generated"
   exit 1
 fi
 
 DB_NAME="$1"
-case "$DB_NAME" in
-    *temporal*)
-        USER_NAME="temporal"
-        ;;
-    *)
-        USER_NAME="$DB_NAME"
-        ;;
-esac
+USER_NAME="$2"
 
 # Use provided password or generate random one
-if [ -n "${2-}" ]; then
-  PASSWORD="$2"
+if [ -n "${3-}" ]; then
+  PASSWORD="$3"
 else
   PASSWORD=$(openssl rand -hex 12)  # Generate 12-character random password
 fi

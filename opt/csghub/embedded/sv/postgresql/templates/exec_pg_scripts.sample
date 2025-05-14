@@ -1,22 +1,23 @@
 #!/bin/bash
 # Purpose: Automatically execute PostgreSQL SQL scripts on specified database
-# Usage: ./exec_pg_scripts.sh <database_name> <password>
+# Usage: ./exec_pg_scripts.sh <database_name> <user> <password>
 
 set -euo pipefail  # Strict error handling
 
 export PATH=/opt/csghub/embedded/bin/:$PATH
 
 # Validate input parameters
-if [ -z "$1" ] || [ -z "$2" ]; then
-  echo -e "\033[31mError: Database name and password required!\033[0m"
-  echo "Usage: $0 <database_name> <password> [directory_path]"
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+  echo -e "\033[31mError: Database name and user and password required!\033[0m"
+  echo "Usage: $0 <database_name> <user> <password> [directory_path]"
   echo "Note: Default directory is ./scripts if not specified"
   exit 1
 fi
 
 DB_NAME="$1"
-DB_PASSWORD="$2"
-SCRIPT_DIR=${3:-"./scripts"}
+DB_USER="$2"
+DB_PASSWORD="$3"
+SCRIPT_DIR=${4:-"./scripts"}
 
 # Check if directory exists
 if [ ! -d "$SCRIPT_DIR" ]; then

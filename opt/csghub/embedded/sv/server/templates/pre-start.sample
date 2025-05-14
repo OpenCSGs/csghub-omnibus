@@ -14,14 +14,17 @@ rm -rf {{ $envDir }}/* || true
 {{- $server := (datasource "config").server }}
 {{- $dataDir := $server.data | default "/var/opt/csghub/server" }}
 {{- $db := $server.postgresql }}
-{{- $dbname := $db.name }}
-{{- $password := $db.password | default (crypto.PBKDF2 $dbname "opencsg" 2048 8) }}
-{{- file.Write (printf "%s/POSTGRES_USER" $envDir) $dbname }}
+{{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
+{{- file.Write (printf "%s/POSTGRES_USER" $envDir) $db.user }}
 {{- file.Write (printf "%s/POSTGRES_PASSWORD" $envDir) $password }}
-{{- file.Write (printf "%s/POSTGRES_DB" $envDir) $dbname }}
+{{- file.Write (printf "%s/POSTGRES_DB" $envDir) $db.name }}
 
+{{- $postgresql := (datasource "config").postgresql }}
+{{- $patroni := (datasource "config").patroni }}
+{{- if or $postgresql.enable $patroni.enable }}
 # Create server database
-/opt/csghub/service/postgresql/create_database {{ $dbname }} {{ $password }}
+/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
+{{- end }}
 
 # exit when error
 set -e
@@ -46,11 +49,14 @@ chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration migrate "${args[@]}"
 
 cd -
 # Load local sql scripts
-/opt/csghub/service/postgresql/exec_pg_scripts {{ $dbname }} {{ $password }}
+/opt/csghub/service/postgresql/exec_pg_scripts {{ $db.name }} {{ $db.user }} {{ $password }}
 
+{{- $minio := (datasource "config").minio }}
+{{- if $minio.enable }}
 # Create bucket
 if [ -x "/opt/csghub/service/minio/create_bucket" ]; then
     /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }}
 fi
+{{- end }}
 
 exit 0
