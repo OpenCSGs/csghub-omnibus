@@ -257,7 +257,6 @@ portal:
     endpoint: "127.0.0.1:9000"  # S3 endpoint
     force_path_style: false       # Path-style access
     bucket: "csghub-portal"     # Bucket name
-    encrypt: false              # Server-side encryption
     secure: false               # Use HTTPS
 
 ##########################################################################
@@ -436,6 +435,8 @@ minio:
 # Logger configuration section
 logger:
   enable: false # Enable or disable logging system
+  listen_port: 9002
+  auth_token: "MTIzYWJj"
 
 ##########################################################################
 # Consul Configuration
