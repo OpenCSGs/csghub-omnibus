@@ -12,11 +12,11 @@ fi
 set -eu -o pipefail
 
 {{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal_ui" }}
+{{- $temporalDataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
 cd {{ $dataDir }}
 
 exec chpst -P \
-  -e /opt/csghub/etc/temporal/env \
-  -e /opt/csghub/etc/temporal_ui/env \
+  -e {{ $temporalDataDir }}/env \
   -U temporal:temporal \
   -u temporal:temporal \
   /opt/csghub/embedded/bin/ui-server \

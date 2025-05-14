@@ -15,7 +15,7 @@ export TEMPORAL_HOME
 cd {{ $dataDir }}
 
 # Setup temporal database
-chpst -e /opt/csghub/etc/temporal/env -P \
+chpst -e {{ $dataDir }}/env -P \
   -U temporal:temporal \
   -u temporal:temporal \
   "${TEMPORAL_HOME}"/auto-setup.sh
@@ -23,7 +23,7 @@ chpst -e /opt/csghub/etc/temporal/env -P \
 # fail on errors
 set -e
 
-exec chpst -e /opt/csghub/etc/temporal/env -P \
+exec chpst -e {{ $dataDir }}/env -P \
   -U temporal:temporal \
   -u temporal:temporal \
   /opt/csghub/embedded/bin/temporal-server \
