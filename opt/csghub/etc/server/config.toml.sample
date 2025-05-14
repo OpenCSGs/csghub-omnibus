@@ -37,12 +37,16 @@ saas = {{ $server.saas }}
 instance_id = ""
 enable_swagger = {{ $server.enable_swagger }}
 enable_https = {{ $server.enable_https }}
-{{ $seedFile := "/opt/csghub/etc/server/seed" }}
-{{- $seed := file.Read $seedFile -}}
-{{- if not $seed -}}
-{{- $seed = random.Alpha 48 | file.Write $seedFile -}}
+{{- $seedFile := "/opt/csghub/etc/server/seed" -}}
+{{- $seed := "" -}}
+{{- if file.Exists $seedFile -}}
+  {{- $seed = file.Read $seedFile -}}
 {{- end -}}
-{{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 -}}
+{{- if not $seed -}}
+  {{- $seed = random.Alpha 48 -}}
+  {{- file.Write $seedFile $seed -}}
+{{- end -}}
+{{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 }}
 api_token = {{ $apiToken | quote }}
 docs_host = {{ printf "%s://%s:6636" $url.Scheme $host | quote }}
 

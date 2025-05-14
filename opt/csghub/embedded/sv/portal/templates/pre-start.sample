@@ -20,10 +20,15 @@ echo "false" > {{ $envDir }}/CSGHUB_PORTAL_SENSITIVE_CHECK
 cd /
 
 {{- $seedFile := "/opt/csghub/etc/server/seed" -}}
-{{- $seed := file.Read $seedFile -}}
-{{- if not $seed -}}
-{{- $seed = random.Alpha 48 | file.Write $seedFile -}}
+{{- $seed := "" -}}
+{{- if file.Exists $seedFile -}}
+  {{- $seed = file.Read $seedFile -}}
 {{- end -}}
+{{- if not $seed -}}
+  {{- $seed = random.Alpha 48 -}}
+  {{- file.Write $seedFile $seed -}}
+{{- end -}}
+
 {{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 -}}
 
 {{- $csghub := (datasource "config").csghub }}
