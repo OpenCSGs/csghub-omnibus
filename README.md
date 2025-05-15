@@ -9,9 +9,11 @@ This document is only used to guide users on how to build deb/rpm packages and c
 ### Docker
 
 ```shell
+docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
+  -t omnibus-csghub:new-release \
+  -f Dockerfile \
+  --push .
 ```
-
-
 
 ### Linux
 
@@ -31,15 +33,7 @@ git clone git@git-devops.opencsg.com:product/infra/omnibus-csghub.git
 dpkg-buildpackage -us -uc -b
 ```
 
-
-
-
-
-dh_make -c apache -e support@opencsg.com -n -p omnibus-csghub -y -s
-
-
-
-
+<!-- dh_make -c apache -e support@opencsg.com -n -p omnibus-csghub -y -s -->
 
 _Tips: There is currently no need to distinguish between Debian distributions_
 
