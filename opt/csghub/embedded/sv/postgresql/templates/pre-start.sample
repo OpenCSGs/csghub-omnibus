@@ -7,7 +7,7 @@ exec 2>&1
 cd {{ $envDir }}
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* || true
+# rm -rf {{ $envDir }}/* || true
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $dataDir := $postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}

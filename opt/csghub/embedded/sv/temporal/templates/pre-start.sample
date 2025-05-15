@@ -8,7 +8,7 @@ exec 2>&1
 cd {{ $envDir }}
 
 # Clear all environment variable files
-rm -rf {{ $envDir }}/* || true
+# rm -rf {{ $envDir }}/* || true
 
 {{- $temporal := (datasource "config").temporal }}
 {{- $db := $temporal.db }}
