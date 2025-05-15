@@ -13,6 +13,11 @@ nginx:
   data: "/var/opt/csghub/nginx"
   ssl_certificate: "/etc/csghub/ssl/csghub.example.com.crt"
   ssl_certificate_key: "/etc/csghub/ssl/csghub.example.com.key"
+  rate_limit:
+    enable: false        # Enable or disable nginx rate limit
+    request: "20r/s"     # Limit the request rate of each IP to 20 requests per second (20r/s)
+    burst: 40            # Allow 40 requests in burst
+    conn: 50             # Limit each client IP to a maximum of 50 simultaneous connections
 
 ##########################################################################
 # CSGHub Server Configuration

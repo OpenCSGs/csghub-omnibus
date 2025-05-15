@@ -81,6 +81,11 @@ http {
         ''      close;
     }
 
+    {{- if $nginx.rate_limit.enable }}
+    limit_req_zone $binary_remote_addr zone=global:10m rate={{ $nginx.rate_limit.request }};
+    limit_conn_zone $binary_remote_addr zone=addr:10m;
+    {{- end }}
+
     {{- $csghub := (datasource "config").csghub -}}
     {{- $url := conv.URL $csghub.external_url -}}
     {{- $urlParts := $url.Host | strings.Split ":" -}}
@@ -126,6 +131,11 @@ http {
 
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- end }}
+
+        {{- if $nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
+        limit_conn addr {{ $nginx.rate_limit.conn }};
         {{- end }}
 
         # Default route
@@ -271,6 +281,11 @@ http {
         {{- else }}
         listen {{ $casdoorPort }};
         server_name {{ $host }};
+        {{- end }}
+
+        {{- if $nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
+        limit_conn addr {{ $nginx.rate_limit.conn }};
         {{- end }}
 
         location / {
