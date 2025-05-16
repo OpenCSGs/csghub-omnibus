@@ -147,7 +147,7 @@ readness_period_seconds = {{ $runner.readness_period_seconds }}
 readness_failure_threshold = {{ $runner.readness_failure_threshold }}
 pypi_index_url = {{ $runner.pip_index_url| quote }}
 
-{{ $model := $server.model }}
+{{ $model := $server.model -}}
 [model]
 deploy_timeout_in_min = {{ $model.deploy_timeout }}
 download_endpoint = {{ $model.download_endpoint | quote }}
@@ -158,7 +158,7 @@ nim_ngc_secret_name = "nvidia-nim-secrets"
 [event]
 sync_interval = {{ $mirrorRepo.sync_interval }}
 
-{{ $casdoor := $server.casdoor }}
+{{ $casdoor := $server.casdoor -}}
 [casdoor]
 client_id = {{ $casdoor.client_id | quote }}
 client_secret = {{ $casdoor.client_secret | quote }}
@@ -170,7 +170,7 @@ application_name = {{ $casdoor.application_name | quote }}
 {{ $nats := (datasource "config").nats }}
 {{- $natsUser := "natsadmin" -}}
 {{- $natsPassword := crypto.PBKDF2 $natsUser "opencsg" 2048 8 -}}
-{{- $serverNats := $server.nats }}
+{{- $serverNats := $server.nats -}}
 [nats]
 url = {{ $serverNats.url | default (printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword) | quote }}
 msg_fetch_timeout_in_sec = {{ $serverNats.msg_fetch_timeout_in_sec }}
@@ -206,13 +206,13 @@ host = {{ printf "http://%s" $userHost | quote }}
 port = {{ $userPort }}
 signin_success_redirect_url = {{ printf "%s/server/callback" $csghub.external_url | quote }}
 
-{{ $multi_sync := $server.multi_sync }}
+{{ $multi_sync := $server.multi_sync -}}
 [multi_sync]
 enabled = {{ $multi_sync.enabled }}
 saas_api_domain = "https://hub.opencsg.com"
 saas_sync_domain = "https://sync.opencsg.com"
 
-{{ $telemetry := $server.telemetry }}
+{{ $telemetry := $server.telemetry -}}
 [telemetry]
 enable = {{ $telemetry.enabled | default true }}
 report_url = "http://hub.opencsg.com/api/v1/telemetry"
@@ -220,7 +220,7 @@ report_url = "http://hub.opencsg.com/api/v1/telemetry"
 [auto_clean]
 instance = false
 
-{{ $dataset := $server.dataset }}
+{{ $dataset := $server.dataset -}}
 [dataset]
 prompt_max_jsonl_file_size = {{ $dataset.prompt_max_jsonl_file_size }}
 
@@ -243,7 +243,7 @@ host = {{ printf "%s://%s" $moderationUrl.Scheme $moderationHost | quote }}
 port = {{ $moderationPort }}
 encoded_sensitive_words = {{ $moderation.encoded_sensitive_words | quote }}
 
-{{ $workflow := $server.workflow }}
+{{ $workflow := $server.workflow -}}
 [workflow]
 endpoint = {{ $workflow.endpoint | quote }}
 
@@ -251,16 +251,16 @@ endpoint = {{ $workflow.endpoint | quote }}
 sync_as_client_cron_expression = {{ $multi_sync.sync_as_client_cron_expression | quote }}
 calc_recom_score_cron_expression = {{ $multi_sync.calc_recom_score_cron_expression | quote }}
 
-{{ $proxy := $server.proxy }}
+{{ $proxy := $server.proxy -}}
 [proxy]
 hosts = [{{- range $k, $v := $proxy.hosts }}{{if $k}}, {{end}}{{$v | quote }}{{- end }}]
 
-{{ $instrumentation := $server.instrumentation }}
+{{ $instrumentation := $server.instrumentation -}}
 [instrumentation]
 otlp_logging = {{ $instrumentation.otlp_logging }}
 otlp_endpoint = {{ $instrumentation.otlp_endpoint | quote }}
 
-{{ $image_builder := $runner.image_builder }}
+{{ $image_builder := $runner.image_builder -}}
 [runner]
 image_builder_namespace = {{ $image_builder.namespace | quote }}
 image_builder_git_image = {{ $image_builder.git_image | quote }}
