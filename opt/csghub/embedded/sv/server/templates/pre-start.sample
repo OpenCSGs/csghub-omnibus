@@ -54,9 +54,7 @@ cd -
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}
 # Create bucket
-if [ -x "/opt/csghub/service/minio/create_bucket" ]; then
-    /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }}
-fi
+[ -x "/opt/csghub/service/minio/create_bucket" ] && /opt/csghub/service/minio/create_bucket {{ $portal.s3.bucket }}
 {{- end }}
 
 exit 0
