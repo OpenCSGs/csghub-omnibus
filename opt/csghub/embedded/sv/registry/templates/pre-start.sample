@@ -20,7 +20,7 @@ cd {{ $dataDir }}
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}
 # Create bucket
-[ -x "/opt/csghub/service/minio/create_bucket" ] && /opt/csghub/service/minio/create_bucket {{ $portal.s3.bucket }}
+[ -x "/opt/csghub/service/minio/create_bucket" ] && /opt/csghub/service/minio/create_bucket {{ $registry.storage.s3.bucket }}
 {{- end }}
 
 exit 0
