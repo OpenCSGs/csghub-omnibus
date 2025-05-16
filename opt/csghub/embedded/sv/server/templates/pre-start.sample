@@ -18,9 +18,7 @@ cd {{ $envDir }}
 {{- file.Write (printf "%s/POSTGRES_USER" $envDir) $db.user }}
 {{- file.Write (printf "%s/POSTGRES_PASSWORD" $envDir) $password }}
 {{- file.Write (printf "%s/POSTGRES_DB" $envDir) $db.name }}
-
-{{- $home := env.Getenv "HOME" "/etc/csghub" }}
-{{- file.Write (printf "%s/HOME" $envDir) $home }}
+{{- file.Write (printf "%s/HOME" $envDir) "/etc/csghub" }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
