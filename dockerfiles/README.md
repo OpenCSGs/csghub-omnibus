@@ -41,8 +41,9 @@ docker buildx build \
 ```shell
 ## Toolbox
 OS_RELEASE=ubuntu:22.04
-TOOLBOX_VERSION=1.1.1
+TOOLBOX_VERSION=1.1.2
 GOMPLATE_VERSION=v4.3.2
+KUBECTL_VERSION=v1.33.0
 DNSMASQ_VERSION=2.91
 docker buildx build \
   --provenance false \

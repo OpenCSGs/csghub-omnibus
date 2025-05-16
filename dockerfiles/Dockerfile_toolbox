@@ -24,13 +24,16 @@ RUN ssh-keygen -A
 
 ## Install gompalte
 ARG GOMPLATE_VERSION=v4.3.2
+ARG KUBECTL_VERSION=v1.33.0
 ARG TARGETPLATFORM
 RUN case ${TARGETPLATFORM} in \
         "linux/amd64") \
-            wget --no-check-certificate -O ${CSGHUB_EMBEDDED}/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64 \
+            wget --no-check-certificate -O ${CSGHUB_EMBEDDED}/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64 && \
+            wget --no-check-certificate -O ${CSGHUB_EMBEDDED}/bin/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
             ;; \
         "linux/arm64") \
-            wget --no-check-certificate -O ${CSGHUB_EMBEDDED}/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-arm64 \
+            wget --no-check-certificate -O ${CSGHUB_EMBEDDED}/bin/gomplate https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-arm64 && \
+            wget --no-check-certificate -O ${CSGHUB_EMBEDDED}/bin/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/arm64/kubectl \
             ;; \
         *) \
             echo "Unsupported platform: ${TARGETPLATFORM}" && \
