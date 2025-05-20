@@ -50,7 +50,7 @@ fi
 
 # Check if bucket already exists
 if "$MC_PATH" ls "$MINIO_ALIAS/$BUCKET_NAME" &> /dev/null; then
-    echo "Error: Bucket '$BUCKET_NAME' already exists"
+    echo "Warn: Bucket '$BUCKET_NAME' already exists"
     exit 0
 fi
 
