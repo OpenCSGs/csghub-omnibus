@@ -58,4 +58,6 @@ cd -
 [ -x "/opt/csghub/service/minio/create_bucket" ] && /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }}
 {{- end }}
 
+find {{ $configDir }} -mindepth 1 -maxdepth 1 ! -name '*.sample' ! -name 'seed' ! -name 'env' ! -name 'scripts' -exec cp -r {} {{ $dataDir }} \;
+
 exit 0
