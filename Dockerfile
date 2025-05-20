@@ -65,7 +65,6 @@ FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_portal:${
 FROM ${OS_RELEASE}
 WORKDIR /
 
-COPY ./etc/. /etc/
 COPY ./opt/. /opt/
 COPY ./scripts/. /scripts/
 

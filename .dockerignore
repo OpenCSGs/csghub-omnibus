@@ -20,4 +20,11 @@ debian
 *.DS_Store
 ehthumbs.db
 Thumbs.db
-dockerfiles
+dockerfiles### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
