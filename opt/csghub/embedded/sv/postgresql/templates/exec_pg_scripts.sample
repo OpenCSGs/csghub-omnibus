@@ -40,7 +40,7 @@ export PGPASSWORD="$DB_PASSWORD"
 # Execute each SQL file
 for SQL_FILE in $SQL_FILES; do
   echo -e "\033[32mExecuting $SQL_FILE on database $DB_NAME\033[0m"
-  if ! psql -U $DB_NAME -f "$SQL_FILE"; then
+  if ! psql -U $DB_USER -d $DB_NAME -f "$SQL_FILE"; then
     echo -e "\033[31mError: Failed to execute $SQL_FILE\033[0m"
     exit 1
   fi
