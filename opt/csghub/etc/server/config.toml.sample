@@ -127,7 +127,7 @@ valid_hour = 24
 {{- $deploy := $runner.deploy -}}
 {{- $runnerRegistry := dict -}}
 {{- $runnerRegistry = $runner.registry -}}
-{{- $proxy := (datasource "config").proxy -}}
+{{- $rproxy := (datasource "config").rproxy -}}
 {{- $registry := (datasource "config").registry -}}
 {{- $registryPort := $registry.listen | regexp.Find ":([0-9]+)/" | strings.TrimSuffix "/" | strings.TrimPrefix ":" -}}
 [space]
@@ -138,7 +138,7 @@ internal_root_domain = {{ printf "%s.app.internal" $deploy.namespace | quote }}
 public_root_domain = ""
 docker_reg_base = {{ $runnerRegistry.prefix | quote }}
 image_pull_secret = {{ $runnerRegistry.pull_secret | quote }}
-rproxy_server_port = {{ $proxy.listen_port }}
+rproxy_server_port = {{ $rproxy.listen_port }}
 session_secret_key = "secret"
 deploy_timeout_in_min = {{ $deploy.timeout }}
 gpu_model_label = {{ $runner.gpu_label | quote }}
