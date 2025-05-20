@@ -71,6 +71,7 @@ COPY ./scripts/. /scripts/
 ENV CSGHUB_HOME=/opt/csghub
 ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
 ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+ENV DUCKDB_EXTENSION_DIRECTORY=/opt/csghub/embedded/sv/server
 
 SHELL ["/bin/bash", "-c"]
 
