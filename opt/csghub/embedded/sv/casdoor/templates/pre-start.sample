@@ -18,14 +18,35 @@ set -e
 /opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
 {{- end }}
 
-# Load local sql scripts
-/opt/csghub/service/postgresql/exec_pg_scripts {{ $db.name }} {{ $db.user }} {{ $password }}
-
 {{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
 if [ -f {{ $dataDir }}/app.conf ]; then
   mkdir -p {{ $dataDir }}/conf || true
   mv {{ $dataDir }}/app.conf {{ $dataDir }}/conf
   cp -a {{ $configDir }}/{web,files} {{ $dataDir }}/ || true
 fi
+
+COMMAND="/opt/csghub/embedded/bin/casdoor"
+
+# Initialize database
+(cd {{ $dataDir }} && $COMMAND || true)&
+
+# Wait to initialize
+sleep 1
+
+# Clean up any existing processes
+echo "Checking for existing casdoor processes..."
+if pgrep -f "$COMMAND" >/dev/null; then
+    echo "Found existing casdoor process, attempting graceful shutdown..."
+    pkill -f "$COMMAND" || true
+
+    # Force kill if still running after graceful attempt
+    if pgrep -f "$COMMAND" >/dev/null; then
+        echo "Forcing termination of remaining processes..."
+        pkill -9 -f "$COMMAND" || true
+    fi
+fi
+
+# Load local sql scripts
+/opt/csghub/service/postgresql/exec_pg_scripts {{ $db.name }} {{ $db.user }} {{ $password }}
 
 exit 0
