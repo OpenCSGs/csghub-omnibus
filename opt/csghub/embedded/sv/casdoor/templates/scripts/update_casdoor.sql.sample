@@ -42,15 +42,36 @@ BEGIN
             UPDATE
                 application
             SET
-                redirect_uris = ''["%s/api/v1/callback/casdoor"]''
+                redirect_uris = ''["{{ $csghub.external_url }}/api/v1/callback/casdoor"]''
             WHERE
                 name = ''CSGHub''
-        ', current_setting('csghub.external_url', true));
+        ');
+
+        -- Disable User Signup for Build-in Application
+        -- Enable Select organization mode for login
+        EXECUTE format('
+            UPDATE
+                application
+            SET
+                enable_sign_up = ''f'',
+                org_choice_mode = ''Select''
+            WHERE
+                name = ''app-built-in''
+        ');
     END IF;
 END
 $$;
 
 -- Dynamically update admin password in user table (only if table exists)
+{{- $initPassFile := "/etc/csghub/init_root_password" -}}
+{{- $pass := "" -}}
+{{- if file.Exists $initPassFile -}}
+  {{- $pass = file.Read $initPassFile -}}
+{{- end -}}
+{{- if not $pass -}}
+  {{- $pass = random.Alpha 48 -}}
+  {{- file.Write $initPassFile $pass -}}
+{{- end }}
 DO $$
 BEGIN
     IF EXISTS (
@@ -61,10 +82,11 @@ BEGIN
             UPDATE
                 "user"
             SET
-                password = ''Root@1234''
+                password_type = ''bcrypt'',
+                password = ''{{ $pass | crypto.Bcrypt }}''
             WHERE
                 name = ''admin''
-                AND password = ''123''
+                AND password_type = ''plain''
         ';
     END IF;
 END
