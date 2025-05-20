@@ -38,12 +38,27 @@ http {
     default_type application/octet-stream;
 
     # Enhanced log format for troubleshooting upstream issues
-    log_format debug_log '$remote_addr - $remote_user [$time_local] "$request" '
-                         '$status $body_bytes_sent "$http_referer" '
-                         '"$http_user_agent" "$http_x_forwarded_for" '
-                         'upstream_addr=$upstream_addr upstream_status=$upstream_status '
-                         'request_time=$request_time upstream_response_time=$upstream_response_time';
+    log_format json_combined escape=json
+      '{'
+        '"remote_addr":"$remote_addr",'
+        '"remote_user":"$remote_user",'
+        '"time_local":"$time_local",'
+        '"request":"$request",'
+        '"status":"$status",'
+        '"body_bytes_sent":"$body_bytes_sent",'
+        '"http_referer":"$http_referer",'
+        '"http_user_agent":"$http_user_agent",'
+        '"http_x_forwarded_for":"$http_x_forwarded_for",'
+        '"upstream_addr":"$upstream_addr",'
+        '"upstream_status":"$upstream_status",'
+        '"request_time":$request_time,'
+        '"upstream_response_time":$upstream_response_time'
+      '}';
 
+    # Redirect log tpo stdout/stderr
+    access_log /dev/stdout json_combined;
+    error_log /dev/stderr warn;
+    
     # Gzip compression settings
     gzip on;
     gzip_disable "msie6";
