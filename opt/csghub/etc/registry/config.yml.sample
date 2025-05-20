@@ -27,7 +27,7 @@ storage:
   {{- $auth := $registry.storage.s3 }}
   s3:
     accesskey: {{ $auth.accesskey | default $user }}
-    secretkey: {{ $auth.accesskey | default $password }}
+    secretkey: {{ $auth.secretkey | default $password }}
     region: {{ $auth.region | default "cn-north-1" }}
     regionendpoint: {{ $auth.regionendpoint | default "http://127.0.0.1:9000" }}
     forcepathstyle: {{ $auth.forcepathstyle | default false }}
