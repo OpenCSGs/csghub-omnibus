@@ -4,7 +4,7 @@
 exec 2>&1
 
 {{- $configDir := "/opt/csghub/etc/server" }}
-{{- $envDir := printf "$s/env" $configDir }}
+{{- $envDir := printf "%s/env" $configDir }}
 cd {{ $envDir }}
 
 # Clear all environment variable files
