@@ -53,13 +53,13 @@ http {
         '"upstream_status":"$upstream_status",'
         '"request_time":$request_time,'
         '"upstream_response_time":$upstream_response_time,'
-        '"host":"$http_host"'
+        '"host":"$host"'
       '}';
 
     # Redirect log tpo stdout/stderr
     access_log /dev/stdout json_combined;
     error_log /dev/stderr warn;
-    
+
     # Gzip compression settings
     gzip on;
     gzip_disable "msie6";
@@ -158,7 +158,7 @@ http {
         location / {
             proxy_pass http://127.0.0.1:8090;
             proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header X-Forwarded-Host $server_name:{{ $port }};
+            proxy_set_header X-Forwarded-Host $server_name;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header Host $host;
         }
@@ -209,7 +209,7 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection $connection_upgrade;
-            proxy_cookie_flags ~ nosecure samesite=lax;  # Set secure and samesite cookies
+            proxy_cookie_flags ~ nosecure samesite=lax;
         }
 
         # Git specific route
@@ -227,12 +227,11 @@ http {
         }
     }
 
-    {{- $registry := (datasource "config").registry -}}
+    {{ $registry := (datasource "config").registry -}}
     {{- $registryListen := $registry.listen }}
     {{- $registryParts := $registryListen | strings.Split ":" -}}
     {{- $registryHost := "127.0.0.1" -}}
     {{- $registryPort := 5000 -}}
-
     {{- if gt (len $registryParts) 0 -}}
       {{- if eq (len $registryParts) 1 -}}
         {{- if hasPrefix (index $registryParts 0) ":" -}}
@@ -278,7 +277,7 @@ http {
         }
     }
 
-    {{- $casdoor := (datasource "config").casdoor -}}
+    {{ $casdoor := (datasource "config").casdoor -}}
     {{- $casdoorListen := $casdoor.listen -}}
     {{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
     {{- $casdoorHost := index $casdoorParts 0 -}}
@@ -377,17 +376,18 @@ http {
     {{- if has $deploy "knative" }}
     {{- if has $deploy.knative "services" }}
     {{- $services := $deploy.knative.services }}
-    {{- range $services }}
+    {{ range $services }}
     # Dynamic HTTP routing for apps
     server {
         listen 80;
         server_name *.{{ $ns }}.{{ .domain }};
+
         location / {
             proxy_http_version 1.1;
             proxy_pass http://{{ .host }}:{{ .port }};
             proxy_set_header Host $host;
             proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection $connection_upgrade;
+            proxy_set_header Connection 'upgrade';
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Host $http_host;
