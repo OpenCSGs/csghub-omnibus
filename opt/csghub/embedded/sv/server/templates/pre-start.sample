@@ -19,6 +19,7 @@ cd {{ $envDir }}
 {{- file.Write (printf "%s/POSTGRES_PASSWORD" $envDir) $password }}
 {{- file.Write (printf "%s/POSTGRES_DB" $envDir) $db.name }}
 {{- file.Write (printf "%s/HOME" $envDir) "/etc/csghub" }}
+{{- file.Write (printf "%s/STARHUB_SERVER_PUBLIC_ROOT_DOMAIN" $envDir) " " }}
 {{- file.Write (printf "%s/DUCKDB_HOME" $envDir) "/opt/csghub/embedded/sv/server" }}
 {{- file.Write (printf "%s/DUCKDB_EXTENSION_DIRECTORY" $envDir) "/opt/csghub/embedded/sv/server" }}
 
@@ -52,7 +53,7 @@ chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration migrate "${args[@]}"
 
 cd -
 # Load local sql scripts
-[ -x "/scripts/pg_executor" ]; && /scripts/pg_executor {{ $db.name }} {{ $db.user }} {{ $password }}
+[ -x "/scripts/pg_executor" ] && /scripts/pg_executor {{ $db.name }} {{ $db.user }} {{ $password }}
 
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}
