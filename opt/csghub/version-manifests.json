@@ -95,7 +95,7 @@
       {
         "name": "csghub-server",
         "description": "CSGHub backend service",
-        "version": "1.7.0",
+        "version": "1.7.1",
         "repository": ""
       },
       {
