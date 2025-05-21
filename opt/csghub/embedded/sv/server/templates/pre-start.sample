@@ -19,6 +19,8 @@ cd {{ $envDir }}
 {{- file.Write (printf "%s/POSTGRES_PASSWORD" $envDir) $password }}
 {{- file.Write (printf "%s/POSTGRES_DB" $envDir) $db.name }}
 {{- file.Write (printf "%s/HOME" $envDir) "/etc/csghub" }}
+{{- file.Write (printf "%s/DUCKDB_HOME" $envDir) "/opt/csghub/embedded/sv/server" }}
+{{- file.Write (printf "%s/DUCKDB_EXTENSION_DIRECTORY" $envDir) "/opt/csghub/embedded/sv/server" }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}

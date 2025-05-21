@@ -71,7 +71,6 @@ COPY ./scripts/. /scripts/
 ENV CSGHUB_HOME=/opt/csghub
 ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
 ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
-ENV DUCKDB_EXTENSION_DIRECTORY=/opt/csghub/embedded/sv/server
 
 SHELL ["/bin/bash", "-c"]
 
@@ -134,8 +133,8 @@ COPY --from=nginx /opt/csghub/. /opt/csghub/
 COPY ./opt/csghub/etc/nginx/. /opt/csghub/etc/nginx/
 
 ## Install csghub-server
-ENV GIN_MODE=release \
-    DUCKDB_HOME=/opt/csghub/embedded/sv/server
+ENV GIN_MODE=release
+
 COPY --from=server /starhub-bin/starhub ${CSGHUB_SRV_HOME}/server/bin/csghub-server
 COPY --from=server /starhub-bin/. ${CSGHUB_HOME}/etc/server/
 COPY --from=server /root/.duckdb ${CSGHUB_SRV_HOME}/server/.duckdb
