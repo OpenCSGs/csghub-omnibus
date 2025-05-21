@@ -1,0 +1,17 @@
+#!/bin/bash
+# Purpose: Automatically execute PostgreSQL SQL scripts on specified database
+# Usage: ./pg_exists <database_name> <user> <password> [host] [port]
+
+set -euo pipefail  # Strict error handling
+
+export PATH=/opt/csghub/embedded/bin/:$PATH
+
+# Validate input parameters
+if [ -z "$DSN" ] || [ -z "$1" ]; then
+  echo -e "\033[31mError: Database DSN and TABLE required!\033[0m"
+  echo "Usage: $0 <table_name>"
+  exit 1
+fi
+
+# Return count
+psql "$DSN" -Atc "SELECT COUNT(*) FROM $1"

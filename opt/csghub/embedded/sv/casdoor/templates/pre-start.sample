@@ -6,10 +6,14 @@ exec 2>&1
 # exit on error
 set -e
 
+{{- $envDir := "/opt/csghub/etc/casdoor/env" }}
+cd {{ $envDir }}
+
 {{- $configDir := "/opt/csghub/etc/casdoor" }}
 {{- $casdoor := (datasource "config").casdoor }}
 {{- $db := $casdoor.db }}
 {{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
+{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" $db.user $password $db.host $db.port $db.name) }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
@@ -31,7 +35,12 @@ COMMAND="/opt/csghub/embedded/bin/casdoor"
 (cd {{ $dataDir }} && $COMMAND || true)&
 
 # Wait to initialize
-sleep 1
+while true; do
+  res=$(chpst -e {{ $envDir }} /scripts/pg_exists "application")
+  if [ "$res" -gt 0 ]; then
+    break
+  fi
+done
 
 # Clean up any existing processes
 echo "Checking for existing casdoor processes..."
@@ -47,6 +56,7 @@ if pgrep -f "$COMMAND" >/dev/null; then
 fi
 
 # Load local sql scripts
-[ -x "/scripts/pg_executor" ] && /scripts/pg_executor {{ $db.name }} {{ $db.user }} {{ $password }}
+cd /opt/csghub/service/casdoor
+[ -x "/scripts/pg_executor" ] && chpst -e {{ $envDir }} /scripts/pg_executor
 
 exit 0

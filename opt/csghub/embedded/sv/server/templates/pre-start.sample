@@ -19,6 +19,7 @@ cd {{ $envDir }}
 {{- file.Write (printf "%s/POSTGRES_PASSWORD" $envDir) $password }}
 {{- file.Write (printf "%s/POSTGRES_DB" $envDir) $db.name }}
 {{- file.Write (printf "%s/HOME" $envDir) "/etc/csghub" }}
+{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" $db.user $password $db.host $db.port $db.name) }}
 {{- file.Write (printf "%s/STARHUB_SERVER_PUBLIC_ROOT_DOMAIN" $envDir) " " }}
 {{- file.Write (printf "%s/DUCKDB_HOME" $envDir) "/opt/csghub/embedded/sv/server" }}
 {{- file.Write (printf "%s/DUCKDB_EXTENSION_DIRECTORY" $envDir) "/opt/csghub/embedded/sv/server" }}
@@ -35,7 +36,6 @@ set -e
 
 {{- $configDir := "/opt/csghub/etc/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}
-cd {{ $configDir }}
 
 # Define constants
 readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
@@ -53,8 +53,8 @@ echo "Migration migrate"
 chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration migrate "${args[@]}"
 
 # Load local sql scripts
-cd /opt/csghub/service/server
-[ -x "/scripts/pg_executor" ] && /scripts/pg_executor {{ $db.name }} {{ $db.user }} {{ $password }}
+cd -
+[ -x "/scripts/pg_executor" ] && chpst -e {{ $envDir }} /scripts/pg_executor
 
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}

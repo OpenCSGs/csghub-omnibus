@@ -1,23 +1,23 @@
 #!/bin/bash
 # Purpose: Automatically execute PostgreSQL SQL scripts on specified database
-# Usage: ./pg_executor <database_name> <user> <password>
+# Usage: ./pg_executor <database_name> <user> <password> [host] [port]
 
 set -euo pipefail  # Strict error handling
 
 export PATH=/opt/csghub/embedded/bin/:$PATH
 
 # Validate input parameters
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
-  echo -e "\033[31mError: Database name and user and password required!\033[0m"
-  echo "Usage: $0 <database_name> <user> <password> [directory_path]"
-  echo "Note: Default directory is ./scripts if not specified"
+if [ -z "$DSN" ]; then
+  echo -e "\033[31mError: Env DSN empty!\033[0m"
   exit 1
 fi
 
-DB_NAME="$1"
-DB_USER="$2"
-DB_PASSWORD="$3"
-SCRIPT_DIR=${4:-"./scripts"}
+if [ $# -eq 0 ]; then
+  echo -e "\033[33mWarn: scripts directory not specified! Using default ./scripts\033[0m"
+  echo "Usage: $0 [directory_path]"
+fi
+
+SCRIPT_DIR=${1:-"./scripts"}
 
 # Check if directory exists
 if [ ! -d "$SCRIPT_DIR" ]; then
@@ -33,22 +33,13 @@ if [ -z "$SQL_FILES" ]; then
   exit 0
 fi
 
-export PGDATABASE="$DB_NAME"
-# Export password for psql
-export PGPASSWORD="$DB_PASSWORD"
-
 # Execute each SQL file
 for SQL_FILE in $SQL_FILES; do
-  echo -e "\033[32mExecuting $SQL_FILE on database $DB_NAME\033[0m"
-  if ! psql -U $DB_USER -d $DB_NAME -f "$SQL_FILE"; then
+  echo -e "\033[32mExecuting $SQL_FILE\033[0m"
+  if ! psql "$DSN" -f "$SQL_FILE"; then
     echo -e "\033[31mError: Failed to execute $SQL_FILE\033[0m"
     exit 1
   fi
 done
 
 echo -e "\n\033[32mSuccessfully executed all SQL files!\033[0m"
-echo "-------------------------------------"
-echo "Database: $DB_NAME"
-echo "Total files executed: $(echo "$SQL_FILES" | wc -l)"
-echo "Directory: $SCRIPT_DIR"
-echo "-------------------------------------"
