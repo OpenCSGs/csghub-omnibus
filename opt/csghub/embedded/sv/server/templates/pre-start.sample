@@ -35,13 +35,14 @@ set -e
 
 {{- $configDir := "/opt/csghub/etc/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}
+cd {{ $configDir }}
 
 # Define constants
 readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
 readonly ENV_DIR="/opt/csghub/etc/server/env"
 
 # Build command arguments
-args=("start" "server")
+args=()
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 echo "Database setup..."
@@ -51,8 +52,8 @@ chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration init "${args[@]}"
 echo "Migration migrate"
 chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration migrate "${args[@]}"
 
-cd -
 # Load local sql scripts
+cd /opt/csghub/service/server
 [ -x "/scripts/pg_executor" ] && /scripts/pg_executor {{ $db.name }} {{ $db.user }} {{ $password }}
 
 {{- $minio := (datasource "config").minio }}
