@@ -3,7 +3,8 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-{{- $envDir := "/opt/csghub/etc/server/env" }}
+{{- $configDir := "/opt/csghub/etc/server" }}
+{{- $envDir := printf "$s/env" $configDir }}
 cd {{ $envDir }}
 
 # Clear all environment variable files
@@ -34,7 +35,7 @@ cd {{ $envDir }}
 # exit when error
 set -e
 
-{{- $configDir := "/opt/csghub/etc/server" }}
+{{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}
 
 # Define constants
@@ -42,18 +43,35 @@ readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
 readonly ENV_DIR="/opt/csghub/etc/server/env"
 
 # Build command arguments
-args=()
+args=("start" "server")
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
-echo "Database setup..."
-echo "Migration init"
-chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration init "${args[@]}"
+# Database setup
+(cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" || true)&
 
-echo "Migration migrate"
-chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration migrate "${args[@]}"
+# Wait to initialize
+while true; do
+  res=$(chpst -e {{ $envDir }} /scripts/pg_exists "tags")
+  if [ "$res" -gt 0 ]; then
+    break
+  fi
+done
+
+# Clean up any existing processes
+echo "Checking for existing csghub_server processes..."
+if pgrep -f "$SERVER_BIN" >/dev/null; then
+    echo "Found existing csghub_server process, attempting graceful shutdown..."
+    pkill -f "$SERVER_BIN" || true
+
+    # Force kill if still running after graceful attempt
+    if pgrep -f "$SERVER_BIN" >/dev/null; then
+        echo "Forcing termination of remaining processes..."
+        pkill -9 -f "$SERVER_BIN" || true
+    fi
+fi
 
 # Load local sql scripts
-cd -
+cd /opt/csghub/service/server
 [ -x "/scripts/pg_executor" ] && chpst -e {{ $envDir }} /scripts/pg_executor
 
 {{- $minio := (datasource "config").minio }}
