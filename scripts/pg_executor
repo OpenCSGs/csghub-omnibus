@@ -1,6 +1,6 @@
 #!/bin/bash
 # Purpose: Automatically execute PostgreSQL SQL scripts on specified database
-# Usage: ./exec_pg_scripts.sh <database_name> <user> <password>
+# Usage: ./pg_executor <database_name> <user> <password>
 
 set -euo pipefail  # Strict error handling
 

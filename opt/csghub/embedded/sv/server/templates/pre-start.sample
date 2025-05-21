@@ -50,7 +50,7 @@ chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" migration migrate "${args[@]}"
 
 cd -
 # Load local sql scripts
-/opt/csghub/service/postgresql/exec_pg_scripts {{ $db.name }} {{ $db.user }} {{ $password }}
+[ -x "/scripts/pg_executor" ]; && /scripts/pg_executor {{ $db.name }} {{ $db.user }} {{ $password }}
 
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}

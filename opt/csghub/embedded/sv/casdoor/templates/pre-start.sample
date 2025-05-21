@@ -47,6 +47,6 @@ if pgrep -f "$COMMAND" >/dev/null; then
 fi
 
 # Load local sql scripts
-/opt/csghub/service/postgresql/exec_pg_scripts {{ $db.name }} {{ $db.user }} {{ $password }}
+[ -x "/scripts/pg_executor" ]; && /scripts/pg_executor {{ $db.name }} {{ $db.user }} {{ $password }}
 
 exit 0
