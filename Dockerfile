@@ -15,7 +15,7 @@ ARG CASDOOR_VERSION=v1.736.1
 ARG DNSMASQ_VERSION=2.91
 ARG NGINX_VERSION=1.27.5
 ARG CSGHUB_SERVER_VERSION=v1.7.1
-ARG CSGHUB_PORTAL_VERSION=v1.7.0
+ARG CSGHUB_PORTAL_VERSION=v1.7.1
 
 ## Install Runit Service Daemon
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-${RUNIT_VERSION} AS runit
