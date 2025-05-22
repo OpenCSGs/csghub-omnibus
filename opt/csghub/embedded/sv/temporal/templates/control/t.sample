@@ -1,0 +1,30 @@
+#!/bin/sh
+exec 1>&2
+
+if pgrep temporal >/dev/null; then
+    echo "Stopping temporal processes..."
+
+    # First try graceful termination
+    pkill -TERM temporal
+
+    # Wait for processes to exit
+    sleep 2
+
+    # Check if any processes remain
+    if pgrep temporal >/dev/null; then
+        echo "Force killing remaining temporal processes..."
+        pkill -KILL temporal || true
+    fi
+
+    # Final verification
+    if pgrep temporal >/dev/null; then
+        echo "Warning: Some temporal processes still running!"
+        exit 1
+    else
+        echo "temporal stopped successfully"
+    fi
+else
+    echo "No temporal processes running"
+fi
+
+exit 0
