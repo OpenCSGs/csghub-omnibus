@@ -1,5 +1,6 @@
 ARG OS_RELEASE=ubuntu:22.04
-FROM ${OS_RELEASE} AS builder
+ARG GOLANG_VERSION=1.24.2
+FROM ${OS_RELEASE} AS downloader
 WORKDIR /
 
 ENV CSGHUB_HOME=/opt/csghub
@@ -41,12 +42,6 @@ RUN case ${TARGETPLATFORM} in \
             ;; \
      esac
 
-## Install csghub-ctl
-COPY ./cli/. ./cli/
-RUN cd /cli && \
-    mkdir -p ${CSGHUB_HOME}/bin && \
-    go build -buildvcs=false -o ${CSGHUB_HOME}/bin/csghub-ctl
-
 ## Install htpasswd
 RUN cp /usr/bin/htpasswd ${CSGHUB_EMBEDDED}/bin/
 
@@ -58,6 +53,26 @@ RUN wget --no-check-certificate -O /dnsmasq.tar.xz https://thekelleys.org.uk/dns
     mkdir -p ${CSGHUB_HOME}/etc/dnsmasq && cp dnsmasq.conf.example ${CSGHUB_HOME}/etc/dnsmasq/ && \
     rm -rf /dnsmasq*
 
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/golang:${GOLANG_VERSION} AS builder
+WORKDIR /
+
+ENV CSGHUB_HOME=/opt/csghub
+ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
+ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
+ENV GOPROXY=https://goproxy.cn,direct
+
+## Install csghub-ctl
+COPY /toolbox/csghub-ctl/. /csghub-ctl/
+RUN cd /csghub-ctl && \
+    mkdir -p ${CSGHUB_HOME}/bin && \
+    go build -buildvcs=false -o ${CSGHUB_HOME}/bin/csghub-ctl
+
+## Install KYML
+COPY /toolbox/kyml/. /kyml/
+RUN cd /kyml && \
+    mkdir -p ${CSGHUB_HOME}/bin && \
+    go build -buildvcs=false -o ${CSGHUB_HOME}/bin/kyml
+
 FROM ${OS_RELEASE}
 WORKDIR /
 
@@ -65,10 +80,11 @@ ENV CSGHUB_HOME=/opt/csghub
 ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
 ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
 
-COPY --from=builder /etc/ssh/ssh_host_* /etc/ssh/
-COPY --from=builder ${CSGHUB_HOME}/etc/. ${CSGHUB_HOME}/etc/
+COPY --from=downloader /etc/ssh/ssh_host_* /etc/ssh/
+COPY --from=downloader ${CSGHUB_HOME}/etc/. ${CSGHUB_HOME}/etc/
+COPY --from=downloader ${CSGHUB_HOME}/bin/. ${CSGHUB_HOME}/bin/
+COPY --from=downloader ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
+COPY --from=downloader ${CSGHUB_SRV_HOME}/dnsmasq/. ${CSGHUB_SRV_HOME}/dnsmasq/
 COPY --from=builder ${CSGHUB_HOME}/bin/. ${CSGHUB_HOME}/bin/
-COPY --from=builder ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
-COPY --from=builder ${CSGHUB_SRV_HOME}/dnsmasq/. ${CSGHUB_SRV_HOME}/dnsmasq/
 
 RUN chmod +x -R /opt/csghub/bin /opt/csghub/embedded/bin /opt/csghub/embedded/sv/*/bin
