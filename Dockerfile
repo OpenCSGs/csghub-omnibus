@@ -156,7 +156,8 @@ RUN apt update && \
       libgeoip1 \
       libgd3 \
       libxml2 \
-      libxslt1.1 && \
+      libxslt1.1 \
+      libcurl3-gnutls && \
     apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
 RUN chmod +x -R /opt/csghub/bin && \
