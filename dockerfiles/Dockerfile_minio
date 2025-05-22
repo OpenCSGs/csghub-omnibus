@@ -9,7 +9,7 @@ RUN apt update && \
     apt clean && \
       rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
-COPY ./logger/. /logger/
+COPY ./toolbox/logger/. /logger/
 ## Install logger
 RUN cd /logger && go build -buildvcs=false -o /logger
 
