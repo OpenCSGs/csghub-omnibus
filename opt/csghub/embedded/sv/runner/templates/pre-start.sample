@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Isn't it strange to have two CDs connected here?
+# There must be a reason for their existence. Don't move them.
+{{- $chome := "/opt/csghub" }}
+{{- $envDir := printf "%s/etc/runner/env" $chome }}
+cd {{ $chome }}
+{{- file.Write (printf "%s/KUBECONFIG" $chome) "/etc/csghub/.kube/config" }}
+
+{{- $srvDir := printf "%s/service/runner" $chome }}
+cd {{ $srvDir }}
+/opt/csghub/bin/kyml -file ./yamls -create -kubeconfig /etc/csghub/.kube/config
+
+exit 0

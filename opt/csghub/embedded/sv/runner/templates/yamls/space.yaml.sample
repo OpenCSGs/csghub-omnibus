@@ -1,0 +1,42 @@
+{{- $runner := (datasource "config").runner -}}
+{{- $deploy := $runner.deploy -}}
+{{- $image_builder := $runner.image_builder -}}
+{{- $runnerRegistry := $runner.registry -}}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $deploy.namespace }}
+  labels:
+    kubernetes.io/metadata.name: {{ $deploy.namespace }}
+---
+{{- $registry := (datasource "config").registry }}
+{{- if $registry.enable }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $runnerRegistry.pull_secret }}
+  namespace: {{ $deploy.namespace }}
+  annotations:
+    helm.sh/resource-policy: keep
+type: kubernetes.io/dockerconfigjson
+data:
+  {{- $endpoint := regexp.Find "^[^/]+" $runnerRegistry.prefix }}
+  {{- $username := $registry.auth.username }}
+  {{- $password := $registry.auth.password | default (crypto.PBKDF2 $username "opencsg" 2048 8) }}
+  .dockerconfigjson: {{ printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" $runnerRegistry $username $password (printf "%s:%s" $username $password | base64.Encode) | base64.Encode }}
+{{- if not $deploy.mergingNamespace }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $runnerRegistry.pull_secret }}
+  namespace: {{ $image_builder.namespace }}
+  annotations:
+    helm.sh/resource-policy: keep
+type: kubernetes.io/dockerconfigjson
+data:
+  {{- $endpoint := regexp.Find "^[^/]+" $runnerRegistry.prefix }}
+  {{- $username := $registry.auth.username }}
+  {{- $password := $registry.auth.password | default (crypto.PBKDF2 $username "opencsg" 2048 8) }}
+  .dockerconfigjson: {{ printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" $runnerRegistry $username $password (printf "%s:%s" $username $password | base64.Encode) | base64.Encode }}
+{{- end }}
+{{- end }}

@@ -3,6 +3,14 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+{{- $deploy := (datasource "config").runner.deploy }}
+{{- if $deploy.autoConfigure }}
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+{{- end }}
+
 # fail on errors
 set -e
 
