@@ -135,7 +135,11 @@ builder_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }
 runner_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
 runner_server_port = {{ $runner.listen_port }}
 internal_root_domain = {{ printf "%s.app.internal" $deploy.namespace | quote }}
+{{- if $deploy.publicRootDomain }}
+public_root_domain = {{ $deploy.publicRootDomain | quote }}
+{{- else }}
 public_root_domain = ""
+{{- end }}
 docker_reg_base = {{ $runnerRegistry.prefix | quote }}
 image_pull_secret = {{ $runnerRegistry.pull_secret | quote }}
 rproxy_server_port = {{ $rproxy.listen_port }}

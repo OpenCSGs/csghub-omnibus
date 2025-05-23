@@ -6,11 +6,18 @@ exec 2>&1
 {{- $configDir := "/opt/csghub/etc/dnsmasq" }}
 cd {{ $configDir }}
 {{- $runner := (datasource "config").runner }}
-{{- $configFile := printf "%s/internal-domain.conf" $configDir }}
 {{- $ns := $runner.deploy.namespace }}
 {{- $services := $runner.deploy.knative.services }}
 {{- range $services }}
 {{- $entry := printf "address=/%s.%s/127.0.0.1" $ns .domain }}
+{{- $configFile := printf "%s/%s.conf" $configDir .domain }}
+{{- file.Write $configFile $entry }}
+{{- end }}
+{{- $deploy := $runner.deploy }}
+{{- $publicDomain := $deploy.publicRootDomain }}
+{{- if $publicDomain }}
+{{- $entry := printf "address=/%s/127.0.0.1" $publicDomain }}
+{{- $configFile := printf "%s/%s.conf" $configDir $publicDomain }}
 {{- file.Write $configFile $entry }}
 {{- end }}
 

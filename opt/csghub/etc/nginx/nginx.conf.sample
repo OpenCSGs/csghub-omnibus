@@ -119,6 +119,7 @@ http {
 
     {{- $server := (datasource "config").server -}}
     {{- $nginx := (datasource "config").nginx -}}
+    {{- $dataDir := $nginx.data }}
 
     {{- $csghubCert := $nginx.ssl_certificate }}
     {{- $csghubCertKey := $nginx.ssl_certificate_key }}
@@ -199,6 +200,9 @@ http {
         }
         {{- end }}
 
+        {{- $runner := (datasource "config").runner -}}
+        {{- $deploy := $runner.deploy }}
+        {{- if not $deploy.publicRootDomain }}
         # Endpoint route
         location /endpoint/ {
             proxy_pass http://127.0.0.1:8083;
@@ -211,6 +215,7 @@ http {
             proxy_set_header Connection $connection_upgrade;
             proxy_cookie_flags ~ nosecure samesite=lax;
         }
+        {{- end }}
 
         # Git specific route
         location ~* \.git(/.*)?$ {
@@ -223,9 +228,51 @@ http {
         # Custom error page handling for 50x errors
         error_page 500 502 503 504 /50x.html;
         location = /50x.html {
-            root /usr/share/nginx/html;
+            root {{ $dataDir }}/html;
         }
     }
+
+    {{ if $deploy.publicRootDomain }}
+    server {
+        {{- if eq $url.Scheme "https" }}
+        listen 443 ssl;
+        {{- else }}
+        listen 80;
+        {{- end }}
+        server_name {{ printf "*.%s" $deploy.publicRootDomain }};
+
+        {{- if eq $url.Scheme "https" }}
+        ssl_certificate {{ $csghubCert }};
+        ssl_certificate_key {{ $csghubCertKey }};
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- end }}
+
+        {{- if $nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
+        limit_conn addr {{ $nginx.rate_limit.conn }};
+        {{- end }}
+
+        # Endpoint route
+        location / {
+            proxy_pass http://127.0.0.1:8083;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $http_host;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+        }
+
+        # Custom error page handling for 50x errors
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root {{ $dataDir }}/html;
+        }
+    }
+    {{- end }}
 
     {{ $registry := (datasource "config").registry -}}
     {{- $registryListen := $registry.listen }}
@@ -314,7 +361,7 @@ http {
 
         error_page 500 502 503 504 /50x.html;
         location = /50x.html {
-            root  /usr/share/nginx/html;
+            root  {{ $dataDir }}/html;
         }
     }
 
@@ -365,13 +412,6 @@ http {
         }
     }
 
-    {{- $runner := (datasource "config").runner -}}
-    {{- $deploy := dict }}
-    {{- if has $runner "deploy" }}
-    {{- if $runner.deploy -}}
-    {{- $deploy = $runner.deploy }}
-    {{- end -}}
-    {{- end -}}
     {{- $ns := $deploy.namespace | default "spaces" }}
     {{- if has $deploy "knative" }}
     {{- if has $deploy.knative "services" }}
@@ -396,7 +436,7 @@ http {
 
         error_page 500 502 503 504 /50x.html;
         location = /50x.html {
-            root  /usr/share/nginx/html;
+            root  {{ $dataDir }}/html;
         }
     }
     {{- end }}
