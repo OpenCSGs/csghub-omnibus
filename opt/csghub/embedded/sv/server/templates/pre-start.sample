@@ -51,7 +51,7 @@ args=("start" "server")
 
 # Wait to initialize
 while true; do
-  res=$(chpst -e {{ $envDir }} /scripts/pg_exists "tags")
+  res=$(chpst -e {{ $envDir }} /scripts/pg_exists "space_resources")
   if [ "$res" -gt 0 ]; then
     break
   fi
