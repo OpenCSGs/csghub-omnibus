@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 # Isn't it strange to have two CDs connected here?
 # There must be a reason for their existence. Don't move them.
 {{- $chome := "/opt/csghub" }}
@@ -14,4 +17,3 @@ cd {{ $chome }}
 cd {{ $srvDir }}
 /opt/csghub/bin/kyml -file ./yamls -create -kubeconfig /etc/csghub/.kube/config
 
-exit 0

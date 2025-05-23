@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
 {{- $envDir := printf "%s/env" $dataDir }}
 cd {{ $envDir }}
@@ -29,4 +32,3 @@ cd {{ $envDir }}
 /opt/csghub/service/postgresql/create_database {{ $visibilityDB }} {{ $db.user }} {{ $password }}
 {{- end }}
 
-exit 0

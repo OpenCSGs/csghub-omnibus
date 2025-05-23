@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 # Attempt to change ulimit before the set -e flag, ignore failures
 ulimit -n 15000
 

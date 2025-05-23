@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $configDir := "/opt/csghub/etc/dnsmasq" }}
 cd {{ $configDir }}
 {{- $runner := (datasource "config").runner }}
@@ -29,4 +32,3 @@ if [ -f "/etc/resolv.conf" ]; then
   fi
 fi
 
-exit 0

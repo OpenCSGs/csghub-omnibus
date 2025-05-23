@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
 chown -R registry:registry {{ $dataDir }}
 
@@ -23,4 +26,3 @@ cd {{ $dataDir }}
 [ -x "/opt/csghub/service/minio/create_bucket" ] && /opt/csghub/service/minio/create_bucket {{ $registry.storage.s3.bucket }}
 {{- end }}
 
-exit 0

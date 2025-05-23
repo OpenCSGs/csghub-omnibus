@@ -3,13 +3,13 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# fail on errors
+set -e
+
 # Run the pre-start script to ensure that the service meets the startup conditions
 if [ -x ./pre-start ]; then
   ./pre-start
 fi
-
-# fail on errors
-set -e
 
 {{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}

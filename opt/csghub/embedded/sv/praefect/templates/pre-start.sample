@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $envDir := "/opt/csghub/etc/praefect/env" }}
 cd {{ $envDir }}
 {{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
@@ -14,4 +17,3 @@ if [ ! -s {{ $pidFile }} ]; then
 fi
 {{- file.Write (printf "%s/GITALY_PID_FILE" $envDir) $pidFile }}
 
-exit 0

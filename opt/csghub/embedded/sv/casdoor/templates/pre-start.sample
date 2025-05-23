@@ -59,4 +59,3 @@ fi
 cd /opt/csghub/service/casdoor
 [ -x "/scripts/pg_executor" ] && chpst -e {{ $envDir }} /scripts/pg_executor
 
-exit 0

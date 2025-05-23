@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $envDir := "/opt/csghub/etc/minio/env" }}
 cd {{ $envDir }}
 
@@ -28,4 +31,3 @@ cd {{ $envDir }}
 {{- file.Write $envFile $value }}
 {{- end }}
 
-exit 0

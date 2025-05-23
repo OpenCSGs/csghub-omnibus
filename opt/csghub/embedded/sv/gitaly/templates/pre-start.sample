@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 # Define the repository parent directory
 {{- $gitaly := (datasource "config").gitaly }}
 {{- $dataDir := $gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
@@ -30,4 +33,4 @@ mkdir -p {{ path.Dir $secretFile }} || true
 {{- file.Write $secretFile $secret }}
 {{- end }}
 
-exit 0
+

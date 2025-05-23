@@ -3,7 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $dataDir := (datasource "config").redis.data | default "/var/opt/csghub/redis" }}
 chown -R redis:redis {{ $dataDir }} || true
 
-exit 0

@@ -27,4 +27,3 @@ else
     echo "No temporal processes running"
 fi
 
-exit 0

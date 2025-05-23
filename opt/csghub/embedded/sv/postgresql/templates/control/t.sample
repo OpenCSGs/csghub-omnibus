@@ -34,4 +34,3 @@ else
     echo "No PostgreSQL processes running"
 fi
 
-exit 0

@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $envDir := "/opt/csghub/etc/minio/env" }}
 cd {{ $envDir }}
 
@@ -13,4 +16,3 @@ cd {{ $envDir }}
 {{- file.Write (printf "%s/WEBHOOK_LISTEN_PORT" $envDir) $logger.listen_port }}
 {{- file.Write (printf "%s/WEBHOOK_AUTH_TOKEN" $envDir) $logger.auth_token }}
 
-exit 0

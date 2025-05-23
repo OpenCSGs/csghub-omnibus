@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $configDir := "/opt/csghub/etc/temporal_ui" }}
 cd {{ $configDir }}
 {{ $temporalUI := (datasource "config").temporal_ui }}
@@ -10,4 +13,3 @@ cd {{ $configDir }}
 {{- $password := $temporalUI.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
 {{- file.Write (printf "%s/.htpasswd" $configDir) (printf "%s:%s" $user ($password | crypto.Bcrypt)) }}
 
-exit 0

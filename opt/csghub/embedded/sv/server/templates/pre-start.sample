@@ -81,5 +81,4 @@ cd /opt/csghub/service/server
 {{- end }}
 
 find {{ $configDir }} -mindepth 1 -maxdepth 1 ! -name '*.sample' ! -name 'seed' ! -name 'env' ! -name 'scripts' -exec cp -r {} {{ $dataDir }} \;
-
-exit 0
+echo "copy configuration files done."

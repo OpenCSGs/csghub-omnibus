@@ -3,6 +3,9 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 {{- $envDir := "/opt/csghub/etc/patroni/env" }}
 cd {{ $envDir }}
 
@@ -25,4 +28,4 @@ chown -R postgres:postgres {{ $dataDir }} || true
 {{- file.Write (printf "%s/PYTHONPATH" $envDir) "$PATRONI_HOME/lib/python3.13/site-packages:$PYTHONHOME/lib/python3.13/site-packages" }}
 {{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "$PYTHONHOME/bin:$PGHOME/bin:$PATH" }}
 
-exit 0
+
