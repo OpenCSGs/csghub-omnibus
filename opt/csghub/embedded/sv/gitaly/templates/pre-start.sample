@@ -19,7 +19,6 @@ if [ ! -s {{ $pidFile }} ]; then
 fi
 
 {{- $envDir := "/opt/csghub/etc/gitaly/env" }}
-cd {{ $envDir }}
 {{- $pidFileEnv := printf "%s/GITALY_PID_FILE" $envDir }}
 {{- file.Write $pidFileEnv $pidFile }}
 

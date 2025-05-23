@@ -7,7 +7,6 @@ exec 2>&1
 set -e
 
 {{- $configDir := "/opt/csghub/etc/dnsmasq" }}
-cd {{ $configDir }}
 {{- $runner := (datasource "config").runner }}
 {{- $ns := $runner.deploy.namespace }}
 {{- $services := $runner.deploy.knative.services }}

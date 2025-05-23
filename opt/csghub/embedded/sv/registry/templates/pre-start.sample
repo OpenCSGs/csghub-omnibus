@@ -9,7 +9,6 @@ set -e
 {{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
 chown -R registry:registry {{ $dataDir }}
 
-cd {{ $dataDir }}
 {{- $registry := (datasource "config").registry }}
 {{- $auth := $registry.auth }}
 {{- $user := $auth.username | default "registry" }}
@@ -18,6 +17,7 @@ cd {{ $dataDir }}
 {{- $htpasswdFile := printf "%s/.htpasswd" $dataDir }}
 {{- $encrypt := printf "%s:%s" $user (crypto.Bcrypt $password) }}
 {{- file.Write $htpasswdFile $encrypt }}
+{{- file.Write "/etc/csghub/init_registry_password" (printf "%s:%s" $user $password) }}
 {{- end }}
 
 {{- $minio := (datasource "config").minio }}

@@ -7,8 +7,6 @@ exec 2>&1
 set -e
 
 {{- $envDir := "/opt/csghub/etc/casdoor/env" }}
-cd {{ $envDir }}
-
 {{- $configDir := "/opt/csghub/etc/casdoor" }}
 {{- $casdoor := (datasource "config").casdoor }}
 {{- $db := $casdoor.db }}

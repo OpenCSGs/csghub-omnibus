@@ -441,12 +441,13 @@ minio:
 
   # Environment variables
   environments:
-    MINIO_OPTS: " --console-address=:9002"  # Console options
+    MINIO_CONSOLE_ADDRESS: ":9002"    # Console options
+    # MINIO_OPTS: " --console-address=:9002"
 
 # Logger configuration section
 logger:
   enable: false # Enable or disable logging system
-  listen_port: 9002
+  listen_port: 9003
   auth_token: "MTIzYWJj"
 
 ##########################################################################

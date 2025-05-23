@@ -9,7 +9,6 @@ if [ -x ./pre-start ]; then
 fi
 
 {{- $configDir := "/opt/csghub/etc/temporal_ui" }}
-cd {{ $configDir }}
 {{ $temporalUI := (datasource "config").temporal_ui }}
 {{- $user := $temporalUI.auth.user }}
 {{- $password := $temporalUI.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}

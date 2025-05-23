@@ -7,7 +7,6 @@ exec 2>&1
 set -e
 
 {{- $envDir := "/opt/csghub/etc/postgresql/env" }}
-cd {{ $envDir }}
 
 # Clear all environment variable files
 # rm -rf {{ $envDir }}/* || true

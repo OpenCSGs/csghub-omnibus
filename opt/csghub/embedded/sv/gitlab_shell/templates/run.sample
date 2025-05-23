@@ -10,7 +10,6 @@ set -e
 ulimit -n 15000
 
 # Run the pre-start script to ensure that the service meets the startup conditions
-cd /opt/csghub
 {{- $gitaly := (datasource "config").gitaly }}
 {{- $token := $gitaly.auth.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) }}
 {{- file.Write "/opt/csghub/etc/gitlab_shell/.gitlab_shell_secret" $token }}

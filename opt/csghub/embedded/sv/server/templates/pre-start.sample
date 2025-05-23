@@ -3,9 +3,11 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# exit when error
+set -e
+
 {{- $configDir := "/opt/csghub/etc/server" }}
 {{- $envDir := printf "%s/env" $configDir }}
-cd {{ $envDir }}
 
 # Clear all environment variable files
 # rm -rf {{ $envDir }}/* || true
@@ -32,9 +34,6 @@ cd {{ $envDir }}
 /opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
 {{- end }}
 
-# exit when error
-set -e
-
 {{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}
 
@@ -51,7 +50,7 @@ args=("start" "server")
 
 # Wait to initialize
 while true; do
-  res=$(chpst -e {{ $envDir }} /scripts/pg_exists "space_resources")
+  res=$(chpst -e {{ $envDir }} /scripts/pg_exists "tags")
   if [ "$res" -gt 0 ]; then
     break
   fi

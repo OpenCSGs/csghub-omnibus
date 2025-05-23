@@ -7,7 +7,6 @@ exec 2>&1
 set -e
 
 {{- $envDir := "/opt/csghub/etc/praefect/env" }}
-cd {{ $envDir }}
 {{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
 chown -R git:git {{ $dataDir }} || true
 

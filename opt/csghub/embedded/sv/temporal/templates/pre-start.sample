@@ -8,7 +8,6 @@ set -e
 
 {{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
 {{- $envDir := printf "%s/env" $dataDir }}
-cd {{ $envDir }}
 
 # Clear all environment variable files
 # rm -rf {{ $envDir }}/* || true

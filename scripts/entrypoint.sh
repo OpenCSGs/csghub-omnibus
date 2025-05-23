@@ -15,7 +15,7 @@ retry() {
 }
 
 # Reconfigure all service enabled
-retry /usr/bin/csghub-ctl reconfigure
+cd / && retry /usr/bin/csghub-ctl reconfigure
 
 # Start runit daemon
 /opt/csghub/embedded/bin/runsvdir-start
