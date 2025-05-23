@@ -169,7 +169,7 @@ runner:
     namespace: "spaces"         # Kubernetes namespace
     timeout: 60                 # Deployment timeout in minutes
 
-    publicRootDomain: "public.example.com"     # Use a dedicate domain name
+    usePublicDomain: true     # Use a dedicate domain name
 
     autoConfigure: true         # knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
     registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public"   # Pull images from registry

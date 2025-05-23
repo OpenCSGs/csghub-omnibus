@@ -135,8 +135,17 @@ builder_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }
 runner_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
 runner_server_port = {{ $runner.listen_port }}
 internal_root_domain = {{ printf "%s.app.internal" $deploy.namespace | quote }}
-{{- if $deploy.publicRootDomain }}
-public_root_domain = {{ $deploy.publicRootDomain | quote }}
+{{- if $deploy.usePublicDomain }}
+{{- $rootDomain := "example.com" }}
+{{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+{{- $hostParts := strings.Split "." $host }}
+{{- if le (len $hostParts) 2 }}
+{{- $rootDomain = $host }}
+{{- else }}
+{{- $rootDomain = regexp.Replace "^[^.]+\\." "" $host }}
+{{- end }}
+{{- end }}
+public_root_domain = {{ printf "public.%s" $rootDomain | quote }}
 {{- else }}
 public_root_domain = ""
 {{- end }}

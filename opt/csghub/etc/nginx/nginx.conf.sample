@@ -202,7 +202,7 @@ http {
 
         {{- $runner := (datasource "config").runner -}}
         {{- $deploy := $runner.deploy }}
-        {{- if not $deploy.publicRootDomain }}
+        {{- if not $deploy.usePublicDomain }}
         # Endpoint route
         location /endpoint/ {
             proxy_pass http://127.0.0.1:8083;
@@ -232,14 +232,23 @@ http {
         }
     }
 
-    {{ if $deploy.publicRootDomain }}
+    {{ if $deploy.usePublicDomain -}}
+    {{- $rootDomain := "example.com" }}
+    {{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+    {{- $hostParts := strings.Split "." $host }}
+    {{- if le (len $hostParts) 2 }}
+    {{- $rootDomain = $host }}
+    {{- else }}
+    {{- $rootDomain = regexp.Replace "^[^.]+\\." "" $host }}
+    {{- end }}
+    {{- end }}
     server {
         {{- if eq $url.Scheme "https" }}
         listen 443 ssl;
         {{- else }}
         listen 80;
         {{- end }}
-        server_name {{ printf "*.%s" $deploy.publicRootDomain }};
+        server_name {{ printf "*.public.%s" $rootDomain }};
 
         {{- if eq $url.Scheme "https" }}
         ssl_certificate {{ $csghubCert }};

@@ -16,11 +16,24 @@ cd {{ $configDir }}
 {{- $configFile := printf "%s/%s.conf" $configDir .domain }}
 {{- file.Write $configFile $entry }}
 {{- end }}
+
+{{- $csghub := (datasource "config").csghub -}}
+{{- $url := conv.URL $csghub.external_url -}}
+{{- $urlParts := $url.Host | strings.Split ":" -}}
+{{- $host := index $urlParts 0 -}}
 {{- $deploy := $runner.deploy }}
-{{- $publicDomain := $deploy.publicRootDomain }}
-{{- if $publicDomain }}
-{{- $entry := printf "address=/%s/127.0.0.1" $publicDomain }}
-{{- $configFile := printf "%s/%s.conf" $configDir $publicDomain }}
+{{- if $deploy.usePublicDomain }}
+{{- $rootDomain := "example.com" }}
+{{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+{{- $hostParts := strings.Split "." $host }}
+{{- if le (len $hostParts) 2 }}
+{{- $rootDomain = $host }}
+{{- else }}
+{{- $rootDomain = regexp.Replace "^[^.]+\\." "" $host }}
+{{- end }}
+{{- end }}
+{{- $entry := printf "cname=public.%s,%s" $rootDomain $host }}
+{{- $configFile := printf "%s/%s.conf" $configDir (printf "public.%s" $rootDomain) }}
 {{- file.Write $configFile $entry }}
 {{- end }}
 
