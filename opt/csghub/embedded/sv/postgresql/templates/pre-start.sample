@@ -22,7 +22,7 @@ chown -R postgres:postgres {{ $dataDir }} || true
 {{- file.Write (printf "%s/MANPATH" $envDir) "$MANPATH:$PGHOME/share/man" }}
 {{- file.Write (printf "%s/PATH" $envDir) "$PGHOME/bin:$PATH" }}
 
-if [ ! -f "$PGDATA/PG_VERSION" ]; then
+if [ ! -f "{{ $dataDir }}/PG_VERSION" ]; then
     if [ -f {{ $dataDir }}/postgresql.conf ]; then
         mv {{ $dataDir }}/*.conf {{ $dataDir }}/..
     fi
