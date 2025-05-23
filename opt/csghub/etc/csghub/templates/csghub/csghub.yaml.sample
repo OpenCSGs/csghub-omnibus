@@ -8,10 +8,16 @@ csghub:
   ## External URL for accessing CSGHub (must be reachable by users)
   external_url: "http://csghub.example.com"
 
-  ## Nginx configuration
-  # nginx:
-    # ssl_certificate: "/etc/csghub/ssl/csghub.example.com.crt"
-    # ssl_certificate_key: "/etc/csghub/ssl/csghub.example.com.key"
+## Nginx configuration
+#nginx:
+#  data: "/var/opt/csghub/nginx"
+#  ssl_certificate: "/etc/csghub/ssl/csghub.example.com.crt"
+#  ssl_certificate_key: "/etc/csghub/ssl/csghub.example.com.key"
+#  rate_limit:
+#    enable: false        # Enable or disable nginx rate limit
+#    request: "20r/s"     # Limit the request rate of each IP to 20 requests per second (20r/s)
+#    burst: 40            # Allow 40 requests in burst
+#    conn: 50             # Limit each client IP to a maximum of 50 simultaneous connections
 
 ##########################################################################
 ## CSGHub Server Configuration
@@ -157,6 +163,10 @@ csghub:
 #  deploy:
 #    namespace: "spaces"         ## Kubernetes namespace
 #    timeout: 60                 ## Deployment timeout in minutes
+
+#    autoConfigure: true         ## knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
+#    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public"   ## Pull images from registry
+#    mergingNamespace: true      ## minimize the creation of namespaces.
 
 #    ## Knative service settings
 #    knative:
@@ -471,7 +481,7 @@ csghub:
 #  max_wal_senders: 4            ## Maximum number of WAL sender processes
 #  max_replication_slots: 3      ## Maximum number of replication slots
 #  checkpoint_timeout: "10min"   ## Automatic checkpoint interval
-#  
+#
 #  ## Host-based authentication rules
 #  pg_hba:
 #    - host all all all scram-sha-256

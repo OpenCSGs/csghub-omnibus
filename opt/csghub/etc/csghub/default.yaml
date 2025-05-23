@@ -169,6 +169,10 @@ runner:
     namespace: "spaces"         # Kubernetes namespace
     timeout: 60                 # Deployment timeout in minutes
 
+    autoConfigure: true         ## knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
+    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public"   ## Pull images from registry
+    mergingNamespace: true      ## minimize the creation of namespaces.
+
     # Knative service settings
     knative:
       services:
