@@ -157,7 +157,8 @@ RUN apt update && \
       libgd3 \
       libxml2 \
       libxslt1.1 \
-      libcurl3-gnutls && \
+      libcurl3-gnutls \
+      vim && \
     apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
 RUN chmod +x -R /opt/csghub/bin && \
