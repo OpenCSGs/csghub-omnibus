@@ -1,33 +1,18 @@
 services:
   csghub:
     container_name: csghub
-    image: omnibus-csghub:2.0
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:2.0
     hostname: 'csghub.example.com'
     environment:
-      DUCKDB_EXTENSION_DIRECTORY: /opt/csghub/embedded/sv/server
       CSGHUB_OMNIBUS_CONFIG: |
         csghub:
-          external_url: "http://192.168.18.10:8080"
-        runner:
-          enable: true
-          registry:
-            prefix: "127.0.0.1:5001/csghub/"
-          deploy:
-            knative:
-              services:
-                - type: "NodePort"
-                  domain: "app.internal"
-                  host: "192.168.18.10"
-                  port: 30213
-        temporal_ui:
-          enable: true
+          external_url: "http://csghub.example.com"
     ports:
-      - '8080:80'
+      - '80:80'
       - '2222:2222'
-      - '5001:5000'
+      - '5000:5000'
       - '8000:8000'
       - '9000:9000'
-      - '9001:9001'
     volumes:
       - csghub_etc:/etc/csghub
       - csghub_logs:/var/log/csghub
