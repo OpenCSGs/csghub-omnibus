@@ -275,7 +275,11 @@ otlp_endpoint = {{ $instrumentation.otlp_endpoint | quote }}
 
 {{ $image_builder := $runner.image_builder -}}
 [runner]
+{{- if $deploy.mergingNamespace }}
+image_builder_namespace = {{ $deploy.namespace | quote }}
+{{- else }}
 image_builder_namespace = {{ $image_builder.namespace | quote }}
+{{- end }}
 image_builder_git_image = {{ $image_builder.git_image | quote }}
 image_builder_kaniko_image = {{ $image_builder.kaniko_image | quote }}
 image_builder_job_ttl = {{ $image_builder.job_ttl }}
