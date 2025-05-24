@@ -31,5 +31,13 @@ cd {{ $chome }}
 {{- end }}
 {{- end }}
 {{- end }}
-/opt/csghub/bin/kyml -file {{ $chome }}/service/runner/yamls -create -kubeconfig /etc/csghub/.kube/config > {{ $logDir }}/autoConfigure.log 2>&1 &
 
+# Check and kill any existing kyml processes before starting a new one
+if pgrep -f "/opt/csghub/bin/kyml" >/dev/null; then
+    pkill -f "/opt/csghub/bin/kyml"
+    # Wait a moment for the process to terminate
+    sleep 1
+fi
+
+# Start the new kyml process
+/opt/csghub/bin/kyml -file {{ $chome }}/service/runner/yamls -create -kubeconfig /etc/csghub/.kube/config > {{ $logDir }}/autoConfigure.log 2>&1 &
