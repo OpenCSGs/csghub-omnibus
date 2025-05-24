@@ -149,7 +149,7 @@ public_root_domain = {{ printf "public.%s" $rootDomain | quote }}
 {{- else }}
 public_root_domain = ""
 {{- end }}
-docker_reg_base = {{ $runnerRegistry.prefix | quote }}
+docker_reg_base = {{ $runnerRegistry.prefix | default (printf "%s:%d/csghub/" $host $registryPort ) | quote }}
 image_pull_secret = {{ $runnerRegistry.pull_secret | quote }}
 rproxy_server_port = {{ $rproxy.listen_port }}
 session_secret_key = {{ crypto.SHA1 $seed | quote }}
