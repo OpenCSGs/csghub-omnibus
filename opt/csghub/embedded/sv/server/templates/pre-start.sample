@@ -81,3 +81,29 @@ cd /opt/csghub/service/server
 
 find {{ $configDir }} -mindepth 1 -maxdepth 1 ! -name '*.sample' ! -name 'seed' ! -name 'env' ! -name 'scripts' -exec cp -r {} {{ $dataDir }} \;
 echo "copy configuration files done."
+
+{{- $multi_sync := $server.multi_sync -}}
+{{- if $multi_sync.enabled }}
+
+{{- $logDir := "/var/log/csghub/server" }}
+{{- if has (datasource "config").server "log" }}
+{{- if has (datasource "config").server.log "dir" }}
+{{- if (datasource "config").server.log.dir }}
+{{- $logDir = (datasource "config").server.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+# Check and kill any existing multi-sync processes before starting a new one
+if pgrep -f "$SERVER_BIN sync sync-as-client" >/dev/null; then
+    pkill -f "$SERVER_BIN sync sync-as-client"
+    # Wait a moment for the process to terminate
+    sleep 1
+fi
+
+args=("sync" "sync-as-client")
+[[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
+
+# Initialize multi-source synchronization
+(cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" > {{ $logDir }}/multi-sync.log 2>&1)&
+{{- end }}
