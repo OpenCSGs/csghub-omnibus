@@ -72,7 +72,7 @@ Omnibus-CSGHub 是 OpenCSG CSGHub 的一键式 Docker Compose 部署方案，让
 - Docker Compose Plugin 1.12.0+  
 - Kubernetes 1.28+ (Required for full-featured installation only)
 
-### 运行 Running CSGHub
+### 运行 Run CSGHub
 
 - 基本功能 Basic Features
 
@@ -101,3 +101,49 @@ Omnibus-CSGHub 是 OpenCSG CSGHub 的一键式 Docker Compose 部署方案，让
     ```shell
     docker compose -f [compose-file] down
     ```
+
+### 管理 Manage CSGHub
+
+#### 配置管理 Manage Configuration
+
+- 配置变量 `CSGHUB_OMNIBUS_CONFIG`
+
+    配置变量具有最高优先级，不会被任何其他配置覆盖，主要用于 Docker Compose 启动时自定义变量的传入。
+
+    *This configuration variable has the highest priority and won't be overridden by any other configurations. It's primarily used for passing custom variables during Docker Compose startup.*
+
+- 可配置参数文件 `/etc/csghub/csghub.yaml`
+
+    定义了所有可配置修改参数，默认情况下极少参数需要做修改。
+
+    *Contains all configurable parameters, with minimal modifications typically required under default settings.*
+
+- 默认参数文件 `/opt/csghub/etc/csghub/default.yaml`
+
+    定义了所有参数的默认值。
+
+    *Defines the default values for all parameters. default configuration (lowest priority).*
+
+#### 服务管理 Manage Service
+
+- `csghub-ctl`
+
+    | 选项 OPTIONS | 用途 Usage                                        | 备注 Remark |
+    | ------------ | ------------------------------------------------- | ----------- |
+    | --help       | 获取命令帮助 *Get command help*                   |             |
+    | start        | 启动服务 *Start the service*                      |             |
+    | restart      | 重启服务 *Restart the service*                    |             |
+    | stop         | 停止服务 *Stop the service*                       |             |
+    | reload       | 重载服务 *Reload the service*                     |             |
+    | tail         | 实时查看服务日志 *View service logs in real time* |             |
+    | status       | 查看服务状态 *View service status*                |             |
+    | other        | 见 `--help`                                       |             |
+
+- `csghub-psql`
+
+    用于快速登录数据库。
+
+    *Used to quickly login to the database.*
+
+
+
