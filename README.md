@@ -56,11 +56,11 @@ Omnibus-CSGHub 是 OpenCSG CSGHub 的一键式 Docker Compose 部署方案，让
 因 CSGHub 配置的复杂性，启动 CSGhub 分为以下两种方式：  
 *Due to the complexity of CSGHub configuration, starting CSGHub is divided into two modes:*
 
-- **基本功能：**不启动包含模型评测，模型推理，模型微调，Space 等在内的依托于 Kubernetes 的相关功能。  
+- **基本功能：** 不启动包含模型评测，模型推理，模型微调，Space 等在内的依托于 Kubernetes 的相关功能。  
 
     ***Basic Features:** Does not include Kubernetes-dependent functionalities such as model evaluation, inference, fine-tuning, and Spaces.*
 
-- **完整功能：**包含 ce/ee 的完整功能。  
+- **完整功能：** 包含 ce/ee 的完整功能。  
 
     ***Full Features:** Includes all functionalities of both ce/ee editions.*
 
