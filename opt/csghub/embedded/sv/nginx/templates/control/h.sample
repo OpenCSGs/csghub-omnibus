@@ -1,0 +1,9 @@
+#!/bin/sh
+exec 1>&2
+
+{{- $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
+if pgrep nginx; then
+    chpst -e /opt/csghub/etc/nginx/env -P \
+        -u root:root \
+        /opt/csghub/embedded/bin/nginx -c {{ $dataDir }}/nginx.conf -s reload
+fi
