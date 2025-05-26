@@ -237,13 +237,11 @@ instance = false
 [dataset]
 prompt_max_jsonl_file_size = {{ $dataset.prompt_max_jsonl_file_size }}
 
-{{ $moderation := dict }}
-{{- $moderation := $server.moderation -}}
+{{ $moderation := (datasource "config").moderation -}}
+{{- if $moderation.enable -}}
 {{- $moderationAddress := $moderation.address -}}
-
 {{- $moderationUrl := conv.URL $moderationAddress -}}
 {{- $moderationParts := $moderationUrl.Host | strings.Split ":" -}}
-
 {{- $moderationHost := index $moderationParts 0 | default "127.0.0.1" -}}
 {{- $moderationPort := "" -}}
 {{ if gt (len $moderationParts) 1 }}
@@ -255,6 +253,16 @@ prompt_max_jsonl_file_size = {{ $dataset.prompt_max_jsonl_file_size }}
 host = {{ printf "%s://%s" $moderationUrl.Scheme $moderationHost | quote }}
 port = {{ $moderationPort }}
 encoded_sensitive_words = {{ $moderation.encoded_sensitive_words | quote }}
+
+{{ $sensitive := $moderation.sensitive_check -}}
+[sensitive_check]
+enable = true
+access_key_id = {{ $sensitive.access_key_id | quote }}
+access_key_secret = {{ $sensitive.access_key_secret | quote }}
+region = {{ $sensitive.region | quote }}
+endpoint = {{ $sensitive.endpoint | quote }}
+enable_ssl = {{ $sensitive.enable_ssl }}
+{{- end }}
 
 {{ $workflow := $server.workflow -}}
 [workflow]

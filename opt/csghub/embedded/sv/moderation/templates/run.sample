@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# fail on errors
+set -e
+
+{{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
+{{- $configFile := printf "%s/config.toml" $dataDir }}
+
+# Define constants
+readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
+readonly ENV_DIR="/opt/csghub/etc/server/env"
+
+# Build command arguments
+args=("moderation" "launch")
+[[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
+
+echo "Starting server..."
+cd {{ $dataDir }}
+exec chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}"

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/moderation" }}
+{{- if has (datasource "config").moderation "log" }}
+{{- if has (datasource "config").moderation.log "dir" }}
+{{- if (datasource "config").moderation.log.dir }}
+{{- $logDir = (datasource "config").moderation.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}
