@@ -1,223 +1,103 @@
-# How to build DEB/RPM packages locally
+# Omnibus-CSGHub - Docker Compose Deployment Solution
 
-## Summary
+Omnibus-CSGHub 是 OpenCSG CSGHub 的一键式 Docker Compose 部署方案，让您能够快速搭建企业级 AI 模型管理平台。  
+*Omnibus-CSGHub is a one-click Docker Compose deployment solution for OpenCSG CSGHub, enabling rapid setup of enterprise-grade AI model management platforms.*
 
-This document is only used to guide users on how to build deb/rpm packages and container images.
+这个解决方案通过容器化技术简化了 CSGHub 的安装和配置过程，特别适合快速部署和开发测试环境使用。  
+*This solution simplifies CSGHub installation and configuration through containerization, making it ideal for quick deployment and development/testing environments.*
 
-## Build method
+## 主要特性 | Key Features
 
-### Docker
+- **快速部署**：只需一条命令即可启动完整的 CSGHub 服务栈  
 
-```shell
-docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
-  -t omnibus-csghub:new-release \
-  -f Dockerfile \
-  --push .
-```
+    ***Quick Deployment**: Launch the complete CSGHub service stack with a single command*  
 
-### Linux
+- **全容器化**：所有组件（Web 前端、后端服务、数据库等）均以服务形式运行在容器内部  
 
-#### [DEB](https://www.debian.org/doc/manuals/maint-guide/build.zh-cn.html)
+    ***Fully Containerized**: All components (web frontend, backend services, DB, etc.) run as containerized services*  
 
-##### 1. Prepare the build environment
+- **环境隔离**：各服务独立运行，避免环境冲突  
 
-```shell
-apt install -y debhelper devscripts dh-make
-apt install -y build-essential libicu-dev zlib1g-dev pkg-config libssl-dev
-```
+    ***Environment Isolation**: Independent services prevent environment conflicts*  
 
-##### 2. Create the package structure
+- **易于维护**：通过 Compose 文件统一管理服务配置  
 
-```shell
-git clone git@git-devops.opencsg.com:product/infra/omnibus-csghub.git
-dpkg-buildpackage -us -uc -b
-```
+    ***Easy Maintenance**: Unified service configuration via Compose files*  
 
-<!-- dh_make -c apache -e support@opencsg.com -n -p omnibus-csghub -y -s -->
+- **灵活扩展**：支持根据需求调整资源配置和服务规模  
 
-_Tips: There is currently no need to distinguish between Debian distributions_
+    ***Flexible Scaling**: Adjust resources and scale services as needed*  
 
-```shell
-git clone git@git-devops.opencsg.com:product/infra/omnibus-csghub.git
-cd omnibus-csghub && rm -rf .git* .idea Dockerfile *.md *.spec
-cd .. 
-dpkg-deb -Z xz -b omnibus-csghub omnibus-csghub_1.6.0-ee.0_amd64.deb
-```
+## 适用场景 | Use Cases
 
-#### RPM
+- 快速搭建 CSGHub 演示环境  
 
-##### 1. Prepare the build environment
+    *Quickly set up CSGHub demo environments*  
 
-```shell
-# Install required tools
-dnf install -y rpm-build rpmdevtools dnf-plugins-core openssh-clients
+- 开发测试环境部署  
 
-# Install building dependencies
-dnf install -y gcc make bison flex libtool readline-devel zlib-devel openssl-devel libicu-devel libxml2-devel libxslt-devel unzip patchelf chrpath systemd-devel
+    *Development and testing environment deployments*  
 
-# or
-# Install build dependencies
-# yum-builddep ~/rpmbuild/SPECS/omnibus-csghub.spec
+- 中小规模生产环境部署  
 
-# Set up the RPM build tree
-rpmdev-setuptree
-```
+    *Small-to-medium production environment deployments*  
 
-##### 2. Create the package structure
+- 需要快速验证 CSGHub 功能的场景  
 
-```shell
-# clone the repository
-git clone git@git-devops.opencsg.com:product/infra/omnibus-csghub.git
+    *Scenarios requiring quick validation of CSGHub functionality*  
 
-# Copy your files to the appropriate locations
-mkdir -p omnibus-csghub-1.6.0 && cp -a omnibus-csghub/{etc,opt} omnibus-csghub-1.6.0
-rm -rf omnibus-csghub-1.6.0/opt/csghub/embedded/{python,sv/{postgresql,patroni}/{bin,lib,include,share,*requirements*}}
+使用 Omnibus-CSGHub，您可以在几分钟内完成 CSGHub 的部署，立即开始管理您的 AI 模型和数据资产。  
+*With Omnibus-CSGHub, deploy CSGHub in minutes and start managing your AI models and data assets immediately.*
 
-# Create source code packages
-tar -zcf ~/rpmbuild/SOURCES/omnibus-csghub-1.6.0.tar.gz omnibus-csghub-1.6.0
-```
+## 运行服务 | Running the Service
 
-##### 3. Download other source package
+### 功能说明 Feature Description
 
-```shell
-export pgsql_version=16.8
-export scws_version=1.2.3
-export zhparser_version=2.3
-export python_version=3.13.2
+因 CSGHub 配置的复杂性，启动 CSGhub 分为以下两种方式：  
+*Due to the complexity of CSGHub configuration, starting CSGHub is divided into two modes:*
 
-wget -O ~/rpmbuild/SOURCES/postgresql-${pgsql_version}.tar.gz https://ftp.postgresql.org/pub/source/v${pgsql_version}/postgresql-${pgsql_version}.tar.gz
-wget -O ~/rpmbuild/SOURCES/scws-${scws_version}.tar.bz2 http://www.xunsearch.com/scws/down/scws-${scws_version}.tar.bz2
-wget -O ~/rpmbuild/SOURCES/v${zhparser_version}.zip https://gh-proxy.com/github.com/amutu/zhparser/archive/refs/tags/v${zhparser_version}.zip
-wget -O ~/rpmbuild/SOURCES/Python-${python_version}.tgz https://www.python.org/ftp/python/${python_version}/Python-${python_version}.tgz
-```
+- **基本功能：**不启动包含模型评测，模型推理，模型微调，Space 等在内的依托于 Kubernetes 的相关功能。  
 
-##### 4. Copy the spec file
+    ***Basic Features:** Does not include Kubernetes-dependent functionalities such as model evaluation, inference, fine-tuning, and Spaces.*
 
-```shell
-cp omnibus-csghub/omnibus-csghub.spec ~/rpmbuild/SPECS/omnibus-csghub.spec
-```
+- **完整功能：**包含 ce/ee 的完整功能。  
 
-##### 5. Build the RPM
+    ***Full Features:** Includes all functionalities of both ce/ee editions.*
 
-```shell
-# Using en locale
-export LANG="" 
-# Ignore rpath check error
-export QA_RPATHS=$(( 0x0001|0x0002 )) 
-# Build the RPM package
-rpmbuild -ba --define 'dist .oe2203sp4' ~/rpmbuild/SPECS/omnibus-csghub.spec
+*特别说明：如果使用 IP 地址配置访问，MCP 功能使用受限（此功能依赖域名）。*  
+*Special Note: MCP functionality will be limited when using IP address configuration (this feature requires domain name).*
 
-# The built RPM will be in:
-# ~/rpmbuild/RPMS/x86_64/omnibus-csghub-1.6.0-1.oe2203sp4.x86_64.rpm (or similar)
-```
+### 其他前置条件 Additional Prerequisites
 
-##### 6. Verification
+- Docker Compose Plugin 1.12.0+  
+- Kubernetes 1.28+ (Required for full-featured installation only)
 
-```shell
-# Check the package contents
-rpm -qlp ~/rpmbuild/RPMS/x86_64/omnibus-csghub-*.rpm
-rpm -qlp ~/rpmbuild/SRPMS/omnibus-csghub-*.src.rpm
+### 运行 Running CSGHub
 
-# Check the package metadata
-rpm -qip ~/rpmbuild/RPMS/x86_64/omnibus-csghub-*.rpm
-rpm -qip ~/rpmbuild/SRPMS/omnibus-csghub-*.src.rpm
-```
+- 基本功能 Basic Features
 
-#### RPM (Build from source package)
+    ```shell
+    docker compose -f docker-compose-simple.yml up -d 
+    ```
 
-##### Auto re-build from src package
+- 完整功能 Full Features
 
-```shell
-# Install required tools
-dnf install -y rpm-build rpmdevtools dnf-plugins-core openssh-clients
+    ```shell
+    docker compose -f docker-compose.yml up -d 
+    ```
 
-# Install build dependencies
-dnf install -y gcc make bison flex libicu-devel libtool libxml2-devel libxslt-devel openssl-devel readline-devel systemd-devel zlib-devel chrpath
+    完整功能需要修改如下参数：  
+    *For full features, modify these parameters:*
 
-# Rebuild from source code package
-rpmbuild --rebuild --define 'dist .oe2109' ~/omnibus-csghub-1.6.0-1.src.rpm
-```
+    - `environment.CSGHUB_OMNIBUS_CONFIG.runner.deploy.knative.services[0].host` 修改为访问 Kubernetes API Server的 IP 地址。  
+      *Update to the IP address for accessing Kubernetes API Server.*
+    
+    - `volumes[3]`映射`.kube`目录到CSGHub。  
+      *Map the `.kube` directory to CSGHub.*
 
-##### Manual re-build from src package
+- 停止服务执行相同操作（将up替换为down）：  
+    *To stop the service, execute the same command replacing 'up' with 'down':*
 
-###### 1. Prepare the build environment
-
-```shell
-# Install required tools
-dnf install -y rpm-build rpmdevtools dnf-plugins-core
-
-# Set up the RPM build tree
-rpmdev-setuptree
-```
-
-###### 2. Install src packages
-
-```shell
-rpm -ivh omnibus-csghub-1.6.0-1.src.rpm
-```
-
-###### 3. Verify build tree
-
-```shell
-tree rpmbuild/
-
-rpmbuild/
-|-- BUILD
-|-- RPMS
-|-- SOURCES
-|   |-- Python-3.13.2.tgz
-|   |-- omnibus-csghub-1.6.0.tar.gz
-|   |-- postgresql-16.8.tar.gz
-|   |-- scws-1.2.3.tar.bz2
-|   `-- v2.3.zip
-|-- SPECS
-|   `-- omnibus-csghub.spec
-`-- SRPMS
-```
-
-###### 4. Install build dependencies
-
-```shell
-# Install build dependencies
-dnf install gcc make bison flex libicu-devel libtool libxml2-devel libxslt-devel openssl-devel readline-devel systemd-devel zlib-devel chrpath
-
-# If patchelf cannot be installed automatically
-# CentOS 7
-dnf install -y https://rpmfind.net/linux/openmandriva/5.0/repository/x86_64/unsupported/release/patchelf-0.11-1-omv4002.x86_64.rpm
-# CentOS 8
-dnf install -y https://rpmfind.net/linux/epel/8/Everything/x86_64/Packages/p/patchelf-0.12-1.el8.x86_64.rpm
-```
-
-###### 5. Rebuild package
-
-```shell
-# Build all
-rpmbuild -ba ~/rpmbuild/SPECS/omnibus-csghub.spec
-
-# Debugging
-# Unzip the source code and prepare the build environment
-rpmbuild -bp ~/rpmbuild/SPECS/omnibus-csghub.spec
-# Compile
-rpmbuild -bc ~/rpmbuild/SPECS/omnibus-csghub.spec
-# Install to virtual root directory
-rpmbuild -bi ~/rpmbuild/SPECS/omnibus-csghub.spec
-# Generate RPM packages only
-rpmbuild -bb ~/rpmbuild/SPECS/omnibus-csghub.spec
-```
-
-#### Key Differences from Debian to RPM
-
-1. **Spec File Structure**: RPM uses a single `.spec` file instead of multiple control files
-2. **Script Sections**:
-    - `%pre` replaces `preinst`
-    - `%post` replaces `postinst`
-    - `%preun` replaces `prerm`
-    - `%postun` replaces `postrm`
-3. **File Ownership**: RPM uses `%defattr` and `%attr` macros for file permissions
-4. **Dependencies**:
-    - `Requires` replaces `Depends`
-    - `Obsoletes` replaces `Replaces`
-5. **Version Comparison**: RPM handles version comparisons internally, no need for dpkg checks
-
-
-
+    ```shell
+    docker compose -f [compose-file] down
+    ```

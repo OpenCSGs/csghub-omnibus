@@ -1,0 +1,21 @@
+services:
+  csghub:
+    container_name: csghub
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:2.0
+    hostname: 'csghub.example.com'
+    environment:
+      CSGHUB_OMNIBUS_CONFIG: |
+        csghub:
+          external_url: "http://csghub.example.com"
+    ports:
+      - '80:80'
+      - '2222:2222'
+      - '8000:8000'
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - ./csghub/etc:/etc/csghub
+      - ./csghub/logs:/var/log/csghub
+      - ./csghub/data:/var/opt/csghub
+    restart: always
+    shm_size: '256m'
