@@ -413,7 +413,7 @@
     {{- $pass = file.Read $initPassFile -}}
   {{- end -}}
   {{- if not $pass -}}
-    {{- $pass = random.Alpha 48 -}}
+    {{- $pass = random.Alpha 24 -}}
     {{- file.Write $initPassFile $pass -}}
   {{- end -}}
   "users": [
