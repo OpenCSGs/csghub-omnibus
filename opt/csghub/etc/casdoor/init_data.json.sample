@@ -20,7 +20,7 @@
       "websiteUrl": "{{ $csghub.external_url }}",
       "favicon": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/favicon.png",
       "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
-      "passwordType": "sha512-salt",
+      "passwordType": "bcrypt",
       "passwordSalt": "OpenCSG",
       "passwordOptions": [
         "AtLeast8",
