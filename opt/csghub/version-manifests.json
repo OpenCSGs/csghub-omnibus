@@ -96,13 +96,13 @@
         "name": "csghub-server",
         "description": "CSGHub backend service",
         "version": "1.7.1-ce",
-        "repository": ""
+        "repository": "https://github.com/OpenCSGs/csghub-server"
       },
       {
         "name": "csghub-portal",
         "description": "CSGHub frontend portal",
         "version": "1.7.1-ce",
-        "repository": ""
+        "repository": "https://github.com/OpenCSGs/csghub"
       }
     ]
   }

@@ -1,5 +1,6 @@
 ARG OS_RELEASE=ubuntu:22.04
 
+ARG CSGHUB_VERSION=v1.7.1-ce
 ARG RUNIT_VERSION=2.1.2
 ARG TOOLBOX_VERSION=1.2.1
 ARG CONSUL_VERSION=1.20.5
@@ -14,8 +15,6 @@ ARG NATS_VERSION=2.10.16
 ARG CASDOOR_VERSION=v1.799.0
 ARG DNSMASQ_VERSION=2.91
 ARG NGINX_VERSION=1.27.5
-ARG CSGHUB_SERVER_VERSION=v1.7.1
-ARG CSGHUB_PORTAL_VERSION=v1.7.1
 
 ## Install Runit Service Daemon
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-${RUNIT_VERSION} AS runit
@@ -57,10 +56,10 @@ FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/casbin/casdoor:$
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:nginx-${NGINX_VERSION} AS nginx
 
 ## Install csghub-server
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_server:${CSGHUB_SERVER_VERSION} AS server
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_server:${CSGHUB_VERSION} AS server
 
 ## Install csghub-portal
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_portal:${CSGHUB_PORTAL_VERSION} AS portal
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_portal:${CSGHUB_VERSION} AS portal
 
 FROM ${OS_RELEASE}
 WORKDIR /
