@@ -126,8 +126,7 @@ valid_hour = 24
 
 {{ $runner := (datasource "config").runner }}
 {{- $deploy := $runner.deploy -}}
-{{- $runnerRegistry := dict -}}
-{{- $runnerRegistry = $runner.registry -}}
+{{- $runnerRegistry := $runner.registry -}}
 {{- $rproxy := (datasource "config").rproxy -}}
 {{- $registry := (datasource "config").registry -}}
 {{- $registryPort := $registry.listen | regexp.Find ":([0-9]+)" | strings.TrimPrefix ":" -}}
