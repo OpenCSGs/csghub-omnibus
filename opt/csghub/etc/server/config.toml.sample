@@ -1,5 +1,6 @@
 {{- $csghub := (datasource "config").csghub -}}
 {{- $server := (datasource "config").server -}}
+{{- $praefect := (datasource "config").praefect -}}
 {{- $gitlabShell := (datasource "config").gitlab_shell -}}
 
 {{- $url := conv.URL $csghub.external_url -}}
@@ -280,6 +281,18 @@ hosts = [{{- range $k, $v := $proxy.hosts }}{{if $k}}, {{end}}{{$v | quote }}{{-
 [instrumentation]
 otlp_logging = {{ $instrumentation.otlp_logging }}
 otlp_endpoint = {{ $instrumentation.otlp_endpoint | quote }}
+
+{{ $git := $server.git -}}
+{{ $praefect :=
+[git]
+operation_timeout = {{ $git.operation_timeout }}
+{{- if $praefect.enable }}
+check_file_size_enabled = false
+{{- else }}
+check_file_size_enabled = {{ $git.check_file_size_enabled }}
+{{- end }}
+max_un_lfs_file_size = {{ $git.max_un_lfs_file_size }}
+skip_lfs_file_validation = {{ $git.skip_lfs_file_validation }}
 
 {{ $image_builder := $runner.image_builder -}}
 [runner]
