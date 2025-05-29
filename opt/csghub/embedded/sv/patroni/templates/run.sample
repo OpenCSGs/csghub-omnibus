@@ -15,4 +15,4 @@ set -e
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/patroni/env -P \
   -u postgres:postgres \
-  /opt/csghub/embedded/bin/python3.13 /opt/csghub/embedded/bin/patroni {{ $configDir }}/patroni.yaml
+  /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/bin/patroni {{ $configDir }}/patroni.yaml

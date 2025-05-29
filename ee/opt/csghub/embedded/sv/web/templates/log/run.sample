@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/starship_web" }}
+{{- if has (datasource "config").starship "log" }}
+{{- if has (datasource "config").starship.log "dir" }}
+{{- if (datasource "config").starship.log.dir }}
+{{- $logDir = (datasource "config").starship.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

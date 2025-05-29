@@ -22,7 +22,7 @@ AutoProv:       no
 %define scws_version 1.2.3
 %define scws_home /opt/csghub/embedded
 %define zhparser_version 2.3
-%define python_version 3.13.2
+%define python_version 3.11.11
 %define python_home /opt/csghub/embedded/python
 
 Source0:        %{name}-%{version}.tar.gz
@@ -132,7 +132,7 @@ export PYTHONHOME=%{buildroot}%{python_home}
 export PYTHONPATH=%{buildroot}/opt/csghub/embedded/sv
 export PATH=$PYTHONHOME/bin:$PATH
 export LD_LIBRARY_PATH=$PYTHONHOME/lib:$LD_LIBRARY_PATH
-python3.13 -m pip install \
+python3.11 -m pip install \
     --no-cache-dir \
     --root=%{buildroot} \
     --prefix=/opt/csghub/embedded/sv/patroni \
@@ -140,7 +140,7 @@ python3.13 -m pip install \
 
 # Fixed shebang path
 find %{buildroot}/opt/csghub/embedded/sv/patroni/bin -type f -exec \
-    sed -i '1s|#!.*/python3.13|#!/opt/csghub/embedded/python/bin/python3.13|' {} \;
+    sed -i '1s|#!.*/python3.11|#!/opt/csghub/embedded/python/bin/python3.11|' {} \;
 
 # Fix path references
 find %{buildroot} -type f -name "*.so" -exec chmod 755 {} \;

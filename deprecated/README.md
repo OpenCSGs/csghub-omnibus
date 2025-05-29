@@ -83,7 +83,7 @@ tar -zcf ~/rpmbuild/SOURCES/omnibus-csghub-1.6.0.tar.gz omnibus-csghub-1.6.0
 export pgsql_version=16.8
 export scws_version=1.2.3
 export zhparser_version=2.3
-export python_version=3.13.2
+export python_version=3.11.11
 
 wget -O ~/rpmbuild/SOURCES/postgresql-${pgsql_version}.tar.gz https://ftp.postgresql.org/pub/source/v${pgsql_version}/postgresql-${pgsql_version}.tar.gz
 wget -O ~/rpmbuild/SOURCES/scws-${scws_version}.tar.bz2 http://www.xunsearch.com/scws/down/scws-${scws_version}.tar.bz2
@@ -165,7 +165,7 @@ rpmbuild/
 |-- BUILD
 |-- RPMS
 |-- SOURCES
-|   |-- Python-3.13.2.tgz
+|   |-- Python-3.11.11.tgz
 |   |-- omnibus-csghub-1.6.0.tar.gz
 |   |-- postgresql-16.8.tar.gz
 |   |-- scws-1.2.3.tar.bz2
