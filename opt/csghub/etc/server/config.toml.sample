@@ -282,7 +282,6 @@ otlp_logging = {{ $instrumentation.otlp_logging }}
 otlp_endpoint = {{ $instrumentation.otlp_endpoint | quote }}
 
 {{ $git := $server.git -}}
-{{ $praefect :=
 [git]
 operation_timeout = {{ $git.operation_timeout }}
 {{- if $praefect.enable }}
