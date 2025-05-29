@@ -54,7 +54,7 @@ RUN apt install -y \
       libsqlite3-dev \
       libbz2-dev
 
-ARG PYTHON_VERSION=3.13.3
+ARG PYTHON_VERSION=3.11.11
 RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
     mkdir /python && tar --strip-components=1 -zxf Python-${PYTHON_VERSION}.tgz -C /python && \
     cd /python && ./configure --prefix=${CSGHUB_EMBEDDED}/python \
@@ -64,7 +64,6 @@ RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VER
     make && make altinstall
 
 ## Install patroni
-RUN ln -sf ${CSGHUB_EMBEDDED}/python/bin/* ${CSGHUB_EMBEDDED}/bin/
 ENV PYTHONHOME=${CSGHUB_EMBEDDED}/python
 ENV PYTHONPATH=${CSGHUB_SRV_HOME}:\$PYTHONPATH \
     PATH=$PYTHONHOME/bin:$PATH \
@@ -72,9 +71,17 @@ ENV PYTHONPATH=${CSGHUB_SRV_HOME}:\$PYTHONPATH \
 
 # Install Patroni
 ARG PATRONI_VERSION=4.0.5
-RUN python3.13 -m pip install \
+RUN python3.11 -m pip install \
       --no-cache-dir \
       --prefix=/opt/csghub/embedded/sv/patroni patroni[consul]==${PATRONI_VERSION} psycopg2-binary
+
+# Install dependencies for starship
+COPY ./dockerfiles/starship/. ./starship/
+RUN python3.11 -m pip install -U pip && \
+    python3.11 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
+    python3.11 -m pip install --default-timeout=60 --no-cache-dir -r /starship/requirements.txt \
+
+RUN ln -sf ${CSGHUB_EMBEDDED}/python/bin/* ${CSGHUB_EMBEDDED}/bin/
 
 FROM ${OS_RELEASE}
 
