@@ -181,8 +181,8 @@ organization_name = {{ $casdoor.organization_name | quote }}
 application_name = {{ $casdoor.application_name | quote }}
 
 {{ $nats := (datasource "config").nats }}
-{{- $natsUser := "natsadmin" -}}
-{{- $natsPassword := crypto.PBKDF2 $natsUser "opencsg" 2048 8 -}}
+{{- $natsUser := $nats.auth.user -}}
+{{- $natsPassword := $nats.auth.password | default (crypto.PBKDF2 $natsUser "opencsg" 2048 8) -}}
 {{- $serverNats := $server.nats -}}
 [nats]
 url = {{ $serverNats.url | default (printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword) | quote }}
