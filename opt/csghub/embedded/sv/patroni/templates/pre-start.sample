@@ -25,6 +25,6 @@ chown -R postgres:postgres {{ $dataDir }} || true
 {{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "$PYTHONHOME/lib:$PGHOME/lib:$LD_LIBRARY_PATH" }}
 {{- file.Write (printf "%s/PATRONI_HOME" $envDir) "/opt/csghub/embedded/sv/patroni" }}
 {{- file.Write (printf "%s/PYTHONPATH" $envDir) "$PATRONI_HOME/lib/python3.11/site-packages:$PYTHONHOME/lib/python3.11/site-packages" }}
-{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "$PYTHONHOME/bin:$PGHOME/bin:$PATH" }}
+{{- file.Write (printf "%s/PATH" $envDir) "$PYTHONHOME/bin:$PGHOME/bin:$PATH" }}
 
 
