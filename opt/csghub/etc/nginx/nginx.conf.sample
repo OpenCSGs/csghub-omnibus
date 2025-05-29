@@ -370,7 +370,7 @@ http {
 
         error_page 500 502 503 504 /50x.html;
         location = /50x.html {
-            root  {{ $dataDir }}/html;
+            root {{ $dataDir }}/html;
         }
     }
 
@@ -445,7 +445,7 @@ http {
 
         error_page 500 502 503 504 /50x.html;
         location = /50x.html {
-            root  {{ $dataDir }}/html;
+            root {{ $dataDir }}/html;
         }
     }
     {{- end }}
