@@ -1,7 +1,7 @@
 services:
   csghub:
-    container_name: csghub
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:2.0
+    container_name: omnibus-csghub
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.7.1-ee
     hostname: 'csghub.example.com'
     environment:
       CSGHUB_OMNIBUS_CONFIG: |
@@ -16,6 +16,9 @@ services:
                   domain: "app.internal"
                   host: "192.168.18.10"
                   port: 30123
+        server:
+          dataflow:
+            address: "http://dataflow:8000"
         starship:
           enable: true
     ports:
@@ -34,3 +37,29 @@ services:
       - ./csghub/.kube:/etc/csghub/.kube
     restart: always
     shm_size: '256m'
+
+  dataflow:
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/dataflow:latest
+    environment:
+      CSGHUB_ENDPOINT: "http://csghub.example.com"
+      DATABASE_HOSTNAME: "omnibus-csghub"
+      DATABASE_PORT: "5432"
+      DATABASE_USERNAME: "dataflow"
+      DATABASE_PASSWORD: "8f444970fcde559c"
+      DATABASE_DB: "dataflow"
+      DATA_DIR: "/data"
+      MAX_WORKERS: 50
+      RAY_ADDRESS: "auto"
+      RAY_ENABLE: false
+      RAY_LOG_DIR: "/var/log/dataflow"
+      API_SERVER: "0.0.0.0"
+      API_PORT: 8000
+      AZURE_OPENAI_ENDPOINT: "$AZURE_OPENAI_ENDPOINT"
+      AZURE_OPENAI_API_KEY: "$AZURE_OPENAI_ENDPOINT"
+      OPENAI_API_VERSION: "$OPENAI_API_VERSION"
+      AZURE_MODEL: "$AZURE_MODEL"
+      ENABLE_OPENTELEMETRY: false
+    volumes:
+      - ./csghub/data/dataflow:/data
+      - ./csghub/logs/dataflow:/var/log/dataflow
+    restart: always
