@@ -4,7 +4,7 @@
 INSERT INTO socialaccount_socialapp
   (id, provider, name, client_id, secret, key, provider_id, settings)
 VALUES
-  (1, 'casdoor', 'casdoor', {{ $casdoor.client_id }}, {{ $casdoor.client_secret }}, '', 'casdoor', '{"SCOPE": ["profile"]}')
+  (1, 'casdoor', 'casdoor', {{ $casdoor.client_id | squote }}, {{ $casdoor.client_secret | squote }}, '', 'casdoor', '{"SCOPE": ["profile"]}')
 ON CONFLICT (id) DO NOTHING;
 
 SELECT
