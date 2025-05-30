@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# exit when error
+set -e
+
+{{- $configDir := "/opt/csghub/etc/server" }}
+{{- $envDir := printf "%s/env" $configDir }}
+
+# Clear all environment variable files
+# rm -rf {{ $envDir }}/* || true
+
+{{- file.Write (printf "%s/GIN_MODE" $envDir) "release" }}
+
+{{- $server := (datasource "config").server }}
+{{- $dataDir := $server.data | default "/var/opt/csghub/server" }}
+{{- $db := $server.postgresql }}
+{{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
+{{- file.Write (printf "%s/POSTGRES_USER" $envDir) $db.user }}
+{{- file.Write (printf "%s/POSTGRES_PASSWORD" $envDir) $password }}
+{{- file.Write (printf "%s/POSTGRES_DB" $envDir) $db.name }}
+{{- file.Write (printf "%s/HOME" $envDir) "/etc/csghub" }}
+{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" $db.user $password $db.host $db.port $db.name) }}
+{{- file.Write (printf "%s/STARHUB_SERVER_PUBLIC_ROOT_DOMAIN" $envDir) " " }}
+{{- file.Write (printf "%s/DUCKDB_HOME" $envDir) "/opt/csghub/embedded/sv/server" }}
+{{- file.Write (printf "%s/DUCKDB_EXTENSION_DIRECTORY" $envDir) "/opt/csghub/embedded/sv/server" }}
+{{- file.Write (printf "%s/OPENCSG_LICENSE_PUBLIC_KEY_FILE" $envDir) "/opt/csghub/etc/server/enterprise/public_key_ee.pem" }}
+{{- file.Write (printf "%s/OPENCSG_LICENSE_PRIVATE_KEY_FILE" $envDir) "/opt/csghub/etc/server/enterprise/private_key_ee.pem" }}
+
+{{- $postgresql := (datasource "config").postgresql }}
+{{- $patroni := (datasource "config").patroni }}
+{{- if or $postgresql.enable $patroni.enable }}
+# Create server database
+/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
+{{- end }}
+
+{{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
+{{- $configFile := printf "%s/config.toml" $dataDir }}
+
+# Define constants
+readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
+readonly ENV_DIR="/opt/csghub/etc/server/env"
+
+# Build command arguments
+args=("start" "server")
+[[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
+
+# Database setup
+(cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" || true)&
+
+# Wait to initialize
+while true; do
+  res=$(chpst -e {{ $envDir }} /scripts/pg_exists "tags")
+  if [ "$res" -gt 0 ]; then
+    break
+  fi
+done
+
+# Clean up any existing processes
+echo "Checking for existing csghub_server processes..."
+if pgrep -f "$SERVER_BIN" >/dev/null; then
+    echo "Found existing csghub_server process, attempting graceful shutdown..."
+    pkill -f "$SERVER_BIN" || true
+
+    # Force kill if still running after graceful attempt
+    if pgrep -f "$SERVER_BIN" >/dev/null; then
+        echo "Forcing termination of remaining processes..."
+        pkill -9 -f "$SERVER_BIN" || true
+    fi
+fi
+
+# Load local sql scripts
+cd /opt/csghub/service/server
+[ -x "/scripts/pg_executor" ] && chpst -e {{ $envDir }} /scripts/pg_executor
+
+{{- $minio := (datasource "config").minio }}
+{{- if $minio.enable }}
+# Create bucket
+[ -x "/opt/csghub/service/minio/create_bucket" ] && /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }}
+{{- end }}
+
+find {{ $configDir }} -mindepth 1 -maxdepth 1 ! -name '*.sample' ! -name 'seed' ! -name 'env' ! -name 'scripts' -exec cp -r {} {{ $dataDir }} \;
+echo "copy configuration files done."
+
+{{- $multi_sync := $server.multi_sync -}}
+{{- if $multi_sync.enabled }}
+
+{{- $logDir := "/var/log/csghub/server" }}
+{{- if has (datasource "config").server "log" }}
+{{- if has (datasource "config").server.log "dir" }}
+{{- if (datasource "config").server.log.dir }}
+{{- $logDir = (datasource "config").server.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+# Check and kill any existing multi-sync processes before starting a new one
+if pgrep -f "$SERVER_BIN sync sync-as-client" >/dev/null; then
+    pkill -f "$SERVER_BIN sync sync-as-client"
+    # Wait a moment for the process to terminate
+    sleep 1
+fi
+
+args=("sync" "sync-as-client")
+[[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
+
+# Initialize multi-source synchronization
+(cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" > {{ $logDir }}/multi-sync.log 2>&1)&
+{{- end }}
