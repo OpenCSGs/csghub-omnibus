@@ -94,7 +94,7 @@ csghub:
 
 #  ## Dataflow service configuration
 #  dataflow:
-#    address: "http://127.0.0.1:8001"  ## Dataflow service endpoint
+#    address: "http://dataflow:8000"  ## Dataflow service endpoint
 
 #  ## Workflow service configuration
 #  workflow:

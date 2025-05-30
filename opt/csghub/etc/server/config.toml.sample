@@ -237,6 +237,24 @@ instance = false
 [dataset]
 prompt_max_jsonl_file_size = {{ $dataset.prompt_max_jsonl_file_size }}
 
+{{ $dataflow := $server.dataflow -}}
+{{- $dfUrl := conv.URL $dataflow.address -}}
+{{- $dfUrlParts := $dfUrl.Host | strings.Split ":" -}}
+{{- $dfHost := index $dfUrlParts 0 -}}
+{{- $dfPort := "" -}}
+{{- if gt (len $dfUrlParts) 1 -}}
+  {{- $dfPort = index $dfUrlParts 1 -}}
+{{- else -}}
+  {{- if eq $dfUrl.Scheme "https" -}}
+    {{- $dfPort = "443" -}}
+  {{- else -}}
+    {{- $dfPort = "80" -}}
+  {{- end -}}
+{{- end -}}
+[dataflow]
+host = {{ printf "%s://%s" $dfUrl.Scheme $dfHost | quote }}
+port = {{ $dfPort }}
+
 {{ $moderation := (datasource "config").moderation -}}
 {{- if $moderation.enable -}}
 {{- $moderationAddress := $moderation.address -}}
