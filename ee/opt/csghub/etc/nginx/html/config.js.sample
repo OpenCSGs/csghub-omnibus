@@ -1,7 +1,6 @@
 {{- $starship := (datasource "config").starship }}
 {{- $server := (datasource "config").server }}
 {{- $serverCasdoor := $server.casdoor }}
--- Casdoor
 window.envConfig = {
     VITE_APP_BASE_WEB: {{ $starship.external_url | squote }},
     VITE_APP_BASE_API: {{ $starship.external_api_url | squote }},

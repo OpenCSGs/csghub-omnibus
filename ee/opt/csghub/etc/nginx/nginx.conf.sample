@@ -468,11 +468,23 @@ http {
       {{- end -}}
     {{- end -}}
     server {
-        listen {{ $starshipPort }};
+        {{- if eq $url.Scheme "https" }}
+        listen {{ $starshipPort }} ssl;
         server_name {{ $starshipHost }};
 
+        ssl_certificate {{ $csghubCert }};
+        ssl_certificate_key {{ $csghubCertKey }};
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- else }}
+        listen {{ $starshipPort }};
+        server_name {{ $starshipHost }};
+        {{- end }}
+
+        {{ $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
         location / {
-            root /opt/csghub/embedded/sv/frontend/html;
+            root {{ $dataDir }}/html;
             index index.html;
             try_files $uri $uri/ /index.html;
         }
@@ -492,8 +504,19 @@ http {
       {{- end -}}
     {{- end -}}
     server {
+        {{- if eq $url.Scheme "https" }}
+        listen {{ $starshipApiPort }} ssl;
+        server_name {{ $starshipApiHost }};
+
+        ssl_certificate {{ $csghubCert }};
+        ssl_certificate_key {{ $csghubCertKey }};
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- else }}
         listen {{ $starshipApiPort }};
         server_name {{ $starshipApiHost }};
+        {{- end }}
 
         location /agentic {
             {{- $agentic := (datasource "config").agentic }}

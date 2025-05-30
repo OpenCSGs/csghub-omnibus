@@ -78,7 +78,7 @@ FROM ${OS_RELEASE}
 WORKDIR /
 
 COPY ./opt/. /opt/
-COPY ee/opt/. /opt/
+COPY ./ee/opt/. /opt/
 COPY ./scripts/. /scripts/
 
 ENV CSGHUB_HOME=/opt/csghub
@@ -140,7 +140,7 @@ COPY --from=casdoor /web ${CSGHUB_HOME}/etc/casdoor/web
 
 ## Install Nginx
 COPY --from=nginx /opt/csghub/. /opt/csghub/
-COPY ./opt/csghub/etc/nginx/. /opt/csghub/etc/nginx/
+#COPY ./opt/csghub/etc/nginx/. /opt/csghub/etc/nginx/
 
 ## Install csghub-server
 ENV GIN_MODE=release
@@ -157,7 +157,7 @@ COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/server/bin/
 ## Install starship-web
 COPY --from=starship /code/. ${CSGHUB_SRV_HOME}/web/
 COPY --from=billing /app/. ${CSGHUB_SRV_HOME}/billing/bin/
-COPY --from=frontend /usr/share/nginx/html ${CSGHUB_SRV_HOME}/frontend/html
+COPY --from=frontend /usr/share/nginx/html ${CSGHUB_HOME}/etc/nginx/html
 COPY --from=agentic /code/. ${CSGHUB_SRV_HOME}/agentic/
 
 # Using 8182 as temporal-ui default listen port
