@@ -12,9 +12,9 @@ set -e
 # rm -rf {{ $envDir }}/* || true
 
 {{- file.Write (printf "%s/PYTHONHOME" $envDir) "/opt/csghub/embedded/python" }}
-{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "/opt/csghub/embedded/python/lib:$LD_LIBRARY_PATH" }}
+{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) (printf "/opt/csghub/embedded/python/lib:%s" (env.Getenv "LD_LIBRARY_PATH")) }}
 {{- file.Write (printf "%s/PYTHONPATH" $envDir) "/opt/csghub/embedded/python/lib/python3.11/site-packages" }}
-{{- file.Write (printf "%s/PATH" $envDir) "/opt/csghub/embedded/python/bin:$PATH" }}
+{{- file.Write (printf "%s/PATH" $envDir) (printf "/opt/csghub/embedded/python/bin:%s" (env.Getenv "PATH")) }}
 
 {{- file.Write (printf "%s/DJANGO_DEBUG" $envDir) "false" }}
 {{- file.Write (printf "%s/DJANGO_SETTINGS_MODULE" $envDir) "config.settings" }}
@@ -30,11 +30,12 @@ set -e
 {{- file.Write (printf "%s/DATABASE_USERNAME" $envDir) $db.user }}
 {{- file.Write (printf "%s/DATABASE_PASSWORD" $envDir) $password }}
 {{- file.Write (printf "%s/DATABASE_NAME" $envDir) $db.name }}
+{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" $db.user $password $db.host $db.port $db.name) }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
 {{- if or $postgresql.enable $patroni.enable }}
-# Create starship database
+# Create starship databasec
 /opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
 {{- end }}
 
@@ -88,6 +89,11 @@ chpst -e /opt/csghub/etc/web/env -P \
   -u root:root \
   /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py createcachetable
 
- chpst -e /opt/csghub/etc/web/env -P \
-   -u root:root \
-   /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py clearsessions
+chpst -e /opt/csghub/etc/web/env -P \
+  -u root:root \
+  /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py clearsessions
+
+# Load local sql scripts
+cd /opt/csghub/service/web
+[ -x "/scripts/pg_executor" ] && chpst -e {{ $envDir }} /scripts/pg_executor
+
