@@ -1,0 +1,16 @@
+-- point to django_site
+INSERT INTO socialaccount_socialapp_sites
+  (id, socialapp_id, site_id)
+VALUES
+  (2, 1, 1)
+ON CONFLICT (id) DO NOTHING;
+
+SELECT
+pg_catalog.setval('public.socialaccount_socialapp_sites_id_seq', (
+        SELECT
+            MAX(id)
+        FROM public.socialaccount_socialapp_sites), TRUE);
+
+{{- $starship := (datasource "config").starship }}
+-- Change django_site to the correct domain
+UPDATE django_site SET domain = '{{ $starship.external_api_url }}', name = '{{ $starship.external_api_url }}' WHERE id = 1;

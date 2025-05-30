@@ -1,0 +1,538 @@
+# User and worker process configuration
+user root;
+worker_processes auto;
+worker_cpu_affinity auto;
+pcre_jit on;
+
+# Events configuration
+events {
+    worker_connections 1024;     # Maximum number of connections per worker
+    multi_accept on;             # Accept as many connections as possible per event
+    use epoll;                   # Use epoll for scalable I/O
+}
+
+{{- $nginx := (datasource "config").nginx }}
+{{- $gitlabShell := (datasource "config").gitlab_shell }}
+# Stream configuration for TCP/UDP traffic
+stream {
+    server {
+        listen {{ $gitlabShell.ssh_port }};             # Listen on TCP port 2222
+        proxy_pass 127.0.0.1:2222;  # Forward traffic to GitLab Shell on port 2222
+    }
+}
+
+# HTTP block configuration
+http {
+    # Disable server version token in responses
+    server_tokens off;
+    charset utf-8;               # Set default charset to UTF-8
+
+    # Enable file transfer optimization
+    sendfile on;                 # Send files directly from disk
+    tcp_nopush on;               # Reduce network congestion
+    tcp_nodelay on;              # Send packets immediately without delay
+
+    # Mime types and default type
+    types_hash_max_size 4096;
+    include mime.types;
+    default_type application/octet-stream;
+
+    # Enhanced log format for troubleshooting upstream issues
+    log_format json_combined escape=json
+      '{'
+        '"remote_addr":"$remote_addr",'
+        '"remote_user":"$remote_user",'
+        '"time_local":"$time_local",'
+        '"request":"$request",'
+        '"status":"$status",'
+        '"body_bytes_sent":"$body_bytes_sent",'
+        '"http_referer":"$http_referer",'
+        '"http_user_agent":"$http_user_agent",'
+        '"http_x_forwarded_for":"$http_x_forwarded_for",'
+        '"upstream_addr":"$upstream_addr",'
+        '"upstream_status":"$upstream_status",'
+        '"request_time":$request_time,'
+        '"upstream_response_time":$upstream_response_time,'
+        '"host":"$host"'
+      '}';
+
+    # Redirect log tpo stdout/stderr
+    access_log /dev/stdout json_combined;
+    error_log /dev/stderr warn;
+
+    # Gzip compression settings
+    gzip on;
+    gzip_disable "msie6";
+    gzip_comp_level 6;
+    gzip_min_length 1100;
+    gzip_buffers 16 8k;
+    gzip_proxied any;
+    gzip_types text/plain application/xml text/css text/js text/xml application/x-javascript text/javascript application/json application/xml+rss;
+
+    # Proxy and buffering optimization
+    proxy_request_buffering off;
+    proxy_buffering on;
+    proxy_buffers 16 64k;
+    proxy_buffer_size 128k;
+    proxy_busy_buffers_size 256k;
+
+    client_body_temp_path /tmp/client_body_temp 1 2;   # Recommend using SSD storage
+    proxy_max_temp_file_size 150000M;               # Avoid large temporary files
+    proxy_temp_path /tmp/proxy_temp 1 2;
+    client_max_body_size 0;                         # No limit for client request body size
+
+    # Global timeout settings (explicit units)
+    client_body_timeout 3600s;
+    client_header_timeout 3600s;
+    send_timeout 3600s;
+    keepalive_timeout 600s;
+    proxy_read_timeout 3600s;
+    proxy_connect_timeout 300s;
+    proxy_redirect off;
+    proxy_http_version 1.1;
+
+    # Connection upgrade mapping
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+    }
+
+    {{- if $nginx.rate_limit.enable }}
+    limit_req_zone $binary_remote_addr zone=global:10m rate={{ $nginx.rate_limit.request }};
+    limit_conn_zone $binary_remote_addr zone=addr:10m;
+    {{- end }}
+
+    {{- $csghub := (datasource "config").csghub -}}
+    {{- $url := conv.URL $csghub.external_url -}}
+    {{- $urlParts := $url.Host | strings.Split ":" -}}
+    {{- $host := index $urlParts 0 | default "csghub.example.com" -}}
+    {{- $port := "" -}}
+    {{- if gt (len $urlParts) 1 -}}
+      {{- $port = index $urlParts 1 -}}
+    {{- else -}}
+      {{- if eq $url.Scheme "https" -}}
+        {{- $port = "443" -}}
+      {{- else -}}
+        {{- $port = "80" -}}
+      {{- end -}}
+    {{- end -}}
+
+    {{- $server := (datasource "config").server -}}
+    {{- $nginx := (datasource "config").nginx -}}
+    {{- $dataDir := $nginx.data }}
+
+    {{- $csghubCert := $nginx.ssl_certificate }}
+    {{- $csghubCertKey := $nginx.ssl_certificate_key }}
+
+    {{- if eq $url.Scheme "https" -}}
+    # Main server configurations
+    server {
+        listen 80;
+        server_name {{ $host }};
+
+        return 301 https://$host$request_uri;
+    }
+    {{- end }}
+
+    server {
+        {{- if eq $url.Scheme "https" }}
+        listen 443 ssl;
+        {{- else }}
+        listen 80;
+        {{- end }}
+        server_name {{ $host }};
+
+        {{- if eq $url.Scheme "https" }}
+        ssl_certificate {{ $csghubCert }};
+        ssl_certificate_key {{ $csghubCertKey }};
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- end }}
+
+        {{- if $nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
+        limit_conn addr {{ $nginx.rate_limit.conn }};
+        {{- end }}
+
+        # Default route
+        location / {
+            proxy_pass http://127.0.0.1:8090;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $host;
+        }
+
+        # API route
+        location /api/ {
+            proxy_pass http://127.0.0.1:8080/api/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # HF route
+        location ~ ^/(hf|csg|ms)/ {
+            proxy_pass http://127.0.0.1:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        {{- $temporalUI := (datasource "config").temporal_ui -}}
+        {{ if $temporalUI.enable }}
+        # Temporal UI route with basic auth
+        location {{ printf "%s/" $temporalUI.public_path }} {
+            auth_basic "Please login with your account:";
+            auth_basic_user_file /opt/csghub/etc/temporal_ui/.htpasswd;
+
+            proxy_pass http://127.0.0.1:8182;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+        {{- end }}
+
+        {{- $runner := (datasource "config").runner -}}
+        {{- $deploy := $runner.deploy }}
+        {{- if and (not $deploy.usePublicDomain) (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+        # Endpoint route
+        location /endpoint/ {
+            proxy_pass http://127.0.0.1:8083;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_cookie_flags ~ nosecure samesite=lax;
+        }
+        {{- end }}
+
+        # Git specific route
+        location ~* \.git(/.*)?$ {
+            proxy_pass http://127.0.0.1:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto http;
+        }
+
+        # Custom error page handling for 50x errors
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root {{ $dataDir }}/html;
+        }
+    }
+
+    {{ if and $deploy.usePublicDomain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) -}}
+    {{- $rootDomain := "example.com" }}
+    {{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+    {{- $hostParts := strings.Split "." $host }}
+    {{- if le (len $hostParts) 2 }}
+    {{- $rootDomain = $host }}
+    {{- else }}
+    {{- $rootDomain = regexp.Replace "^[^.]+\\." "" $host }}
+    {{- end }}
+    {{- end }}
+    server {
+        {{- if eq $url.Scheme "https" }}
+        listen 443 ssl;
+        {{- else }}
+        listen 80;
+        {{- end }}
+        server_name {{ printf "*.public.%s" $rootDomain }};
+
+        {{- if eq $url.Scheme "https" }}
+        ssl_certificate {{ $csghubCert }};
+        ssl_certificate_key {{ $csghubCertKey }};
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- end }}
+
+        {{- if $nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
+        limit_conn addr {{ $nginx.rate_limit.conn }};
+        {{- end }}
+
+        # Endpoint route
+        location / {
+            proxy_pass http://127.0.0.1:8083;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $http_host;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+        }
+
+        # Custom error page handling for 50x errors
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root {{ $dataDir }}/html;
+        }
+    }
+    {{- end }}
+
+    {{ $registry := (datasource "config").registry -}}
+    {{- $registryListen := $registry.listen }}
+    {{- $registryParts := $registryListen | strings.Split ":" -}}
+    {{- $registryHost := "127.0.0.1" -}}
+    {{- $registryPort := 5000 -}}
+    {{- if gt (len $registryParts) 0 -}}
+      {{- if eq (len $registryParts) 1 -}}
+        {{- if hasPrefix (index $registryParts 0) ":" -}}
+          {{- $registryPort = strings.trimPrefix (index $registryParts 0) ":" -}}
+        {{- else if (index $registryParts 0) -}}
+          {{- $registryHost = index $registryParts 0 -}}
+        {{- end -}}
+      {{- else -}}
+        {{- $registryHost = index $registryParts 0 -}}
+        {{- $registryPort = index $registryParts 1 -}}
+      {{- end -}}
+    {{- end -}}
+    # Docker registry service
+    server {
+        {{- if eq $url.Scheme "https" }}
+        listen {{ $registryPort }} ssl;
+        server_name {{ $host }};
+
+        ssl_certificate {{ $csghubCert }};
+        ssl_certificate_key {{ $csghubCertKey }};
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- else }}
+        listen {{ $registryPort }};
+        server_name {{ $host }};
+        {{- end }}
+
+        client_max_body_size 0;                   # Allow unlimited body size
+        chunked_transfer_encoding on;
+
+        location /v2/ {
+            if ($http_user_agent ~ "^(docker\/1\.(3|4|5(?!\.[0-9]-dev))|Go ).*$") {
+                return 404;  # Block unsupported Docker clients
+            }
+
+            proxy_pass http://127.0.0.1:5001;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 900;
+        }
+    }
+
+    {{ $casdoor := (datasource "config").casdoor -}}
+    {{- $casdoorListen := $casdoor.listen -}}
+    {{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
+    {{- $casdoorHost := index $casdoorParts 0 -}}
+    {{- $casdoorPort := index $casdoorParts 1 -}}
+    # Casdoor service configuration
+    server {
+        {{- if eq $url.Scheme "https" }}
+        listen {{ $casdoorPort }} ssl;
+        server_name {{ $host }};
+
+        ssl_certificate {{ $csghubCert }};
+        ssl_certificate_key {{ $csghubCertKey }};
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- else }}
+        listen {{ $casdoorPort }};
+        server_name {{ $host }};
+        {{- end }}
+
+        {{- if $nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
+        limit_conn addr {{ $nginx.rate_limit.conn }};
+        {{- end }}
+
+        location / {
+            proxy_pass http://127.0.0.1:8087;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root {{ $dataDir }}/html;
+        }
+    }
+
+    # More MinIO server configuration
+    server {
+        {{- if eq $url.Scheme "https" }}
+        listen 9001 ssl;
+        server_name {{ $host }};
+
+        ssl_certificate {{ $csghubCert }};
+        ssl_certificate_key {{ $csghubCertKey }};
+
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+        {{- else }}
+        listen 9001;
+        server_name {{ $host }};
+        {{- end }}
+
+        ignore_invalid_headers off;
+        client_max_body_size 0;
+
+        client_header_timeout 7200s;
+        client_body_timeout 7200s;
+        proxy_read_timeout 7200s;
+        proxy_send_timeout 7200s;
+
+        proxy_request_buffering on;
+        proxy_buffering on;
+        proxy_buffers 32 256k;
+        proxy_buffer_size 512k;
+        proxy_busy_buffers_size 1m;
+
+        location / {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            proxy_connect_timeout 300s;
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            chunked_transfer_encoding off;
+
+            proxy_pass http://127.0.0.1:9002;
+        }
+    }
+
+    {{- $ns := $deploy.namespace | default "spaces" }}
+    {{- if has $deploy "knative" }}
+    {{- if has $deploy.knative "services" }}
+    {{- $services := $deploy.knative.services }}
+    {{ range $services }}
+    # Dynamic HTTP routing for apps
+    server {
+        listen 80;
+        server_name *.{{ $ns }}.{{ .domain }};
+
+        location / {
+            proxy_http_version 1.1;
+            proxy_pass http://{{ .host }}:{{ .port }};
+            proxy_set_header Host $host;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $http_host;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root {{ $dataDir }}/html;
+        }
+    }
+    {{- end }}
+    {{- end }}
+    {{- end }}
+
+    {{ $starship := (datasource "config").starship -}}
+    {{- if $starship.enable }}
+    {{- $starshipUrl := conv.URL $starship.external_url -}}
+    {{- $starshipUrlParts := $starshipUrl.Host | strings.Split ":" -}}
+    {{- $starshipHost := index $starshipUrlParts 0 | default "csghub.example.com" -}}
+    {{- $starshipPort := "" -}}
+    {{- if gt (len $starshipUrlParts) 1 -}}
+      {{- $starshipPort = index $starshipUrlParts 1 -}}
+    {{- else -}}
+      {{- if eq $starshipUrl.Scheme "https" -}}
+        {{- $starshipPort = "443" -}}
+      {{- else -}}
+        {{- $starshipPort = "80" -}}
+      {{- end -}}
+    {{- end -}}
+    server {
+        listen {{ $starshipPort }};
+        server_name {{ $starshipHost }};
+
+        location / {
+            root /opt/csghub/embedded/sv/frontend/html;
+            index index.html;
+            try_files $uri $uri/ /index.html;
+        }
+    }
+
+    {{ $starshipApiUrl := conv.URL $starship.external_api_url -}}
+    {{- $starshipApiUrlParts := $starshipApiUrl.Host | strings.Split ":" -}}
+    {{- $starshipApiHost := index $starshipApiUrlParts 0 | default "csghub.example.com" -}}
+    {{- $starshipApiPort := "" -}}
+    {{- if gt (len $starshipApiUrlParts) 1 -}}
+      {{- $starshipApiPort = index $starshipApiUrlParts 1 -}}
+    {{- else -}}
+      {{- if eq $starshipApiUrl.Scheme "https" -}}
+        {{- $starshipApiPort = "443" -}}
+      {{- else -}}
+        {{- $starshipApiPort = "80" -}}
+      {{- end -}}
+    {{- end -}}
+    server {
+        listen {{ $starshipApiPort }};
+        server_name {{ $starshipApiHost }};
+
+        location /agentic {
+            {{- $agentic := (datasource "config").agentic }}
+            proxy_pass http://{{ $agentic.listen }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 300s;
+            proxy_send_timeout 300s;
+            proxy_read_timeout 300s;
+
+            # For streaming API (event-stream)
+            proxy_buffering off;
+            proxy_cache off;
+        }
+
+        location / {
+            proxy_pass http://127.0.0.1:8183;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 300s;
+            proxy_send_timeout 300s;
+            proxy_read_timeout 300s;
+
+            # For streaming API (event-stream)
+            proxy_buffering off;
+            proxy_cache off;
+        }
+
+
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root {{ $dataDir }}/html;
+        }
+    }
+    {{- end }}
+}

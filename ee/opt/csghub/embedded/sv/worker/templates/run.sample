@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+cd /opt/csghub/embedded/sv/web/project
+exec chpst -e /opt/csghub/etc/web/env -P \
+  -u root:root \
+  /opt/csghub/embedded/bin/celery -A config worker --loglevel=INFO -Q high_priority_queue,default -c 2 -n worker%%h

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+{{- $dataDir := (datasource "config").web.data | default "/var/opt/csghub/web" }}
+cd {{ $dataDir }}
+exec chpst -e /opt/csghub/etc/web/env -P \
+  -u root:root \
+  /opt/csghub/embedded/bin/gunicorn -c /opt/csghub/embedded/sv/web/project/gunicorn_config.py

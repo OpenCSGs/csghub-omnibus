@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Exit if execute with any errors
+set -e
+
+{{- $envDir := "/opt/csghub/etc/web/env" }}
+
+# Clear all environment variable files
+# rm -rf {{ $envDir }}/* || true
+
+{{- file.Write (printf "%s/PYTHONHOME" $envDir) "/opt/csghub/embedded/python" }}
+{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "/opt/csghub/embedded/python/lib:$LD_LIBRARY_PATH" }}
+{{- file.Write (printf "%s/PYTHONPATH" $envDir) "/opt/csghub/embedded/python/lib/python3.11/site-packages" }}
+{{- file.Write (printf "%s/PATH" $envDir) "/opt/csghub/embedded/python/bin:$PATH" }}
+
+{{- file.Write (printf "%s/DJANGO_DEBUG" $envDir) "false" }}
+{{- file.Write (printf "%s/DJANGO_SETTINGS_MODULE" $envDir) "config.settings" }}
+{{- file.Write (printf "%s/C_FORCE_ROOT" $envDir) "true" }}
+
+{{- $web := (datasource "config").web }}
+{{- $dataDir := $web.data | default "/var/opt/csghub/web" }}
+{{- $db := $web.postgresql }}
+{{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
+{{- file.Write (printf "%s/DATABASE_TYPE" $envDir) "postgresql" }}
+{{- file.Write (printf "%s/DATABASE_HOST" $envDir) $db.host }}
+{{- file.Write (printf "%s/DATABASE_PORT" $envDir) $db.port }}
+{{- file.Write (printf "%s/DATABASE_USERNAME" $envDir) $db.user }}
+{{- file.Write (printf "%s/DATABASE_PASSWORD" $envDir) $password }}
+{{- file.Write (printf "%s/DATABASE_NAME" $envDir) $db.name }}
+
+{{- $postgresql := (datasource "config").postgresql }}
+{{- $patroni := (datasource "config").patroni }}
+{{- if or $postgresql.enable $patroni.enable }}
+# Create starship database
+/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
+{{- end }}
+
+{{- $redis := $web.redis }}
+{{- $redisUser := $redis.auth.user -}}
+{{- $redisPassword := $redis.auth.password | default (crypto.PBKDF2 $redisUser "opencsg" 2048 8) -}}
+{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":%s@%s" $redisPassword $redis.host) }}
+{{- file.Write (printf "%s/REDIS_PORT" $envDir) $redis.port }}
+
+{{- $starship := (datasource "config").starship }}
+{{- $csghub := (datasource "config").csghub }}
+{{- file.Write (printf "%s/STARSHIP_WEB_URL" $envDir) $starship.external_url }}
+{{- file.Write (printf "%s/STARSHIP_API_URL" $envDir) $starship.external_api_url }}
+{{- file.Write (printf "%s/USE_OPENAI_ASSISTANTS_API" $envDir) "false" }}
+
+{{- file.Write (printf "%s/ACCOUNTING_OP_MODE" $envDir) "has_balance|consume" }}
+{{- file.Write (printf "%s/ACCOUNTING_API_BASE" $envDir) $csghub.external_url }}
+{{- $seedFile := "/opt/csghub/etc/server/seed" -}}
+{{- $seed := "" -}}
+{{- if file.Exists $seedFile -}}
+  {{- $seed = file.Read $seedFile -}}
+{{- end -}}
+{{- if not $seed -}}
+  {{- $seed = random.Alpha 48 -}}
+  {{- file.Write $seedFile $seed -}}
+{{- end -}}
+{{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 }}
+{{- file.Write (printf "%s/ACCOUNTING_API_KEY" $envDir) $apiToken }}
+{{- file.Write (printf "%s/OPENCSG_HUB_BASE_URL" $envDir) $csghub.external_url }}
+{{- file.Write (printf "%s/OPENCSG_HUB_ACCESS_TOKEN" $envDir) $apiToken }}
+
+{{- $openai := $web.openai }}
+{{- file.Write (printf "%s/AZURE_MODEL" $envDir) $openai.model }}
+{{- file.Write (printf "%s/AZURE_API_BASE" $envDir) $openai.api.base }}
+{{- file.Write (printf "%s/AZURE_API_VERSION" $envDir) $openai.api.version }}
+{{- file.Write (printf "%s/AZURE_API_KEY" $envDir) $openai.api.key }}
+{{- file.Write (printf "%s/LANCEDB_URI" $envDir) "/opt/csghub/embedded/sv/web/data/lancedb" }}
+
+{{ $nats := (datasource "config").nats }}
+{{- $natsUser := $nats.auth.user -}}
+{{- $natsPassword := $nats.auth.password | default (crypto.PBKDF2 $natsUser "opencsg" 2048 8) -}}
+{{- $webNats := $web.nats -}}
+{{- file.Write (printf "%s/NATS_URL" $envDir) ($webNats.url | default (printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword)) }}
+
+{{ file.Write (printf "%s/GIT_PYTHON_GIT_EXECUTABLE" $envDir) "/opt/csghub/embedded/bin/gitaly-git-v2.47" }}
+chpst -e /opt/csghub/etc/web/env -P \
+  -u root:root \
+  /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py migrate
+
+chpst -e /opt/csghub/etc/web/env -P \
+  -u root:root \
+  /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py createcachetable
+
+ chpst -e /opt/csghub/etc/web/env -P \
+   -u root:root \
+   /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py clearsessions

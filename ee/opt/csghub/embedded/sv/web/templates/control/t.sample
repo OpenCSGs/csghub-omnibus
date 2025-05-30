@@ -1,0 +1,29 @@
+#!/bin/sh
+exec 1>&2
+
+if pgrep temporal >/dev/null; then
+    echo "Stopping gunicorn processes..."
+
+    # First try graceful termination
+    pkill -TERM gunicorn
+
+    # Wait for processes to exit
+    sleep 2
+
+    # Check if any processes remain
+    if pgrep temporal >/dev/null; then
+        echo "Force killing remaining gunicorn processes..."
+        pkill -KILL gunicorn || true
+    fi
+
+    # Final verification
+    if pgrep gunicorn >/dev/null; then
+        echo "Warning: Some gunicorn processes still running!"
+        exit 1
+    else
+        echo "gunicorn stopped successfully"
+    fi
+else
+    echo "No gunicorn processes running"
+fi
+

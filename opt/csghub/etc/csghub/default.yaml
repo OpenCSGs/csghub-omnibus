@@ -740,3 +740,63 @@ casdoor:
     port: 5432                  # Database port
     user: "casdoor"             # Database user
     password: ""  # Database password
+
+##########################################################################
+# Starship Configuration
+# - IDE AI Coding Assistant
+##########################################################################
+starship:
+  enable: false     # Enable or disable all the following Starship service
+  external_url: http://csghub.example.com:8001       # External URL for Starship web interface
+  external_api_url: http://csghub.example.com:8002   # External API URL for Starship service
+
+# Starship-Web ###########################################################
+web:
+  # Database configuration
+  postgresql:
+    name: "starship"            # Database name
+    host: "127.0.0.1"           # Database host
+    port: 5432                  # Database port
+    user: "starship"            # Database user
+    password: ""                # Database password
+
+  # Redis cache configuration
+  redis:
+    host: "127.0.0.1"  # Redis server address
+    port: 6379
+    auth:
+      user: "default"           # Redis username
+      password: ""              # Redis password
+
+  # OpenAI or compatible assistants
+  openai:
+    model: "csg-gpt4o-mini"
+    ## API connection settings for Azure OpenAI service
+    api:
+      ## Base endpoint URL for Azure OpenAI API
+      ## Note: This should point to your Azure OpenAI service instance
+      base: "https://opencsg-us.openai.azure.com"
+      ## API version to use for compatibility
+      ## Important: This should match the API version supported by your Azure OpenAI deployment
+      version: "2024-06-01"
+      ## API key for authentication (keep empty in version control)
+      ## Security Note: Always set this via environment variables or secrets in production
+      ## Example: "123456abcdef7890" (actual key should never be committed to source control)
+      key: ""
+
+  # NATS messaging configuration
+  nats:
+    url: ""                      # NATS server URL
+
+# Starship-Celery ########################################################
+producer: {}  # Producer configuration (empty for default settings)
+worker: {}    # Worker configuration (empty for default settings)
+
+# Starship-Agentic #######################################################
+agentic:
+  listen: "127.0.0.1:8184"  # Network address and port for Agentic service
+
+# Starship-Billing #######################################################
+billing:
+  enable: false             # Whether billing functionality is enabled
+  listen: "127.0.0.1:8185"  # Network address and port for Billing service

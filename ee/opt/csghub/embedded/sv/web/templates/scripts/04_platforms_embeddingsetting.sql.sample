@@ -1,0 +1,12 @@
+INSERT INTO platforms_embeddingsetting
+  (id, feature, model_id)
+VALUES
+  (1, '', 1),
+  (2, 'ide', 1)
+ON CONFLICT (id) DO NOTHING;
+
+SELECT
+pg_catalog.setval('public.platforms_embeddingsetting_id_seq', (
+        SELECT
+            MAX(id)
+        FROM public.platforms_embeddingsetting), TRUE);

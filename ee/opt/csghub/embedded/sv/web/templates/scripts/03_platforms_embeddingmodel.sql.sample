@@ -1,0 +1,12 @@
+-- Embedding
+INSERT INTO platforms_embeddingmodel
+  (id, provider, model, dim, api_key, api_base, api_version)
+VALUES
+  (1, 'custom', 'openai/jina-embeddings-v2-base-code', 768, 'jina', 'http://host:port/v1', '')
+ON CONFLICT (id) DO NOTHING;
+
+SELECT
+pg_catalog.setval('public.platforms_embeddingmodel_id_seq', (
+        SELECT
+            MAX(id)
+        FROM public.platforms_embeddingmodel), TRUE);

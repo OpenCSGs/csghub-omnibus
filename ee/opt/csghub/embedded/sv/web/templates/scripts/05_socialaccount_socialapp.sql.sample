@@ -1,0 +1,14 @@
+{{- $server := (datasource "config").server }}
+{{- $casdoor := $server.casdoor }}
+-- Casdoor
+INSERT INTO socialaccount_socialapp
+  (id, provider, name, client_id, secret, key, provider_id, settings)
+VALUES
+  (1, 'casdoor', 'casdoor', {{ $casdoor.client_id }}, {{ $casdoor.client_secret }}, '', 'casdoor', '{"SCOPE": ["profile"]}')
+ON CONFLICT (id) DO NOTHING;
+
+SELECT
+pg_catalog.setval('public.socialaccount_socialapp_id_seq', (
+        SELECT
+            MAX(id)
+        FROM public.socialaccount_socialapp), TRUE);

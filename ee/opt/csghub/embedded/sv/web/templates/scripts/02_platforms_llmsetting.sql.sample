@@ -1,0 +1,15 @@
+INSERT INTO platforms_llmsetting
+  (id, feature, model_id)
+VALUES
+  (1, '', 1),
+  (2, 'ide', 1),
+  (3, 'ide-chat', 1),
+  (4, 'ide-code-completion', 1),
+  (5, 'ide-codereview', 1)
+ON CONFLICT (id) DO NOTHING;
+
+SELECT
+pg_catalog.setval('public.platforms_llmsetting_id_seq', (
+        SELECT
+            MAX(id)
+        FROM public.platforms_llmsetting), TRUE);

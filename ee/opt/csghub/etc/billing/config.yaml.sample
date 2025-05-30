@@ -1,0 +1,18 @@
+{{ $nats := (datasource "config").nats }}
+{{ $billing := (datasource "config").billing }}
+{{ $web := (datasource "config").web }}
+{{- $natsUser := $nats.auth.user -}}
+{{- $natsPassword := $nats.auth.password | default (crypto.PBKDF2 $natsUser "opencsg" 2048 8) -}}
+{{- $webNats := $web.nats -}}
+nats: {{ $webNats.url | default (printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword) }}
+pub:
+  addr: {{ $billing.listen }}
+  key: ''
+sub:
+  streams:
+    - name: accountingNotifyStream
+      consumers:
+        - durable_name: starship-billing-durable-consumer
+  webhook:
+    url: http://127.0.0.1:8001/api/v1/platforms/billing-events/
+    key: 'key'

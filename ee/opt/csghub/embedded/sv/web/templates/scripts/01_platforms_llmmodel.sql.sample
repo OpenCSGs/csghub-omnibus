@@ -1,0 +1,12 @@
+-- LLM
+INSERT INTO platforms_llmmodel
+  (id, provider, model, context_window, api_key, api_base, api_version, short_name)
+VALUES
+  (1, 'custom', 'openai/data/models/deepseek-coder-33b-instruct-awq', 16000, 'deepseek', 'http://host:port/v1', '', '')
+ON CONFLICT (id) DO NOTHING;
+
+SELECT
+pg_catalog.setval('public.platforms_llmmodel_id_seq', (
+        SELECT
+            MAX(id)
+        FROM public.platforms_llmmodel), TRUE);

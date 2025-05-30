@@ -1,10 +1,10 @@
 #!/bin/bash
 
-{{- $logDir := "/var/log/csghub/starship_web" }}
-{{- if has (datasource "config").starship "log" }}
-{{- if has (datasource "config").starship.log "dir" }}
-{{- if (datasource "config").starship.log.dir }}
-{{- $logDir = (datasource "config").starship.log.dir }}
+{{- $logDir := "/var/log/csghub/web" }}
+{{- if has (datasource "config").web "log" }}
+{{- if has (datasource "config").web.log "dir" }}
+{{- if (datasource "config").web.log.dir }}
+{{- $logDir = (datasource "config").web.log.dir }}
 {{- end }}
 {{- end }}
 {{- end }}

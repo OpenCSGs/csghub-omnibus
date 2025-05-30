@@ -1,11 +1,11 @@
 ARG OS_RELEASE=ubuntu:22.04
 
-ARG CSGHUB_VERSION=v1.7.1-ce
+ARG CSGHUB_VERSION=v1.7.1
 ARG RUNIT_VERSION=2.1.2
-ARG TOOLBOX_VERSION=1.2.1
+ARG TOOLBOX_VERSION=1.2.2
 ARG CONSUL_VERSION=1.20.5
 ARG MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
-ARG POSTGRESQL_VERSION=16.8
+ARG PATRONI_VERSION=4.0.5
 ARG REDIS_VERSION=6.2.14
 ARG REGISTRY_VERSION=2.8.3
 ARG GITALY_VERSION=v17.5.0
@@ -15,6 +15,10 @@ ARG NATS_VERSION=2.10.16
 ARG CASDOOR_VERSION=v1.799.0
 ARG DNSMASQ_VERSION=2.91
 ARG NGINX_VERSION=1.27.5
+ARG STARSHIP_VERSION=latest
+ARG STARSHIP_FRONTEND=v1.2.2
+ARG STARSHIP_BILLING=v0.2.0
+ARG STARSHIP_AGENTIC=v0.2.0
 
 ## Install Runit Service Daemon
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-${RUNIT_VERSION} AS runit
@@ -29,7 +33,7 @@ FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/hashicorp/consul
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:minio-${MINIO_VERSION} AS minio
 
 ## Install PostgreSQL
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} AS postgresql
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:patroni-${PATRONI_VERSION} AS patroni
 
 ## Install Redis
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:redis-${REDIS_VERSION} AS redis
@@ -61,10 +65,20 @@ FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_server:${
 ## Install csghub-portal
 FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_portal:${CSGHUB_VERSION} AS portal
 
+## Install Starship
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-web:${STARSHIP_VERSION} AS starship
+
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-billing:${STARSHIP_BILLING} AS billing
+
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-portal:${STARSHIP_FRONTEND} AS frontend
+
+FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-agentic:${STARSHIP_AGENTIC} AS agentic
+
 FROM ${OS_RELEASE}
 WORKDIR /
 
 COPY ./opt/. /opt/
+COPY ee/opt/. /opt/
 COPY ./scripts/. /scripts/
 
 ENV CSGHUB_HOME=/opt/csghub
@@ -96,7 +110,7 @@ COPY --from=minio ${CSGHUB_SRV_HOME}/minio/bin/. ${CSGHUB_SRV_HOME}/minio/bin/
 COPY --from=minio ${CSGHUB_SRV_HOME}/logger/bin/. ${CSGHUB_SRV_HOME}/logger/bin/
 
 ## Installer PostgreSQL (or Patroni Python)
-COPY --from=postgresql ${CSGHUB_EMBEDDED}/. ${CSGHUB_EMBEDDED}/
+COPY --from=patroni ${CSGHUB_EMBEDDED}/. ${CSGHUB_EMBEDDED}/
 
 ## Install Redis
 COPY --from=redis ${CSGHUB_SRV_HOME}/redis/bin/. ${CSGHUB_SRV_HOME}/redis/bin/
@@ -116,9 +130,6 @@ COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_HOME}/etc/temporal/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal/
 COPY --from=temporal ${CSGHUB_HOME}/etc/temporal_ui/. ${CSGHUB_HOME}/etc/temporal_ui/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal_ui/. ${CSGHUB_SRV_HOME}/temporal_ui/
-
-# Using 8182 as temporal-ui default listen port
-RUN sed -i 's/8080/8182/g' ${CSGHUB_HOME}/etc/temporal_ui/config-template.yaml
 
 ## Install NATS
 COPY --from=nats /nats-server ${CSGHUB_SRV_HOME}/nats/bin/
@@ -143,6 +154,19 @@ RUN rm ${CSGHUB_HOME}/etc/server/starhub
 ## Install csghub-portal
 COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/server/bin/
 
+## Install starship-web
+COPY --from=starship /code/. ${CSGHUB_SRV_HOME}/web/
+COPY --from=billing /app/. ${CSGHUB_SRV_HOME}/billing/bin/
+COPY --from=frontend /usr/share/nginx/html ${CSGHUB_SRV_HOME}/frontend/html
+COPY --from=agentic /code/. ${CSGHUB_SRV_HOME}/agentic/
+
+# Using 8182 as temporal-ui default listen port
+RUN sed -i 's/8080/8182/g' ${CSGHUB_HOME}/etc/temporal_ui/config-template.yaml && \
+    sed -i -e 's/:8000/:8183/g' \
+      -e 's|/code/logs/gunicorn.access.log|/dev/stdout|g' \
+      -e 's|/code/|/opt/csghub/embedded/sv/web/|g' \
+      ${CSGHUB_EMBEDDED}/sv/web/project/{gunicorn_config.py,uwsgi.ini}
+
 ENV PATH=$PATH:/opt/csghub/embedded/bin
 
 RUN apt update && \
@@ -157,7 +181,8 @@ RUN apt update && \
       libxml2 \
       libxslt1.1 \
       libcurl3-gnutls \
-      vim && \
+      libpq-dev \
+      vim lsof && \
     apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
 RUN chmod +x -R /opt/csghub/bin && \
