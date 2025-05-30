@@ -62,6 +62,7 @@ codeowners==0.7.0
 lark_oapi==1.4.6
 gunicorn==23.0.0
 uvicorn==0.34.0
+hypercorn
 adrf==0.1.9
 servestatic==3.0.1
 django-import-export==4.3.6

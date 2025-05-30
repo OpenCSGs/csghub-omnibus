@@ -79,7 +79,7 @@ RUN python3.11 -m pip install \
 COPY ./dockerfiles/starship/. ./starship/
 RUN python3.11 -m pip install -U pip && \
     python3.11 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
-    python3.11 -m pip install --default-timeout=60 --no-cache-dir -r /starship/requirements.txt \
+    python3.11 -m pip install --default-timeout=60 --no-cache-dir -r /starship/requirements.txt
 
 RUN ln -sf ${CSGHUB_EMBEDDED}/python/bin/* ${CSGHUB_EMBEDDED}/bin/
 
