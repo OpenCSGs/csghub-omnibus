@@ -267,7 +267,7 @@ port = {{ $dfPort }}
 {{- $moderationParts := $moderationUrl.Host | strings.Split ":" -}}
 {{- $moderationHost := index $moderationParts 0 | default "127.0.0.1" -}}
 {{- $moderationPort := "" -}}
-{{ if gt (len $moderationParts) 1 }}
+{{- if gt (len $moderationParts) 1 }}
   {{- $moderationPort = index $moderationParts 1 -}}
 {{- else -}}
     {{- $moderationPort = "8089" -}}
@@ -285,7 +285,7 @@ access_key_secret = {{ $sensitive.access_key_secret | quote }}
 region = {{ $sensitive.region | quote }}
 endpoint = {{ $sensitive.endpoint | quote }}
 enable_ssl = {{ $sensitive.enable_ssl }}
-{{- end }}
+{{- end -}}
 
 {{ $workflow := $server.workflow -}}
 [workflow]
