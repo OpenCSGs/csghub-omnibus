@@ -26,6 +26,7 @@ set -e
 {{- file.Write (printf "%s/STARHUB_SERVER_PUBLIC_ROOT_DOMAIN" $envDir) " " }}
 {{- file.Write (printf "%s/DUCKDB_HOME" $envDir) "/opt/csghub/embedded/sv/server" }}
 {{- file.Write (printf "%s/DUCKDB_EXTENSION_DIRECTORY" $envDir) "/opt/csghub/embedded/sv/server" }}
+{{- file.Write (printf "%s/STARHUB_SERVER_MIRROR_REMOTE" $envDir) "false" }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
