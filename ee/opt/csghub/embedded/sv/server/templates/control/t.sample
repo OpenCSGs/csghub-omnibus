@@ -1,0 +1,58 @@
+#!/bin/sh
+exec 1>&2
+
+if pgrep "celery -A config worker" >/dev/null; then
+    echo "Stopping "celery -A config worker" processes..."
+
+    # First try graceful termination
+    pkill -TERM "celery -A config worker"
+#!/bin/sh
+exec 1>&2
+
+if pgrep "celery -A config worker" >/dev/null; then
+    echo "Stopping "celery -A config worker" processes..."
+
+    # First try graceful termination
+    pkill -TERM "celery -A config worker"
+
+    # Wait for processes to exit
+    sleep 2
+
+    # Check if any processes remain
+    if pgrep "celery -A config worker" >/dev/null; then
+        echo "Force killing remaining "celery -A config worker" processes..."
+        pkill -KILL "celery -A config worker" || true
+    fi
+
+    # Final verification
+    if pgrep "celery -A config worker" >/dev/null; then
+        echo "Warning: Some "celery -A config worker" processes still running!"
+        exit 1
+    else
+        echo ""celery -A config worker" stopped successfully"
+    fi
+else
+    echo "No "celery -A config worker" processes running"
+fi
+
+
+    # Wait for processes to exit
+    sleep 2
+
+    # Check if any processes remain
+    if pgrep "celery -A config worker" >/dev/null; then
+        echo "Force killing remaining "celery -A config worker" processes..."
+        pkill -KILL "celery -A config worker" || true
+    fi
+
+    # Final verification
+    if pgrep "celery -A config worker" >/dev/null; then
+        echo "Warning: Some "celery -A config worker" processes still running!"
+        exit 1
+    else
+        echo ""celery -A config worker" stopped successfully"
+    fi
+else
+    echo "No "celery -A config worker" processes running"
+fi
+

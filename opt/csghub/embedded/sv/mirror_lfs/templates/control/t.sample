@@ -1,0 +1,58 @@
+#!/bin/sh
+exec 1>&2
+
+if pgrep "mirror lfs-sync" >/dev/null; then
+    echo "Stopping "mirror lfs-sync" processes..."
+
+    # First try graceful termination
+    pkill -TERM "mirror lfs-sync"
+#!/bin/sh
+exec 1>&2
+
+if pgrep "mirror lfs-sync" >/dev/null; then
+    echo "Stopping "mirror lfs-sync" processes..."
+
+    # First try graceful termination
+    pkill -TERM "mirror lfs-sync"
+
+    # Wait for processes to exit
+    sleep 2
+
+    # Check if any processes remain
+    if pgrep "mirror lfs-sync" >/dev/null; then
+        echo "Force killing remaining "mirror lfs-sync" processes..."
+        pkill -KILL "mirror lfs-sync" || true
+    fi
+
+    # Final verification
+    if pgrep "mirror lfs-sync" >/dev/null; then
+        echo "Warning: Some "mirror lfs-sync" processes still running!"
+        exit 1
+    else
+        echo ""mirror lfs-sync" stopped successfully"
+    fi
+else
+    echo "No "mirror lfs-sync" processes running"
+fi
+
+
+    # Wait for processes to exit
+    sleep 2
+
+    # Check if any processes remain
+    if pgrep "mirror lfs-sync" >/dev/null; then
+        echo "Force killing remaining "mirror lfs-sync" processes..."
+        pkill -KILL "mirror lfs-sync" || true
+    fi
+
+    # Final verification
+    if pgrep "mirror lfs-sync" >/dev/null; then
+        echo "Warning: Some "mirror lfs-sync" processes still running!"
+        exit 1
+    else
+        echo ""mirror lfs-sync" stopped successfully"
+    fi
+else
+    echo "No "mirror lfs-sync" processes running"
+fi
+
