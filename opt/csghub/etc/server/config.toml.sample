@@ -67,6 +67,11 @@ ssh_domain = {{ printf "ssh://git@%s:%d" $host $shell_port | quote }}
 url = {{ printf "http://localhost:%d" $mirrorRepo.listen_port | quote }}
 token = ""
 port = {{ $mirrorRepo.listen_port }}
+{{- if $server.saas }}
+remote = true
+{{- else }}
+remote = false
+{{- end }}
 session_secret_key = {{ crypto.SHA1 $seed | quote }}
 worker_number = {{ $mirrorRepo.worker_number }}
 lfs_concurrency = {{ $mirrorLfs.lfs_concurrency }}
