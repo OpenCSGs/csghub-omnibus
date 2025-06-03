@@ -64,6 +64,10 @@ FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_portal:${
 FROM ${OS_RELEASE}
 WORKDIR /
 
+LABEL org.opencontainers.image.licenses="Apache-2.0, AGPL-3.0, GPL-2.0-only" \
+      org.opencontainers.image.minio.source="https://github.com/minio/minio/tree/RELEASE.2025-03-12T18-04-18Z" \
+      org.opencontainers.image.dnsmasq.source="http://thekelleys.org.uk/dnsmasq/dnsmasq-2.91.tar.gz"
+
 COPY ./NOTICE /NOTICE
 COPY ./opt/. /opt/
 COPY ./scripts/. /scripts/
