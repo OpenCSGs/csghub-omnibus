@@ -77,6 +77,7 @@ FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-agentic
 FROM ${OS_RELEASE}
 WORKDIR /
 
+COPY ./NOTICE /NOTICE
 COPY ./opt/. /opt/
 COPY ./ee/opt/. /opt/
 COPY ./scripts/. /scripts/

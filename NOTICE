@@ -1,0 +1,59 @@
+# NOTICE
+# SPDX-FileCopyrightText: 2025 OpenCSG
+# SPDX-License-Identifier: [Omnibus-CSGHub License, Apache-2.0]
+
+This project includes unmodified binary components from third-party open source software:
+
+1. **Minio** (AGPLv3 License)
+   - Source: Official Docker image `minio/minio:RELEASE.2025-03-12T18-04-18Z`
+   - Code Repository: https://github.com/minio/minio
+
+2. **Dnsmasq** (GPLv2 License)
+   - Source: Official release package v2.91
+   - Code Repository: http://thekelleys.org.uk/dnsmasq/
+
+3. **Casdoor** (Apache License 2.0)
+   - Source: Official Docker image `casbin/casdoor:v1.799.0`
+   - Code Repository: https://github.com/casdoor/casdoor
+
+4. **Consul** (MPL-2.0 License)
+   - Source: Official Docker image `hashicorp/consul:1.20.5`
+   - Code Repository: https://github.com/hashicorp/consul
+
+5. **Distribution (Docker Registry)** (Apache License 2.0)
+   - Source: Official Docker image `registry:2.8.3`
+   - Code Repository: https://github.com/distribution/distribution
+
+6. **Gitaly** (MIT License)
+   - Source: Official Docker image `registry.gitlab.com/gitlab-org/build/cng/gitaly:v17.5.0`
+   - Code Repository: https://gitlab.com/gitlab-org/gitaly
+
+7. **GitLab Shell** (MIT License)
+   - Source: Official Docker image `registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:v17.5.0`
+   - Code Repository: https://gitlab.com/gitlab-org/gitlab-shell
+
+8. **NATS** (Apache License 2.0)
+   - Source: Official Docker image `nats:2.10.16`
+   - Code Repository: https://github.com/nats-io/nats-server
+
+9. **NGINX** (2-clause BSD License)
+    - Source: Compiled from unmodified source code (official tarball)
+    - Code Repository: https://hg.nginx.org/nginx/
+
+10. **Patroni** (MIT License)
+    - Source: PyPI packages
+    - Code Repository: https://github.com/zalando/patroni
+
+11. **PostgreSQL** (PostgreSQL License)
+    - Source: Compiled from unmodified source code (official tarball)
+    - Code Repository: https://www.postgresql.org/ftp/source/
+
+12. **Redis** (BSD-3-Clause License)
+    - Source: Compiled from unmodified source code (official release)
+    - Code Repository: https://github.com/redis/redis
+
+13. **Temporal** (MIT License)
+    - Source: Official Docker image `temporalio/auto-setup:1.25.1`
+    - Code Repository: https://github.com/temporalio/temporal
+
+Full license texts are available in the `/opt/csghub/LICENSES` directory.
