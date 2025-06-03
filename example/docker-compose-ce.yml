@@ -1,6 +1,5 @@
 services:
   csghub:
-    container_name: omnibus-csghub
     image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.7.1-ce
     hostname: 'csghub.example.com'
     environment:
