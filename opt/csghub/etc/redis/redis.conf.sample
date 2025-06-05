@@ -911,7 +911,7 @@ acllog-max-len 128
 # The requirepass is not compatable with aclfile option and the ACL LOAD
 # command, these will cause requirepass to be ignored.
 #
-requirepass {{ $redis.password | default (crypto.PBKDF2 $redis.user "opencsg" 2048 8) }}
+# requirepass {{ $redis.password | default (crypto.PBKDF2 $redis.user "opencsg" 2048 8) }}
 
 # New users are initialized with restrictive permissions by default, via the
 # equivalent of this ACL rule 'off resetkeys -@all'. Starting with Redis 6.2, it

@@ -42,7 +42,8 @@ set -e
 {{- $redis := $web.redis }}
 {{- $redisUser := $redis.auth.user -}}
 {{- $redisPassword := $redis.auth.password | default (crypto.PBKDF2 $redisUser "opencsg" 2048 8) -}}
-{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":%s@%s" $redisPassword $redis.host) }}
+{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":s@%s" $redis.host) }}
+{{/*{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":%s@%s" $redisPassword $redis.host) }} */}}
 {{- file.Write (printf "%s/REDIS_PORT" $envDir) $redis.port }}
 
 {{- $starship := (datasource "config").starship }}
