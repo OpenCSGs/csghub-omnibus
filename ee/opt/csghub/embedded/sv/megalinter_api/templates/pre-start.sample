@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Exit if execute with any errors
+set -e
+
+{{- $envDir := "/opt/csghub/etc/megalinter_api/env" }}
+
+# Clear all environment variable files
+# rm -rf {{ $envDir }}/* || true
+
+{{- $api := (datasource "config").megalinter_api }}
+{{- $redis := $api.redis }}
+{{- file.Write (printf "%s/MEGALINTER_SERVER_REDIS_HOST" $envDir) $redis.host }}
+{{- file.Write (printf "%s/MEGALINTER_SERVER_REDIS_PORT" $envDir) $redis.port }}
+{{- file.Write (printf "%s/MEGALINTER_SERVER_REDIS_QUEUE" $envDir) "megalinter:queue:requests" }}

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/megalinter_worker" }}
+{{- if has (datasource "config").megalinter_worker "log" }}
+{{- if has (datasource "config").megalinter_worker.log "dir" }}
+{{- if (datasource "config").megalinter_worker.log.dir }}
+{{- $logDir = (datasource "config").megalinter_worker.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+{{- $agentic := (datasource "config").agentic }}
+cd /opt/csghub/embedded/sv/agentic
+exec chpst -e /opt/csghub/etc/web/env -P \
+  -u root:root \
+  /opt/csghub/embedded/bin/hypercorn starship.main:starlette \
+    --bind {{ $agentic.listen }} \
+    --log-level info

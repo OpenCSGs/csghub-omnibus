@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+{{- $api := (datasource "config").megalinter_api }}
+{{- $listenParts := $api.listen | strings.Split ":" -}}
+{{- $host := index $listenParts 0 -}}
+{{- $port := index $listenParts 1 -}}
+cd /opt/csghub/embedded/sv/megalinter_api
+exec chpst -P \
+  -e /opt/csghub/etc/web/env \
+  -e /opt/csghub/etc/megalinter_api/env \
+  -u root:root \
+  /opt/csghub/embedded/bin/uvicorn server.server:app --host {{ $host }} --port {{ $port }}

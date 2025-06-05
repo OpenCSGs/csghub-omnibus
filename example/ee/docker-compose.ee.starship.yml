@@ -70,7 +70,7 @@ services:
       - MEGALINTER_SERVER_REDIS_PORT=6379
       - MEGALINTER_SERVER_REDIS_QUEUE=megalinter:queue:requests
     depends_on:
-      - redis
+      - csghub
     restart: always
 
   megalinter-worker:
@@ -81,7 +81,7 @@ services:
       - REDIS_REPORTER_HOST=csghub
       - REDIS_REPORTER_PORT=6379
     depends_on:
-      - redis
+      - csghub
     restart: always
 
   secscan:
@@ -89,12 +89,8 @@ services:
     volumes:
       - ./csghub/data/worker:/code/data
       - ./csghub/data/worker:/var/opt/gitrepos
-    restart: always
-
-  redis:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/redis:7.2.5
     depends_on:
-      - redis
+      - csghub
     restart: always
 
 
