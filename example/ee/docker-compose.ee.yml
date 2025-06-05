@@ -41,7 +41,7 @@ services:
     image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/dataflow:latest
     environment:
       CSGHUB_ENDPOINT: "http://csghub.example.com"
-      DATABASE_HOSTNAME: "omnibus-csghub"
+      DATABASE_HOSTNAME: "csghub"
       DATABASE_PORT: "5432"
       DATABASE_USERNAME: "dataflow"
       DATABASE_PASSWORD: "8f444970fcde559c"

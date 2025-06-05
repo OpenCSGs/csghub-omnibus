@@ -1,0 +1,101 @@
+services:
+  csghub:
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.7.1-ee
+    hostname: 'csghub.example.com'
+    environment:
+      CSGHUB_OMNIBUS_CONFIG: |
+        csghub:
+          external_url: "http://csghub.example.com"
+        runner:
+          enable: true
+          deploy:
+            knative:
+              services:
+                - type: "NodePort"
+                  domain: "app.internal"
+                  host: "192.168.18.10"
+                  port: 30123
+        server:
+          dataflow:
+            address: "http://dataflow:8000"
+        starship:
+          enable: true
+    ports:
+      - '80:80'
+      - '2222:2222'
+      - '5000:5000'
+      - '8000:8000'
+      - '8001:8001'
+      - '8002:8002'
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - ./csghub/etc:/etc/csghub
+      - ./csghub/logs:/var/log/csghub
+      - ./csghub/data:/var/opt/csghub
+      - ./csghub/.kube:/etc/csghub/.kube
+    restart: always
+    shm_size: '256m'
+
+  dataflow:
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/dataflow:latest
+    environment:
+      CSGHUB_ENDPOINT: "http://csghub.example.com"
+      DATABASE_HOSTNAME: "csghub"
+      DATABASE_PORT: "5432"
+      DATABASE_USERNAME: "dataflow"
+      DATABASE_PASSWORD: "8f444970fcde559c"
+      DATABASE_DB: "dataflow"
+      DATA_DIR: "/data"
+      MAX_WORKERS: 50
+      RAY_ADDRESS: "auto"
+      RAY_ENABLE: false
+      RAY_LOG_DIR: "/var/log/dataflow"
+      API_SERVER: "0.0.0.0"
+      API_PORT: 8000
+      AZURE_OPENAI_ENDPOINT: "$AZURE_OPENAI_ENDPOINT"
+      AZURE_OPENAI_API_KEY: "$AZURE_OPENAI_ENDPOINT"
+      OPENAI_API_VERSION: "$OPENAI_API_VERSION"
+      AZURE_MODEL: "$AZURE_MODEL"
+      ENABLE_OPENTELEMETRY: false
+    volumes:
+      - ./csghub/data/dataflow:/data
+      - ./csghub/logs/dataflow:/var/log/dataflow
+    restart: always
+
+  megalinter-api:
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/oxsecurity/megalinter-server:beta
+    environment:
+      - MEGALINTER_SERVER_REDIS_HOST=csghub
+      - MEGALINTER_SERVER_REDIS_PORT=6379
+      - MEGALINTER_SERVER_REDIS_QUEUE=megalinter:queue:requests
+    depends_on:
+      - redis
+    restart: always
+
+  megalinter-worker:
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/oxsecurity/megalinter-worker:v8.0.0
+    environment:
+      - MEGALINTER_SERVER_REDIS_HOST=csghub
+      - MEGALINTER_SERVER_REDIS_PORT=6379
+      - REDIS_REPORTER_HOST=csghub
+      - REDIS_REPORTER_PORT=6379
+    depends_on:
+      - redis
+    restart: always
+
+  secscan:
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/codegpt-secscan-image:latest
+    volumes:
+      - ./csghub/data/worker:/code/data
+      - ./csghub/data/worker:/var/opt/gitrepos
+    restart: always
+
+  redis:
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/redis:7.2.5
+    depends_on:
+      - redis
+    restart: always
+
+
+
