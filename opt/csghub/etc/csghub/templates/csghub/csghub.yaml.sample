@@ -740,6 +740,10 @@ moderation:
 #   enable: false     # Enable or disable all the following Starship service
 #   external_url: http://csghub.example.com:8001       # External URL for Starship web interface
 #   external_api_url: http://csghub.example.com:8002   # External API URL for Starship service
+#   oauth:
+#     issuer: "https://gitlab.example.com"
+#     client_id: "73f1c2922f51d68fa87de8c1ef0e23e8940f3aa42f5ac7a55a1f586c597d7e9c"
+#     client_secret: "gloas-3ba02f02b3e993664ccdda2c4d76989caa11ce6f07a805b6872d266fbd465831"
 
 # # Starship-Web ###########################################################
 # web:

@@ -3,6 +3,18 @@
 {{- $pgUser := $db.user -}}
 {{- $pgPassword := crypto.PBKDF2 $pgUser "opencsg" 2048 8 -}}
 {{- $dataDir := (datasource "config").casdoor.data -}}
+{{- $csghub := (datasource "config").csghub -}}
+{{- $url := conv.URL $csghub.external_url -}}
+{{- $urlParts := $url.Host | strings.Split ":" -}}
+{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
+{{- $casdoorListen := $casdoor.listen -}}
+{{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
+{{- $casdoorHost := index $casdoorParts 0 -}}
+{{- $casdoorPort := index $casdoorParts 1 -}}
+{{- if eq $casdoorHost "127.0.0.1" -}}
+{{- $casdoorHost = $host -}}
+{{- end -}}
+{{- $casdoorEndpoint := printf "%s://%s:%s" $url.Scheme $casdoorHost $casdoorPort -}}
 appname = casdoor
 httpport = 8087
 runmode = prod
@@ -20,7 +32,7 @@ socks5Proxy = "127.0.0.1:10808"
 verificationCodeTimeout = 10
 initScore = 0
 logPostOnly = true
-origin =
+origin = {{ $casdoorEndpoint }}
 originFrontend =
 staticBaseUrl = "https://cdn.casbin.org"
 isDemoMode = false
