@@ -30,6 +30,7 @@ MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
+  --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg MINIO_VERSION=${MINIO_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:minio-${MINIO_VERSION} \
   --file dockerfiles/Dockerfile_minio \
@@ -48,6 +49,7 @@ DNSMASQ_VERSION=2.91
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
+  --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg GOMPLATE_VERSION=${GOMPLATE_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:toolbox-${TOOLBOX_VERSION} \
   --file dockerfiles/Dockerfile_toolbox \
@@ -63,6 +65,7 @@ TEMPORAL_VERSION=1.25.1
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
+  --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg TEMPORAL_VERSION=${TEMPORAL_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:temporal-${TEMPORAL_VERSION} \
   --file dockerfiles/Dockerfile_temporal \
@@ -78,6 +81,7 @@ REDIS_VERSION=6.2.14
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
+  --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg REDIS_VERSION=${REDIS_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:redis-${REDIS_VERSION} \
   --file dockerfiles/Dockerfile_redis \
@@ -94,6 +98,7 @@ SCWS_VERSION=1.2.3
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
+  --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg POSTGRESQL_VERSION=${POSTGRESQL_VERSION} \
   --build-arg SCWS_VERSION=${SCWS_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} \
@@ -113,6 +118,7 @@ PATRONI_VERSION=4.0.5
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
+  --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg POSTGRESQL_VERSION=${POSTGRESQL_VERSION} \
   --build-arg SCWS_VERSION=${SCWS_VERSION} \
   --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
@@ -131,10 +137,10 @@ NGINX_VERSION=1.22.1
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
+  --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg NGINX_VERSION=${NGINX_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:nginx-${NGINX_VERSION} \
   --file dockerfiles/Dockerfile_nginx \
   --push .
-
 ```
 

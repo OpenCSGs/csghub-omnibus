@@ -4,10 +4,18 @@ ARG MC_VERSION=RELEASE.2025-03-12T17-29-24Z
 FROM ${OS_RELEASE} AS minio-logger
 WORKDIR /
 
-RUN apt update && \
-    apt install -y --no-install-recommends golang && \
-    apt clean && \
-      rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
+RUN if egrep -q -i 'ubuntu|debian' /etc/os-release; then \
+        apt update && \
+        apt install -y --no-install-recommends golang && \
+        apt clean && \
+          rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
+    else \
+        if command -v dnf >/dev/null; then \
+            dnf install -y golang; \
+        else \
+            yum install -y golang; \
+        fi; \
+    fi
 
 COPY ./toolbox/logger/. /logger/
 ## Install logger

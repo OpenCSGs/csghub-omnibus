@@ -8,21 +8,51 @@ ENV CSGHUB_HOME=/opt/csghub
 ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
 ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
 
-RUN apt update && \
-    apt install -y --no-install-recommends \
-      wget git \
-      build-essential \
-      libpcre2-dev \
-      libssl-dev \
-      zlib1g-dev \
-      libgeoip-dev \
-      libgd-dev \
-      libxslt-dev \
-      pkg-config \
-      libedit-dev \
-      ca-certificates && \
-    apt clean && \
-      rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* && \
+RUN if egrep -q -i 'ubuntu|debian' /etc/os-release; then \
+        apt update && \
+        apt install -y --no-install-recommends \
+          wget git \
+          build-essential \
+          libpcre2-dev \
+          libssl-dev \
+          zlib1g-dev \
+          libgeoip-dev \
+          libgd-dev \
+          libxslt-dev \
+          pkg-config \
+          libedit-dev \
+          ca-certificates && \
+        apt clean && \
+          rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
+    else \
+        if command -v dnf >/dev/null; then \
+            dnf install -y \
+              wget git \
+              gcc make \
+              pcre2-devel \
+              openssl-devel \
+              zlib-devel \
+              geoip-devel \
+              gd-devel \
+              libxslt-devel \
+              pkgconfig \
+              libedit-devel \
+              ca-certificates; \
+        else \
+            yum install -y \
+              wget git \
+              gcc make \
+              pcre2-devel \
+              openssl-devel \
+              zlib-devel \
+              geoip-devel \
+              gd-devel \
+              libxslt-devel \
+              pkgconfig \
+              libedit-devel \
+              ca-certificates; \
+        fi; \
+    fi && \
     mkdir -p ${CSGHUB_SRV_HOME}/nginx/bin ${CSGHUB_HOME}/etc/nginx/config.d
 
 RUN git clone https://github.com/bellard/quickjs /quickjs && \

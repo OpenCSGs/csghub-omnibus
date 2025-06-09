@@ -7,16 +7,43 @@ ENV CSGHUB_EMBEDDED=${CSGHUB_HOME}/embedded
 ENV CSGHUB_SRV_HOME=${CSGHUB_EMBEDDED}/sv
 
 ## Install postgresql
-RUN apt update && \
-    apt install -y \
-      gcc flex bison make wget bzip2 clang git \
-      libicu-dev \
-      build-essential \
-      libreadline-dev \
-      libssl-dev \
-      zlib1g-dev \
-      pkg-config \
-      ca-certificates
+RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
+        apt update && \
+        apt install -y --no-install-recommends \
+          gcc flex bison make wget bzip2 clang git \
+          libicu-dev \
+          build-essential \
+          libreadline-dev \
+          libssl-dev \
+          zlib1g-dev \
+          pkg-config \
+          ca-certificates && \
+        apt clean && \
+        rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
+    else \
+        if command -v dnf >/dev/null; then \
+            dnf install -y \
+              gcc flex bison make wget bzip2 clang git \
+              libicu-devel \
+              readline-devel \
+              openssl-devel \
+              zlib-devel \
+              pkgconfig \
+              ca-certificates && \
+            dnf clean all; \
+        else \
+            yum install -y \
+              gcc flex bison make wget bzip2 clang git \
+              libicu-devel \
+              readline-devel \
+              openssl-devel \
+              zlib-devel \
+              pkgconfig \
+              ca-certificates && \
+            yum clean all; \
+        fi; \
+        rm -rf /var/cache/yum /tmp/* /var/tmp/* /var/log/*; \
+    fi
 
 ARG POSTGRESQL_VERSION=16.8
 RUN wget https://ftp.postgresql.org/pub/source/v${POSTGRESQL_VERSION}/postgresql-${POSTGRESQL_VERSION}.tar.gz && \
