@@ -1,0 +1,10 @@
+{
+    "components": [
+      {
+        "name": "temporal",
+        "description": "Temporal is a microservice orchestration platform which enables developers to build scalable applications without sacrificing productivity or reliability.",
+        "version": "1.25.1",
+        "repository": "https://github.com/temporalio/temporal"
+      }
+    ]
+}

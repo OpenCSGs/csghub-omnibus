@@ -1,0 +1,10 @@
+{
+    "components": [
+      {
+        "name": "minio",
+        "description": "High-performance object storage system compatible with S3",
+        "version": "RELEASE.2025-03-12T18-04-18Z",
+        "repository": "https://github.com/minio/minio"
+      }
+    ]
+}

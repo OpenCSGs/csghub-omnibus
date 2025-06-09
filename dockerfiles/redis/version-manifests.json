@@ -1,0 +1,10 @@
+{
+    "components": [
+      {
+        "name": "redis",
+        "description": "Redis is an open source, in-memory data structure store, used as a database, cache and message broker.",
+        "version": "6.2.14",
+        "repository": "https://github.com/redis/redis"
+      }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "components": [
+      {
+        "name": "runit",
+        "description": "A UNIX init scheme with service supervision",
+        "version": "2.1.2",
+        "repository": "http://smarden.org/runit/"
+      }
+    ]
+}

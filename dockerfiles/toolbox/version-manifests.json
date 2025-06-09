@@ -1,0 +1,10 @@
+{
+    "components": [
+      {
+        "name": "toolbox",
+        "description": "Containerized tooling for system operations",
+        "version": "1.2.2",
+        "repository": ""
+      }
+    ]
+}

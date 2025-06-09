@@ -2,9 +2,16 @@
 .PHONY: all
 all: build
 
-# 从 version-manifest.json 提取所有组件的版本信息并格式化为 Docker build args
-VERSION_MANIFESTS := opt/csghub/version-manifests.json
-DOCKER_BUILD_ARGS := $(shell jq -r '.version_manifest.components[] | "--build-arg \(.name | ascii_upcase)_VERSION=\(.version)"' $(VERSION_MANIFESTS) | tr '\n' ' ')
+# 定义文件路径
+VERSION_MANIFEST := opt/csghub/version-manifests.json
+COMPONENT_FILES := dockerfiles/*/version-manifests.json
+TMP_FILE := $(VERSION_MANIFEST).tmp
+
+# 生成Docker build args
+DOCKER_BUILD_ARGS := $(shell \
+    jq -r '.version_manifest.components | unique_by(.name)[] | "--build-arg \(.name | ascii_upcase)_VERSION=\(.version)"' $(VERSION_MANIFEST) | \
+    tr '\n' ' ' \
+)
 
 # 镜像仓库配置
 REGISTRY := opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public
@@ -15,6 +22,22 @@ IMAGE_TAG := $(shell jq -r '.version_manifest.metadata.version' $(VERSION_MANIFE
 
 # 构建平台配置
 PLATFORMS := linux/arm64,linux/amd64
+
+# 合并版本信息并更新主文件
+.PHONY: version-update
+version-update:
+	@echo "Merging version manifests..."
+	@set -e; \
+	tmpfile=$$(mktemp); \
+	jq -n '{components: [inputs.components[]]}' $(COMPONENT_FILES) | \
+	jq -s '.[0] as $$components | .[1] | .version_manifest.components += $$components.components' - $(VERSION_MANIFEST) > $$tmpfile; \
+	if ! jq empty $$tmpfile; then \
+		echo "Invalid JSON generated"; \
+		rm -f $$tmpfile; \
+		exit 1; \
+	fi; \
+	mv $$tmpfile $(VERSION_MANIFEST); \
+	echo "Version manifest updated successfully"
 
 .PHONY: install-tools
 install-tools:
@@ -48,7 +71,7 @@ check-files:
 
 # 工具和文件检查
 .PHONY: check-deps
-check-deps: check-tools check-files
+check-deps: check-tools check-files version-update
 
 # 构建 Docker 镜像
 .PHONY: build
