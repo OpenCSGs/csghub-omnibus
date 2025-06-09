@@ -733,11 +733,11 @@
       "category": "OAuth",
       "type": "Custom",
       "method": "Normal",
-      "clientId": {{ $starship.oauth.client_id | quote }},
-      "clientSecret": {{ $starship.oauth.client_secret | quote }},
-      "customAuthUrl": {{ printf "%s/oauth/authorize" $starship.oauth.issuer | quote }},
-      "customTokenUrl": {{ printf "%s/oauth/token" $starship.oauth.issuer | quote }},
-      "customUserInfoUrl": {{ printf "%s/api/v4/user" $starship.oauth.issuer | quote }},
+      "clientId": {{ $starship.oauth.client_id | default "" | quote }},
+      "clientSecret": {{ $starship.oauth.client_secret | default "" | quote }},
+      "customAuthUrl": {{ printf "%s/oauth/authorize" $starship.oauth.issuer | default "" | quote }},
+      "customTokenUrl": {{ printf "%s/oauth/token" $starship.oauth.issuer | default "" | quote }},
+      "customUserInfoUrl": {{ printf "%s/api/v4/user" $starship.oauth.issuer | default "" | quote }},
       "customLogo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/gitlab_favicon.png",
       "scopes": "read_user openid profile email",
       "userMapping":
@@ -748,8 +748,8 @@
         "id": "id",
         "username": "username"
       },
-      "issuerUrl": {{ $starship.oauth.issuer | quote }},
-      "providerUrl": {{ $starship.oauth.issuer | quote }}
+      "issuerUrl": {{ $starship.oauth.issuer | default "" | quote }},
+      "providerUrl": {{ $starship.oauth.issuer | default "" | quote }}
     },
     {
       "owner": "OpenCSG",
