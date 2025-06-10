@@ -176,14 +176,21 @@ nim_ngc_secret_name = "nvidia-nim-secrets"
 [event]
 sync_interval = {{ $mirrorRepo.sync_interval }}
 
-{{ $casdoor := $server.casdoor -}}
+{{ $casdoor := (datasource "config").casdoor -}}
+{{- $casdoorListen := $casdoor.listen -}}
+{{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
+{{- $casdoorPort := "8000" -}}
+{{- if eq (len $casdoorParts) 2 -}}
+  {{- $casdoorPort = index $casdoorParts 1 -}}
+{{- end -}}
+{{- $serverCasdoor := $server.casdoor -}}
 [casdoor]
-client_id = {{ $casdoor.client_id | quote }}
-client_secret = {{ $casdoor.client_secret | quote }}
-endpoint = {{ $casdoor.endpoint | quote }}
-certificate = {{ $casdoor.certificate | quote }}
-organization_name = {{ $casdoor.organization_name | quote }}
-application_name = {{ $casdoor.application_name | quote }}
+client_id = {{ $serverCasdoor.client_id | quote }}
+client_secret = {{ $serverCasdoor.client_secret | quote }}
+endpoint = {{ $serverCasdoor.endpoint | default (printf "http://%s:%s" $host $$casdoorPort) | quote }}
+certificate = {{ $serverCasdoor.certificate | quote }}
+organization_name = {{ $serverCasdoor.organization_name | quote }}
+application_name = {{ $serverCasdoor.application_name | quote }}
 
 {{ $nats := (datasource "config").nats }}
 {{- $natsUser := $nats.auth.user -}}

@@ -121,8 +121,8 @@ http {
     {{- $nginx := (datasource "config").nginx -}}
     {{- $dataDir := $nginx.data }}
 
-    {{- $csghubCert := $nginx.ssl_certificate }}
-    {{- $csghubCertKey := $nginx.ssl_certificate_key }}
+    {{- $csghubCert := $nginx.ssl_certificate | default (printf "/etc/csghub/ssl/%s.crt" $host) | quote }}
+    {{- $csghubCertKey := $nginx.ssl_certificate_key | default (printf "/etc/csghub/ssl/%s.key" $host) | quote }}
 
     {{- if eq $url.Scheme "https" -}}
     # Main server configurations

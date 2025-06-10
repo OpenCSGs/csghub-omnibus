@@ -738,8 +738,9 @@ moderation:
 ##########################################################################
 # starship:
 #   enable: false     # Enable or disable all the following Starship service
-#   external_url: http://csghub.example.com:8001       # External URL for Starship web interface
-#   external_api_url: http://csghub.example.com:8002   # External API URL for Starship service
+#   listen:
+#     frontend: "127.0.0.1:8001"       # External URL for Starship web interface
+#     api: "127.0.0.1:8002"           # External API URL for Starship service
 #   oauth:
 #     issuer: "https://gitlab.example.com"
 #     client_id: "73f1c2922f51d68fa87de8c1ef0e23e8940f3aa42f5ac7a55a1f586c597d7e9c"
