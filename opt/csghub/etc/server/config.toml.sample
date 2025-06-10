@@ -187,7 +187,7 @@ sync_interval = {{ $mirrorRepo.sync_interval }}
 [casdoor]
 client_id = {{ $serverCasdoor.client_id | quote }}
 client_secret = {{ $serverCasdoor.client_secret | quote }}
-endpoint = {{ $serverCasdoor.endpoint | default (printf "http://%s:%s" $host $$casdoorPort) | quote }}
+endpoint = {{ $serverCasdoor.endpoint | default (printf "%s://%s:%s" $url.Scheme $host $casdoorPort) | quote }}
 certificate = {{ $serverCasdoor.certificate | quote }}
 organization_name = {{ $serverCasdoor.organization_name | quote }}
 application_name = {{ $serverCasdoor.application_name | quote }}
