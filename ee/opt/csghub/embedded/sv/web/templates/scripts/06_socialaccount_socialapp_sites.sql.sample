@@ -11,6 +11,21 @@ pg_catalog.setval('public.socialaccount_socialapp_sites_id_seq', (
             MAX(id)
         FROM public.socialaccount_socialapp_sites), TRUE);
 
+{{- $csghub := (datasource "config").csghub }}
+{{- $url := conv.URL $csghub.external_url -}}
+{{- $urlParts := $url.Host | strings.Split ":" -}}
+{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
 {{- $starship := (datasource "config").starship }}
+{{- $starshipApiListen := $starship.listen.api -}}
+{{- $starshipApiParts := $starshipApiListen | strings.Split ":" -}}
+{{- $starshipApiHost := index $starshipApiParts 0 -}}
+{{- if eq $starshipApiHost "127.0.0.1" -}}
+{{- $starshipApiHost = $host -}}
+{{- end -}}
+{{- $starshipApiPort := "8002" -}}
+{{- if eq (len $starshipApiParts) 2 -}}
+   {{- $starshipApiPort = index $starshipApiParts 1 -}}
+{{- end }}
+{{- $starshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipApiPort -}}
 -- Change django_site to the correct domain
-UPDATE django_site SET domain = '{{ $starship.external_api_url }}', name = '{{ $starship.external_api_url }}' WHERE id = 1;
+UPDATE django_site SET domain = '{{ $starshipApiEndpoint }}', name = '{{ $starshipApiEndpoint }}' WHERE id = 1;

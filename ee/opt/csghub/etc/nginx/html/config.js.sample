@@ -1,9 +1,37 @@
-{{- $starship := (datasource "config").starship }}
+{{- $csghub := (datasource "config").csghub -}}
+{{- $url := conv.URL $csghub.external_url -}}
+{{- $urlParts := $url.Host | strings.Split ":" -}}
+{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
+
+{{- $starship := (datasource "config").starship -}}
+{{- $starshipFrontendListen := $starship.listen.frontend -}}
+{{- $starshipFrontendParts := $starshipFrontendListen | strings.Split ":" -}}
+{{- $starshipFrontendHost := index $starshipFrontendParts 0 -}}
+{{- if eq $starshipFrontendHost "127.0.0.1" -}}
+{{- $starshipFrontendHost = $host -}}
+{{- end -}}
+{{- $starshipFrontendPort := "8001" -}}
+{{- if eq (len $starshipFrontendParts) 2 -}}
+   {{- $starshipFrontendPort = index $starshipFrontendParts 1 -}}
+{{- end }}
+{{- $starshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipFrontendPort -}}
+
+{{- $starshipApiListen := $starship.listen.api -}}
+{{- $starshipApiParts := $starshipApiListen | strings.Split ":" -}}
+{{- $starshipApiHost := index $starshipApiParts 0 -}}
+{{- if eq $starshipApiHost "127.0.0.1" -}}
+{{- $starshipApiHost = $host -}}
+{{- end -}}
+{{- $starshipApiPort := "8002" -}}
+{{- if eq (len $starshipApiParts) 2 -}}
+   {{- $starshipApiPort = index $starshipApiParts 1 -}}
+{{- end }}
+{{- $starshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipApiPort -}}
 {{- $server := (datasource "config").server }}
 {{- $serverCasdoor := $server.casdoor }}
 window.envConfig = {
-    VITE_APP_BASE_WEB: {{ $starship.external_url | squote }},
-    VITE_APP_BASE_API: {{ $starship.external_api_url | squote }},
+    VITE_APP_BASE_WEB: {{ $starshipEndpoint | squote }},
+    VITE_APP_BASE_API: {{ $starshipApiEndpoint | squote }},
     {{- $csghub := (datasource "config").csghub }}
     {{- $url := conv.URL $csghub.external_url }}
     {{- $urlParts := $url.Host | strings.Split ":" }}

@@ -46,10 +46,38 @@ set -e
 {{/*{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":%s@%s" $redisPassword $redis.host) }} */}}
 {{- file.Write (printf "%s/REDIS_PORT" $envDir) $redis.port }}
 
-{{- $starship := (datasource "config").starship }}
+
 {{- $csghub := (datasource "config").csghub }}
-{{- file.Write (printf "%s/STARSHIP_WEB_URL" $envDir) $starship.external_url }}
-{{- file.Write (printf "%s/STARSHIP_API_URL" $envDir) $starship.external_api_url }}
+{{- $url := conv.URL $csghub.external_url -}}
+{{- $urlParts := $url.Host | strings.Split ":" -}}
+{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
+{{- $starship := (datasource "config").starship -}}
+{{- $starshipFrontendListen := $starship.listen.frontend -}}
+{{- $starshipFrontendParts := $starshipFrontendListen | strings.Split ":" -}}
+{{- $starshipFrontendHost := index $starshipFrontendParts 0 -}}
+{{- if eq $starshipFrontendHost "127.0.0.1" -}}
+{{- $starshipFrontendHost = $host -}}
+{{- end -}}
+{{- $starshipFrontendPort := "8001" -}}
+{{- if eq (len $starshipFrontendParts) 2 -}}
+   {{- $starshipFrontendPort = index $starshipFrontendParts 1 -}}
+{{- end }}
+{{- $starshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipFrontendPort -}}
+
+{{- $starshipApiListen := $starship.listen.api -}}
+{{- $starshipApiParts := $starshipApiListen | strings.Split ":" -}}
+{{- $starshipApiHost := index $starshipApiParts 0 -}}
+{{- if eq $starshipApiHost "127.0.0.1" -}}
+{{- $starshipApiHost = $host -}}
+{{- end -}}
+{{- $starshipApiPort := "8002" -}}
+{{- if eq (len $starshipApiParts) 2 -}}
+   {{- $starshipApiPort = index $starshipApiParts 1 -}}
+{{- end }}
+{{- $starshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipApiPort -}}
+
+{{- file.Write (printf "%s/STARSHIP_WEB_URL" $envDir) $starshipEndpoint }}
+{{- file.Write (printf "%s/STARSHIP_API_URL" $envDir) $starshipApiEndpoint }}
 {{- file.Write (printf "%s/USE_OPENAI_ASSISTANTS_API" $envDir) "false" }}
 
 {{- file.Write (printf "%s/ACCOUNTING_OP_MODE" $envDir) "has_balance|consume" }}
