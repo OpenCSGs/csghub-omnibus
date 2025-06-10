@@ -5,6 +5,10 @@ workflow:
         - dockerfiles/*/version-manifests.json
     - when: never
 
+default:
+  tags:
+    - japan
+
 include:
   - local: '.gitlab/.omnibus.gitlab-ci.yml'
 
@@ -12,9 +16,6 @@ stages:
   - detect
   - trigger
   - build
-
-variables:
-  OS_RELEASE:  "opencsg-registry.cn-beijing.cr.aliyuncs.com/public/ubuntu:22.04"
 
 detect_changes:
   stage: detect
