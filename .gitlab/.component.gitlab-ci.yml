@@ -1,0 +1,71 @@
+spec:
+  inputs:
+    component_name:
+      description: "Name of the component to build"
+      default: 'default'
+---
+variables:
+  # Docker
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
+  # Build settings
+  BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+  BUILD_PLATFORMS: "linux/arm64,linux/amd64"
+  # Registry
+  REGISTRY: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public"
+  # Go Env
+  GO111MODULE: "on"
+  GOPROXY: "https://goproxy.cn,direct"
+  # Components
+  COMPONENT_NAME: $[[ inputs.component_name ]]
+  VERSION_MANIFESTS: "dockerfiles/${COMPONENT_NAME}/version-manifests.json"
+  CI_DEBUG_TRACE: "true"
+
+build-$[[ inputs.component_name ]]:
+  stage: build
+  image: ${REGISTRY}/docker:27.3
+  before_script:
+    - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
+    - apk add jq bash
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
+  services:
+    - name: ${REGISTRY}/docker:27.3-dind
+      command: [ "--feature=containerd-snapshotter", "--experimental" ]
+      alias: docker
+  script:
+    - |
+      cat <<'EOF' | bash -s
+      set -e 
+      # Defining basic variables
+      export COMPONENT_NAME_UPPER=$(cat ${VERSION_MANIFESTS} | jq -r '.components[0].name' | tr '[:lower:]' '[:upper:]' | tr '-' '_')
+      export COMPONENT_VERSION=$(cat ${VERSION_MANIFESTS} | jq -r '.components[0].version')
+      echo "Building $COMPONENT_NAME_UPPER version $COMPONENT_VERSION"
+      
+      # Introducing user-defined variables
+      build_args=()
+      while IFS="=" read -r key value; do
+        safe_key=$(echo "$key" | tr '-' '_' | tr '[:lower:]' '[:upper:]')
+      
+        # Allow User specify environments overwrite
+        final_value="${!safe_key:-$value}"
+      
+        build_args+=( "--build-arg" "${safe_key}=${final_value}" )
+      
+        echo "Prepared build arg: ${safe_key}=${final_value}"
+      done < <(jq -r '.components[0].environments | to_entries[] | "\(.key)=\(.value)"' "${VERSION_MANIFESTS}")
+      
+      # Building docker images
+      docker buildx build \
+        --provenance false \
+        --platform ${BUILD_PLATFORMS} \
+        "${build_args[@]}" \
+        -t "$CI_REGISTRY_IMAGE/omnibus-${COMPONENT_NAME}:${COMPONENT_VERSION}" \
+        -t "$CI_REGISTRY_IMAGE/omnibus-${COMPONENT_NAME}:latest" \
+        -f "dockerfiles/${COMPONENT_NAME}/Dockerfile_${COMPONENT_NAME}" \
+        --push .
+      EOF
+  interruptible: true
+  cache:
+    paths:
+      - .cache/buildx

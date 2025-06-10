@@ -1,0 +1,53 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+-(ce|ee)$/'
+    - when: never
+
+build-omnibus:
+  stage: build
+  image: ${REGISTRY}/docker:27.3
+  before_script:
+    - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
+    - apk update && apk add jq bash
+    - |
+      set -e
+      echo "Merging version manifests..."
+      tmpfile=$(mktemp)
+      jq -n '{components: [inputs.components[]]}' dockerfiles/*/version-manifests.json | \
+      jq -s '.[0] as $components | .[1] | .version_manifest.components = (.version_manifest.components + $components.components) | .' - opt/csghub/version-manifests.json > "$tmpfile"
+
+      if ! jq empty "$tmpfile"; then
+        echo "Error: Invalid JSON generated"
+        rm -f "$tmpfile"
+        exit 1
+      fi
+
+      mv "$tmpfile" opt/csghub/version-manifests.json
+      echo "Version manifest successfully updated"
+
+      echo "Merged version-manifests.json:"
+      jq . opt/csghub/version-manifests.json
+    - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
+    - apk add jq bash
+    - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
+    - echo "$ALI_ACR_PASSWORD" | docker login -u $ALI_ACR_USER $ALI_ACR_REGISTRY --password-stdin
+  services:
+    - name: ${REGISTRY}/docker:27.3-dind
+      command: [ "--feature=containerd-snapshotter", "--experimental" ]
+      alias: docker
+  script:
+    - |
+      # 收集所有组件的构建参数
+      BUILD_ARGS=$(jq -r '.version_manifest.components[] | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' "$VERSION_MANIFESTS" | tr '\n' ' ')
+      
+      docker buildx build \
+        --provenance false \
+        --platform linux/arm64,linux/amd64 \
+        $BUILD_ARGS \
+        -t "$ALI_ACR_REGISTRY/omnibus-csghub:$CI_COMMIT_TAG" \
+        -t "$ALI_ACR_REGISTRY/omnibus-csghub:latest" \
+        -f Dockerfile \
+        --push .
+  interruptible: true
+  rules:
+    - if: $CI_COMMIT_TAG

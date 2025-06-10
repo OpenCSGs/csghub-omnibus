@@ -1,0 +1,78 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+-(ce|ee)$/'
+    - changes:
+        - dockerfiles/*/version-manifests.json
+    - when: never
+
+include:
+  - local: '.gitlab/.omnibus.gitlab-ci.yml'
+
+stages:
+  - detect
+  - trigger
+  - build
+
+variables:
+  OS_RELEASE:  "opencsg-registry.cn-beijing.cr.aliyuncs.com/public/ubuntu:22.04"
+
+detect_changes:
+  stage: detect
+  image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/docker:27.3
+  script:
+    - |
+      CHANGED_COMPONENTS=""
+      
+      if [ -z "$OS_RELEASE" ]; then 
+        CHANGED_COMPONENTS=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} | grep dockerfiles | awk -F'/' '{print $2}' | sort -u | tr '\n' ' ')
+      else
+        CHANGED_COMPONENTS=$(ls -d dockerfiles/* | egrep -v "starship|README.md" | xargs -n 1 basename | tr '\n' ' ')
+      fi
+      
+      # 移除末尾可能存在的空格并转换为逗号分隔
+      CHANGED_COMPONENTS=$(echo "$CHANGED_COMPONENTS" | sed 's/ *$//' | tr ' ' ',')
+      
+      echo "CHANGED_COMPONENTS=\"$CHANGED_COMPONENTS\"" > changed_components.env
+      
+      echo "Generated changed_components.env:"
+      cat changed_components.env
+  artifacts:
+    reports:
+      dotenv: changed_components.env
+
+generate_child_pipelines:
+  stage: trigger
+  needs: ["detect_changes"]
+  script:
+    - |
+      if [ -z "$CHANGED_COMPONENTS" ]; then
+        echo "No components changed, nothing to trigger."
+        exit 0
+      fi
+
+      # 为每个变更的子服务生成触发配置
+      cat > child-pipelines.yml <<EOF
+      ---
+      include:
+      EOF
+  
+      COMPONENTS=$(echo "$CHANGED_COMPONENTS" | tr ',' ' ' | sed 's/"//g')
+      for COMPONENT in $COMPONENTS; do
+        cat >> child-pipelines.yml <<EOF
+        - local: .gitlab/.component.gitlab-ci.yml
+          inputs:
+            component_name: "$COMPONENT"
+      EOF
+      done
+  artifacts:
+    paths:
+      - child-pipelines.yml
+
+trigger-child-pipelines:
+  stage: trigger
+  needs: ["generate_child_pipelines"]
+  trigger:
+    include:
+      - artifact: child-pipelines.yml
+        job: generate_child_pipelines
+    strategy: depend
