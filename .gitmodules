@@ -1,12 +1,12 @@
 [submodule "toolbox/logger"]
 	path = toolbox/logger
-	url = git@git-devops.opencsg.com:product/infra/deployment-automation/toolbox/logger.git
+	url = https://gitlab-ci-token:$CI_JOB_TOKEN@git-devops.opencsg.com/product/infra/deployment-automation/toolbox/logger.git
 	branch = main
 [submodule "toolbox/csghub-ctl"]
 	path = toolbox/csghub-ctl
-	url = git@git-devops.opencsg.com:product/infra/deployment-automation/toolbox/csghub-ctl.git
+	url = https://gitlab-ci-token:$CI_JOB_TOKEN@git-devops.opencsg.com/product/infra/deployment-automation/toolbox/csghub-ctl.git
 	branch = main
 [submodule "toolbox/kyml"]
 	path = toolbox/kyml
-	url = git@git-devops.opencsg.com:product/infra/deployment-automation/toolbox/kyml.git
+	url = https://gitlab-ci-token:$CI_JOB_TOKEN@git-devops.opencsg.com/product/infra/deployment-automation/toolbox/kyml.git
 	branch = main
