@@ -35,14 +35,14 @@ set -e
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
 {{- if or $postgresql.enable $patroni.enable }}
-# Create starship databasec
+# Create starship database
 /opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
 {{- end }}
 
 {{- $redis := $web.redis }}
 {{- $redisUser := $redis.auth.user -}}
 {{- $redisPassword := $redis.auth.password | default (crypto.PBKDF2 $redisUser "opencsg" 2048 8) -}}
-{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":s@%s" $redis.host) }}
+{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":@%s" $redis.host) }}
 {{/*{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":%s@%s" $redisPassword $redis.host) }} */}}
 {{- file.Write (printf "%s/REDIS_PORT" $envDir) $redis.port }}
 
@@ -109,7 +109,7 @@ set -e
 {{- $webNats := $web.nats -}}
 {{- file.Write (printf "%s/NATS_URL" $envDir) ($webNats.url | default (printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword)) }}
 
-{{ file.Write (printf "%s/GIT_PYTHON_GIT_EXECUTABLE" $envDir) "/opt/csghub/embedded/bin/gitaly-git-v2.47" }}
+{{- file.Write (printf "%s/GIT_PYTHON_GIT_EXECUTABLE" $envDir) "/opt/csghub/embedded/bin/gitaly-git-v2.47" }}
 chpst -e /opt/csghub/etc/web/env -P \
   -u root:root \
   /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py migrate
