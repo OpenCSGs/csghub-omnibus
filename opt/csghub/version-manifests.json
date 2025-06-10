@@ -41,7 +41,7 @@
       {
         "name": "casdoor",
         "description": "An open-source Identity and Access Management (IAM) / Single-Sign-On (SSO) platform with web UI supporting OAuth 2.0, OIDC, SAML and CAS.",
-        "version": "1.733.0",
+        "version": "1.799.0",
         "repository": "https://github.com/casdoor/casdoor"
       },
       {
