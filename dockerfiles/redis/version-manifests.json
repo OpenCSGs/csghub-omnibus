@@ -4,7 +4,11 @@
         "name": "redis",
         "description": "Redis is an open source, in-memory data structure store, used as a database, cache and message broker.",
         "version": "6.2.14",
-        "repository": "https://github.com/redis/redis"
+        "repository": "https://github.com/redis/redis",
+        "environments": {
+          "OS_RELEASE": "ubuntu:22.04",
+          "REDIS_VERSION": "6.2.14"
+        }
       }
     ]
 }

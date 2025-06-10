@@ -1,10 +1,15 @@
 {
-    "components": [
-      {
-        "name": "minio",
-        "description": "High-performance object storage system compatible with S3",
-        "version": "RELEASE.2025-03-12T18-04-18Z",
-        "repository": "https://github.com/minio/minio"
+  "components": [
+    {
+      "name": "MINIO",
+      "description": "High-performance object storage system compatible with S3",
+      "version": "RELEASE.2025-03-12T18-04-18Z",
+      "repository": "https://github.com/minio/minio",
+      "environments": {
+        "OS_RELEASE": "ubuntu:22.04",
+        "MINIO_VERSION": "RELEASE.2025-03-12T18-04-18Z",
+        "MC_VERSION": "RELEASE.2025-03-12T17-29-24Z"
       }
-    ]
+    }
+  ]
 }

@@ -4,7 +4,11 @@
         "name": "runit",
         "description": "A UNIX init scheme with service supervision",
         "version": "2.1.2",
-        "repository": "http://smarden.org/runit/"
+        "repository": "http://smarden.org/runit/",
+        "environments": {
+          "OS_RELEASE": "ubuntu:22.04",
+          "RUNIT_VERSION": "2.1.2"
+        }
       }
     ]
 }

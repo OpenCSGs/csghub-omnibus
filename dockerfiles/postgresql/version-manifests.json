@@ -4,7 +4,12 @@
         "name": "postgresql",
         "description": "PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance.",
         "version": "16.8",
-        "repository": "https://www.postgresql.org/"
+        "repository": "https://www.postgresql.org/",
+        "environments": {
+          "OS_RELEASE": "ubuntu:22.04",
+          "POSTGRESQL_VERSION": "16.8",
+          "SCWS_VERSION": "1.2.3"
+        }
       }
     ]
 }
