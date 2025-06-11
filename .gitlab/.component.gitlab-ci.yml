@@ -11,22 +11,17 @@ variables:
   # Build settings
   BUILDX_NO_DEFAULT_ATTESTATIONS: 1
   BUILD_PLATFORMS: "linux/arm64,linux/amd64"
-  # Registry
-  REGISTRY: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public"
   # Go Env
   GO111MODULE: "on"
   GOPROXY: "https://goproxy.cn,direct"
-  # Components
-  COMPONENT_NAME: $[[ inputs.component_name ]]
-  VERSION_MANIFESTS: "dockerfiles/$[[ inputs.component_name ]]/version-manifests.json"
   # Git
   GIT_SUBMODULE_FORCE_HTTPS: true
   GIT_SUBMODULE_STRATEGY: recursive
   GIT_SUBMODULE_DEPTH: 1
   GIT_DEPTH: 1
   # Debug
+  OS_RELEASE: "ubuntu:22.04"
   CI_DEBUG_TRACE: "false"
-
 
 build-$[[ inputs.component_name ]]:
   stage: build
@@ -44,13 +39,16 @@ build-$[[ inputs.component_name ]]:
     - |
       cat <<'EOF' | bash -s
       set -e 
+      # Components
+      VERSION_MANIFESTS="dockerfiles/$[[ inputs.component_name ]]/version-manifests.json"
+      
       # Defining basic variables
-      export COMPONENT_NAME_UPPER=$(cat ${VERSION_MANIFESTS} | jq -r '.components[0].name' | tr '[:lower:]' '[:upper:]' | tr '-' '_')
-      export COMPONENT_VERSION=$(cat ${VERSION_MANIFESTS} | jq -r '.components[0].version')
+      COMPONENT_NAME_UPPER=$(cat ${VERSION_MANIFESTS} | jq -r '.components[0].name' | tr '[:lower:]' '[:upper:]' | tr '-' '_')
+      COMPONENT_VERSION=$(cat ${VERSION_MANIFESTS} | jq -r '.components[0].version')
       echo "Building $COMPONENT_NAME_UPPER version $COMPONENT_VERSION"
       
       # Introducing user-defined variables
-      build_args=()
+      build_args=( "--build-arg" "REGISTRY=${REGISTRY}" )
       while IFS="=" read -r key value; do
         safe_key=$(echo "$key" | tr '-' '_' | tr '[:lower:]' '[:upper:]')
       
@@ -62,19 +60,15 @@ build-$[[ inputs.component_name ]]:
         echo "Prepared build arg: ${safe_key}=${final_value}"
       done < <(jq -r '.components[0].environments | to_entries[] | "\(.key)=\(.value)"' "${VERSION_MANIFESTS}")
       
-      OS_TAG = $(basename $OS_RELEASE | sed 's/:/_/g')
+      OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
       # Building docker images
       docker buildx build \
         --provenance false \
         --platform ${BUILD_PLATFORMS} \
         "${build_args[@]}" \
-        --build-arg REGISTRY=$REGISTRY \
         -t "$CI_REGISTRY_IMAGE/omnibus-$[[ inputs.component_name ]]:${COMPONENT_VERSION}-${OS_TAG}" \
         -f "dockerfiles/$[[ inputs.component_name ]]/Dockerfile_$[[ inputs.component_name ]]" \
         --push .
       EOF
   interruptible: true
   retry: 2
-  cache:
-    paths:
-      - .cache/buildx
