@@ -72,3 +72,5 @@ build-$[[ inputs.component_name ]]:
       EOF
   interruptible: true
   retry: 2
+  tags:
+    - infra
