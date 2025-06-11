@@ -760,6 +760,7 @@ moderation:
 
 # # Starship-Web ###########################################################
 # web:
+#   listen: "127.0.0.1:8183"
 #   # Database configuration
 #   postgresql:
 #     name: "starship"            # Database name
@@ -795,6 +796,10 @@ moderation:
 #   # NATS messaging configuration
 #   nats:
 #     url: ""                      # NATS server URL
+
+#    # MegaLinter-Server
+#    megalinter_server:
+#      endpoint: "http://megalinter-server:9000"
 
 # # Starship-Celery ########################################################
 # producer: {}  # Producer configuration (empty for default settings)
