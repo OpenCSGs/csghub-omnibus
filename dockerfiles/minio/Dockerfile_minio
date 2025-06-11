@@ -3,21 +3,10 @@ ARG OS_RELEASE=ubuntu:22.04
 ARG MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
 ARG MC_VERSION=RELEASE.2025-03-12T17-29-24Z
 
-FROM ${REGISTRY}/${OS_RELEASE} AS minio-logger
+FROM ${REGISTRY}/golang:${GOLANG_VERSION} AS minio-logger
 WORKDIR /
 
-RUN if egrep -q -i 'ubuntu|debian' /etc/os-release; then \
-        apt update && \
-        apt install -y --no-install-recommends golang && \
-        apt clean && \
-          rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
-    else \
-        if command -v dnf >/dev/null; then \
-            dnf install -y golang; \
-        else \
-            yum install -y golang; \
-        fi; \
-    fi
+ENV GOPROXY=https://goproxy.cn,direct
 
 COPY ./toolbox/logger/. /logger/
 ## Install logger

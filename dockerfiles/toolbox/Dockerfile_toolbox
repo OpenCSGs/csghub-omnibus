@@ -14,7 +14,6 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         apt update && \
         apt install -y --no-install-recommends \
           wget \
-          golang \
           apache2-utils \
           openssh-client \
           build-essential \
@@ -25,7 +24,6 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         if command -v dnf >/dev/null; then \
             dnf install -y \
               wget \
-              golang \
               httpd-tools \
               openssh-clients \
               gcc gcc-c++ make \
@@ -34,7 +32,6 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         else \
             yum install -y \
               wget \
-              golang \
               httpd-tools \
               openssh-clients \
               gcc gcc-c++ make \
