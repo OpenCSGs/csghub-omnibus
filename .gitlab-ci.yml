@@ -27,19 +27,30 @@ detect_changes:
   image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/docker:27.3
   script:
     - |
-      CHANGED_COMPONENTS=""
-      
-      if [ -z "$OS_RELEASE" ]; then 
-        CHANGED_COMPONENTS=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} | grep dockerfiles | awk -F'/' '{print $2}' | sort -u | tr '\n' ' ')
+      # Initialize with default OS_RELEASE if not set
+      DEFAULT_OS_RELEASE="ubuntu:22.04"
+      OS_RELEASE="${OS_RELEASE:-$DEFAULT_OS_RELEASE}"
+
+      # Get changed Dockerfile components
+      CHANGED_DOCKERFILES=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} | grep '^dockerfiles/[^/]*/Dockerfile' | awk -F'/' '{print $2}' | sort -u)
+
+      if [ -n "$CHANGED_DOCKERFILES" ]; then
+          # Case 1: Some Dockerfiles changed - only build those components
+          CHANGED_COMPONENTS=$(echo "$CHANGED_DOCKERFILES" | tr '\n' ' ')
       else
-        CHANGED_COMPONENTS=$(ls -d dockerfiles/* | egrep -v "starship|README.md" | xargs -n 1 basename | tr '\n' ' ')
+          # Case 2: No Dockerfiles changed - build all components
+          # Ensure OS_RELEASE is not default when building all
+          if [ "$OS_RELEASE" = "$DEFAULT_OS_RELEASE" ]; then
+              echo "Warning: When building all components, OS_RELEASE must be specified and not the `ubuntu:22.04`"
+              exit 0
+          fi
+          CHANGED_COMPONENTS=$(ls -d dockerfiles/*/ | xargs -n 1 basename | egrep -v "starship|README.md" | tr '\n' ' ')
       fi
-      
-      # 移除末尾可能存在的空格并转换为逗号分隔
+
+      # Format output (remove trailing space and convert to comma-separated)
       CHANGED_COMPONENTS=$(echo "$CHANGED_COMPONENTS" | sed 's/ *$//' | tr ' ' ',')
-      
+
       echo "CHANGED_COMPONENTS=\"$CHANGED_COMPONENTS\"" > changed_components.env
-      
       echo "Generated changed_components.env:"
       cat changed_components.env
   artifacts:
