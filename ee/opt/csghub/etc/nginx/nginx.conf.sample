@@ -291,7 +291,7 @@ http {
     {{- if gt (len $registryParts) 0 -}}
       {{- if eq (len $registryParts) 1 -}}
         {{- if hasPrefix (index $registryParts 0) ":" -}}
-          {{- $registryPort = strings.trimPrefix (index $registryParts 0) ":" -}}
+          {{- $registryPort = strings.TrimPrefix (index $registryParts 0) ":" -}}
         {{- else if (index $registryParts 0) -}}
           {{- $registryHost = index $registryParts 0 -}}
         {{- end -}}
