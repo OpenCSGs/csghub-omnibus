@@ -91,3 +91,28 @@ BEGIN
     END IF;
 END
 $$;
+
+-- Dynamically update GitLab_Provider in provider table (only if table exists)
+{{- $starship := (datasource "config").starship }}
+{{- $oauth := $starship.oauth }}
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'provider'
+    ) THEN
+        EXECUTE '
+            UPDATE
+                "provider"
+            SET
+                client_id = ''{{ $oauth.client_id }}'',
+                client_secret = ''{{ $oauth.client_secret }}'',
+                custom_auth_url = ''{{ printf "%s/oauth/authorize" $oauth.issuer }}'',
+                custom_token_url = ''{{ printf "%s/oauth/token" $oauth.issuer }}'',
+                custom_user_info_url = ''{{ printf "%s/api/v4/user" $oauth.issuer }}''
+            WHERE
+                name = ''GitLab_Provider'';
+        ';
+    END IF;
+END
+$$;
