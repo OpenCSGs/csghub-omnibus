@@ -16,23 +16,6 @@
     {{- $port = "80" -}}
   {{- end -}}
 {{- end -}}
-{{- $csghub := (datasource "config").csghub -}}
-{{- $server := (datasource "config").server -}}
-{{- $gitlabShell := (datasource "config").gitlab_shell -}}
-
-{{- $url := conv.URL $csghub.external_url -}}
-{{- $urlParts := $url.Host | strings.Split ":" -}}
-{{- $host := index $urlParts 0 -}}
-{{- $port := "" -}}
-{{- if gt (len $urlParts) 1 -}}
-  {{- $port = index $urlParts 1 -}}
-{{- else -}}
-  {{- if eq $url.Scheme "https" -}}
-    {{- $port = "443" -}}
-  {{- else -}}
-    {{- $port = "80" -}}
-  {{- end -}}
-{{- end -}}
 
 saas = {{ $server.saas }}
 instance_id = ""
@@ -346,3 +329,19 @@ image_builder_kaniko_args = ["--compressed-caching=false","--single-snapshot","-
 # --skip-tls-verify : Disable TLS certificate validation for registries.
 # Uncomment the following line to enable pull images from a private registry without https
 # image_builder_kaniko_args = ["--insecure", "--skip-tls-verify"]
+
+{{ $notification := (datasource "config").notification -}}
+{{- $notifyListen := $notification.listen -}}
+{{- $notifyParts := $notifyListen | strings.Split ":" -}}
+{{- $notifyHost := index $casdoorParts 1 | default "127.0.0.1" -}}
+{{- $notifyPort := "8095" -}}
+{{- if eq (len $notifyParts) 2 -}}
+  {{- $notifyPort = index $notifyPort 1 -}}
+{{- end -}}
+[notification]
+host = {{ printf "http://%s" $notifyHost | quote }}
+port = {{ $notifyPort }}
+mailer_host = {{ $notification.smtp.host | quote }}
+mailer_port = {{ $notification.smtp.port | quote }}
+mailer_username = {{ $notification.smtp.username | quote }}
+mailer_password = {{ $notification.smtp.password | quote }}
