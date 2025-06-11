@@ -1,12 +1,13 @@
+ARG REGISTRY=docker.io
+ARG OS_RELEASE=ubuntu:22.04
 ARG TEMPORAL_VERSION=1.25.1
 ARG TEMPORAL_UI_VERSION=2.30.3
-ARG OS_RELEASE=ubuntu:22.04
 
-FROM temporalio/auto-setup:${TEMPORAL_VERSION} AS temporal
+FROM ${REGISTRY}/temporalio/auto-setup:${TEMPORAL_VERSION} AS temporal
 
-FROM temporalio/ui:${TEMPORAL_UI_VERSION} AS temporal_ui
+FROM ${REGISTRY}/temporalio/ui:${TEMPORAL_UI_VERSION} AS temporal_ui
 
-FROM ${OS_RELEASE}
+FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
 ENV CSGHUB_HOME=/opt/csghub

@@ -1,5 +1,7 @@
+ARG REGISTRY=docker.io
 ARG OS_RELEASE=ubuntu:22.04
-FROM ${OS_RELEASE} AS builder
+
+FROM ${REGISTRY}/${OS_RELEASE} AS builder
 WORKDIR /
 
 ENV CSGHUB_HOME=/opt/csghub
@@ -144,7 +146,7 @@ RUN python3.11 -m pip install -U pip && \
 
 RUN ln -sf ${CSGHUB_EMBEDDED}/python/bin/* ${CSGHUB_EMBEDDED}/bin/
 
-FROM ${OS_RELEASE}
+FROM ${REGISTRY}/${OS_RELEASE}
 
 WORKDIR /
 

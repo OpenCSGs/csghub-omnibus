@@ -68,6 +68,7 @@ build-$[[ inputs.component_name ]]:
         --provenance false \
         --platform ${BUILD_PLATFORMS} \
         "${build_args[@]}" \
+        --build-arg REGISTRY=$REGISTRY \
         -t "$CI_REGISTRY_IMAGE/omnibus-$[[ inputs.component_name ]]:${COMPONENT_VERSION}-${OS_TAG}" \
         -f "dockerfiles/$[[ inputs.component_name ]]/Dockerfile_$[[ inputs.component_name ]]" \
         --push .

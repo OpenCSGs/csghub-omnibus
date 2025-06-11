@@ -1,5 +1,7 @@
+ARG REGISTRY=docker.io
 ARG OS_RELEASE=ubuntu:22.04
-FROM ${OS_RELEASE} AS builder
+
+FROM ${REGISTRY}/${OS_RELEASE} AS builder
 WORKDIR /
 
 ENV CSGHUB_HOME=/opt/csghub
@@ -68,7 +70,7 @@ ENV SCWS_HOME=${CSGHUB_EMBEDDED}
 RUN git clone https://github.com/amutu/zhparser.git && \
     cd /zhparser && make && make install
 
-FROM ${OS_RELEASE}
+FROM ${REGISTRY}/${OS_RELEASE}
 
 WORKDIR /
 

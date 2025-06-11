@@ -1,6 +1,8 @@
+ARG REGISTRY=docker.io
 ARG OS_RELEASE=ubuntu:22.04
 ARG GOLANG_VERSION=1.24.2
-FROM ${OS_RELEASE} AS downloader
+
+FROM ${REGISTRY}/${OS_RELEASE} AS downloader
 WORKDIR /
 
 ENV CSGHUB_HOME=/opt/csghub
@@ -76,7 +78,7 @@ RUN wget --no-check-certificate -O /dnsmasq.tar.xz https://thekelleys.org.uk/dns
     mkdir -p ${CSGHUB_HOME}/etc/dnsmasq && cp dnsmasq.conf.example ${CSGHUB_HOME}/etc/dnsmasq/ && \
     rm -rf /dnsmasq*
 
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/golang:${GOLANG_VERSION} AS builder
+FROM ${REGISTRY}/golang:${GOLANG_VERSION} AS builder
 WORKDIR /
 
 ENV CSGHUB_HOME=/opt/csghub
@@ -96,7 +98,7 @@ RUN cd /kyml && \
     mkdir -p ${CSGHUB_HOME}/bin && \
     go build -buildvcs=false -o ${CSGHUB_HOME}/bin/kyml
 
-FROM ${OS_RELEASE}
+FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
 ENV CSGHUB_HOME=/opt/csghub

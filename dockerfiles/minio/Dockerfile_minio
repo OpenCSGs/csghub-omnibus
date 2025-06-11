@@ -1,7 +1,9 @@
+ARG REGISTRY=docker.io
 ARG OS_RELEASE=ubuntu:22.04
 ARG MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
 ARG MC_VERSION=RELEASE.2025-03-12T17-29-24Z
-FROM ${OS_RELEASE} AS minio-logger
+
+FROM ${REGISTRY}/${OS_RELEASE} AS minio-logger
 WORKDIR /
 
 RUN if egrep -q -i 'ubuntu|debian' /etc/os-release; then \
@@ -22,11 +24,11 @@ COPY ./toolbox/logger/. /logger/
 RUN cd /logger && go build -buildvcs=false -o /logger
 
 ## Install minio
-FROM minio/minio:${MINIO_VERSION} AS minio-server
+FROM ${REGISTRY}/minio/minio:${MINIO_VERSION} AS minio-server
 
-FROM minio/mc:${MC_VERSION} AS minio-client
+FROM ${REGISTRY}/minio/mc:${MC_VERSION} AS minio-client
 
-FROM ${OS_RELEASE}
+FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
 ENV CSGHUB_HOME=/opt/csghub
