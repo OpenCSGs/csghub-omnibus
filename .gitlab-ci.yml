@@ -6,9 +6,9 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "web"'
     - when: never
 
-default:
-  tags:
-    - infra
+#default:
+#  tags:
+#    - infra
 
 include:
   - local: '.gitlab/.omnibus.gitlab-ci.yml'
@@ -32,7 +32,7 @@ detect_changes:
       OS_RELEASE="${OS_RELEASE:-$DEFAULT_OS_RELEASE}"
 
       # Get changed Dockerfile components
-      CHANGED_DOCKERFILES=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} | grep '^dockerfiles/[^/]*/Dockerfile' | awk -F'/' '{print $2}' | sort -u)
+      CHANGED_DOCKERFILES=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} | grep '^dockerfiles/[^/]*' | awk -F'/' '{print $2}' | sort -u)
 
       if [ -n "$CHANGED_DOCKERFILES" ]; then
           # Case 1: Some Dockerfiles changed - only build those components
