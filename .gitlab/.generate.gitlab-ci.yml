@@ -1,0 +1,93 @@
+spec:
+  inputs:
+    tag:
+      description: "Runner tags"
+      default: 'infra'
+---
+default:
+  tags:
+    - $[[ inputs.tag ]]
+
+include:
+  - local: '.gitlab/.omnibus.gitlab-ci.yml'
+
+detect_changes:
+  stage: detect
+  image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/docker:27.3
+  script:
+    - |
+      # Initialize with default OS_RELEASE if not set
+      DEFAULT_OS_RELEASE="ubuntu:22.04"
+      OS_RELEASE="${OS_RELEASE:-$DEFAULT_OS_RELEASE}"
+
+      # Get changed Dockerfile components
+      if [ "${CI_COMMIT_BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then 
+        CHANGED_DOCKERFILES=""
+      else
+        CHANGED_DOCKERFILES=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} | grep '^dockerfiles/[^/]*' | awk -F'/' '{print $2}' | sort -u)
+      fi 
+      
+      if [ -n "$CHANGED_DOCKERFILES" ]; then
+          # Case 1: Some Dockerfiles changed - only build those components
+          CHANGED_COMPONENTS=$(echo "$CHANGED_DOCKERFILES" | tr '\n' ' ')
+      else
+          # Case 2: No Dockerfiles changed - build all components
+          # Ensure OS_RELEASE is not default when building all
+          if [ "$OS_RELEASE" = "$DEFAULT_OS_RELEASE" ]; then
+              echo "Warning: When building all components, OS_RELEASE must be specified and not the 'ubuntu:22.04'"
+              exit 1
+          fi
+          CHANGED_COMPONENTS=$(ls -d dockerfiles/*/ | xargs -n 1 basename | egrep -v "starship|README.md" | tr '\n' ' ')
+      fi
+
+      # Format output (remove trailing space and convert to comma-separated)
+      CHANGED_COMPONENTS=$(echo "$CHANGED_COMPONENTS" | sed 's/ *$//' | tr ' ' ',')
+
+      echo "CHANGED_COMPONENTS=\"$CHANGED_COMPONENTS\"" > changed_components.env
+      echo "Generated changed_components.env:"
+      cat changed_components.env
+  artifacts:
+    reports:
+      dotenv: changed_components.env
+
+generate_child_pipelines:
+  stage: trigger
+  needs:
+    - job: detect_changes
+      artifacts: true
+  script:
+    - |
+      if [ -z "$CHANGED_COMPONENTS" ]; then
+        echo "No components changed, nothing to trigger."
+        exit 1
+      fi
+      
+      # 为每个变更的子服务生成触发配置
+      cat > child-pipelines.yml <<EOF
+      ---
+      include:
+      EOF
+      
+      COMPONENTS=$(echo "$CHANGED_COMPONENTS" | tr ',' ' ' | sed 's/"//g')
+      for COMPONENT in $COMPONENTS; do
+        cat >> child-pipelines.yml <<EOF
+        - local: .gitlab/.component.gitlab-ci.yml
+          inputs:
+            component_name: "$COMPONENT"
+      EOF
+      done
+  artifacts:
+    paths:
+      - child-pipelines.yml
+
+trigger-child-pipelines:
+  stage: trigger
+  needs: ["generate_child_pipelines"]
+  trigger:
+    include:
+      - artifact: child-pipelines.yml
+        job: generate_child_pipelines
+    forward:
+      pipeline_variables: true
+    strategy: depend
+

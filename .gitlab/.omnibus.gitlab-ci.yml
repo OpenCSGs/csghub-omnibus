@@ -31,7 +31,7 @@ build-omnibus:
     - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
     - apk add jq bash
     - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
-    - echo "$ALI_ACR_PASSWORD" | docker login -u $ALI_ACR_USER $ALI_ACR_REGISTRY --password-stdin
+    - echo "$ACR_PASSWORD" | docker login -u $ACR_USERNAME $ACR_REGISTRY --password-stdin
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
   script:
     - |
@@ -46,14 +46,14 @@ build-omnibus:
       
       # 初始化标签数组
         TAGS=(
-          "-t" "${ALI_ACR_REGISTRY}/omnibus-csghub:${CI_COMMIT_TAG}-${OS_TAG}"
+          "-t" "${ACR_REGISTRY}/omnibus-csghub:${CI_COMMIT_TAG}-${OS_TAG}"
         )
       
       # 如果是 ubuntu:22.04，添加额外标签
       if [ "$OS_RELEASE" = "ubuntu:22.04" ]; then
       TAGS+=(
-        "-t" "${ALI_ACR_REGISTRY}/omnibus-csghub:${CI_COMMIT_TAG}"
-        "-t" "${ALI_ACR_REGISTRY}/omnibus-csghub:latest"
+        "-t" "${ACR_REGISTRY}/omnibus-csghub:${CI_COMMIT_TAG}"
+        "-t" "${ACR_REGISTRY}/omnibus-csghub:latest"
       )
       fi
     
