@@ -51,7 +51,7 @@ detect_changes:
       dotenv: changed_components.env
 
 generate_child_pipelines:
-  stage: trigger
+  stage: detect
   needs:
     - job: detect_changes
       artifacts: true

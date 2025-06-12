@@ -10,7 +10,6 @@ stages:
   - detect
   - trigger
   - build
-  - package
 
 variables:
   # Docker
@@ -33,7 +32,7 @@ variables:
   TAG: ubuntu_22.04
 
 trigger-generate:
-  stage: trigger
+  stage: detect
   trigger:
     include:
       - local: .gitlab/.generate.gitlab-ci.yml
