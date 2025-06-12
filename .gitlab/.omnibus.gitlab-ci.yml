@@ -1,3 +1,9 @@
+default:
+  services:
+    - name: ${REGISTRY}/docker:27.3-dind
+      command: [ "--feature=containerd-snapshotter", "--experimental" ]
+      alias: docker
+
 build-omnibus:
   stage: build
   image: ${REGISTRY}/docker:27.3
@@ -26,27 +32,66 @@ build-omnibus:
     - apk add jq bash
     - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
     - echo "$ALI_ACR_PASSWORD" | docker login -u $ALI_ACR_USER $ALI_ACR_REGISTRY --password-stdin
-  services:
-    - name: ${REGISTRY}/docker:27.3-dind
-      command: [ "--feature=containerd-snapshotter", "--experimental" ]
-      alias: docker
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
   script:
     - |
       # 收集所有组件的构建参数
       BUILD_ARGS=$(jq -r '.version_manifest.components[] | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' "$VERSION_MANIFESTS" | tr '\n' ' ')
       
       OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
-      BUILD_ARGS+= ( "--build-arg" "OS_TAG=${OS_TAG}" )
-     
+      BUILD_ARGS+=( "--build-arg" "OS_TAG=${OS_TAG}" )
+      
+      # 初始化标签数组
+        TAGS=(
+          "-t" "${ALI_ACR_REGISTRY}/omnibus-csghub:${CI_COMMIT_TAG}-${OS_TAG}"
+        )
+      
+      # 如果是 ubuntu:22.04，添加额外标签
+      if [ "$OS_RELEASE" = "ubuntu:22.04" ]; then
+      TAGS+=(
+        "-t" "${ALI_ACR_REGISTRY}/omnibus-csghub:${CI_COMMIT_TAG}"
+        "-t" "${ALI_ACR_REGISTRY}/omnibus-csghub:latest"
+      )
+      fi
+    
       docker buildx build \
         --provenance false \
-        --platform linux/arm64,linux/amd64 \
-        $BUILD_ARGS \
-        --build-arg CSGHUB_VERSION=${CI_COMMIT_TAG} \
-        -t "$ALI_ACR_REGISTRY/omnibus-csghub:$CI_COMMIT_TAG" \
-        -t "$ALI_ACR_REGISTRY/omnibus-csghub:latest" \
+        --platform "${BUILD_PLATFORMS}" \
+        "${BUILD_ARGS[@]}" \
+        --build-arg "CSGHUB_VERSION=${CI_COMMIT_TAG}" \
+        "${TAGS[@]}" \
         -f Dockerfile \
         --push .
   interruptible: true
   rules:
     - if: $CI_COMMIT_TAG
+
+pack-omnibus:
+  stage: package
+  image: ${REGISTRY}/docker:27.3
+  before_script:
+    - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
+  script:
+    - |
+      OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
+      BUILD_ARGS+=( 
+        "--build-arg" "OS_RELEASE=${OS_RELEASE}" 
+        "--build-arg" "OS_TAG=${OS_TAG}" 
+        "--build-arg" "REGISTRY=${REGISTRY}" 
+        "--build-arg" "CSGHUB_VERSION=${CI_COMMIT_TAG}" 
+      )
+      
+      docker buildx build \
+        --provenance false \
+        --platform "${BUILD_PLATFORMS}" \
+        "${BUILD_ARGS[@]}" \
+        -f packages/Dockerfile_debian_based \
+        -o packages .
+  dependencies:
+    - build-omnibus
+  interruptible: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  artifacts:
+    paths:
+      - packages/linux_*

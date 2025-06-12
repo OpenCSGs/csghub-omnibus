@@ -6,9 +6,9 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "web"'
     - when: never
 
-#default:
-#  tags:
-#    - infra
+default:
+  tags:
+    - ${TAG}
 
 include:
   - local: '.gitlab/.omnibus.gitlab-ci.yml'
@@ -17,9 +17,25 @@ stages:
   - detect
   - trigger
   - build
+  - package
 
 variables:
+  # Docker
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
+  # Build settings
+  BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+  BUILD_PLATFORMS: "linux/arm64,linux/amd64"
   REGISTRY: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public"
+  # Go Env
+  GO111MODULE: "on"
+  GOPROXY: "https://goproxy.cn,direct"
+  # Git
+  GIT_SUBMODULE_FORCE_HTTPS: true
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_DEPTH: 1
+  GIT_DEPTH: 1
+  # OS
   OS_RELEASE: "ubuntu:22.04"
 
 detect_changes:
