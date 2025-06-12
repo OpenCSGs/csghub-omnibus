@@ -1,0 +1,56 @@
+ARG REGISTRY=docker.io
+ARG OS_RELEASE=hxsoong/kylin:v10-sp1
+ARG CSGHUB_VERSION=v1.7.1-ce
+ARG OS_TAG=kylin_v10-sp1
+
+FROM ${REGISTRY}/omnibus-csghub:${CSGHUB_VERSION} AS omnibus
+
+FROM ${REGISTRY}/${OS_RELEASE} AS builder
+WORKDIR /root
+
+RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
+            apt update && \
+            apt install -y --no-install-recommends dpkg-dev && \
+            apt clean && \
+            rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
+        else \
+            if command -v dnf >/dev/null; then \
+                dnf install -y rpm-build rpmdevtools && \
+                dnf clean all; \
+            else \
+                yum install -y rpm-build rpmdevtools && \
+                yum clean all; \
+            fi; \
+            rm -rf /var/cache/yum /tmp/* /var/tmp/* /var/log/*; \
+        fi
+
+ARG CSGHUB_VERSION
+RUN rpmdev-setuptree
+
+COPY ./packages/rhel-based/omnibus-csghub.spec /root/rpmbuild/SPECS/
+COPY --from=omnibus /opt/. /root/rpmbuild/BUILD/opt
+
+RUN
+RUN cd /root/rpmbuild/BUILD && mkdir -p etc/systemd && \
+    cp -a opt/csghub/etc/csghub/templates/system etc/systemd/
+
+ARG TARGETARCH
+RUN \
+    case "$TARGETARCH" in \
+        "amd64")    RPM_ARCH="x86_64" ;; \
+        "arm64")    RPM_ARCH="aarch64" ;; \
+        "386")      RPM_ARCH="i386" ;; \
+        "arm")      RPM_ARCH="armhfp" ;; \
+        *)          RPM_ARCH="$TARGETARCH" ;; \
+    esac && \
+    VERSION=$(echo "${CSGHUB_VERSION}" | sed -e 's/^v//' -e 's/-.*$//') && \
+    REL=$(echo "${CSGHUB_VERSION}" | sed -e 's/^.*-//') && \
+    sed -i "s/TAG/${VERSION}/g;s/REL/$REL/g;s/ARCH/$RPM_ARCH/g" /root/rpmbuild/SPECS/omnibus-csghub.spec && \
+    echo "Building for TARGETARCH=$TARGETARCH → RPM_ARCH=$RPM_ARCH" && \
+    rpmbuild \
+        --define "_topdir /root/rpmbuild" \
+        --target "$RPM_ARCH" \
+        -bb /root/rpmbuild/SPECS/omnibus-csghub.spec
+
+FROM scratch AS output
+COPY --from=builder /root/rpmbuild/RPMS/*/*.rpm /

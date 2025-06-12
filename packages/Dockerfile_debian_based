@@ -1,0 +1,43 @@
+ARG REGISTRY=docker.io
+ARG OS_RELEASE=ubuntu:22.04
+ARG CSGHUB_VERSION=v1.7.1-ce
+
+FROM ${REGISTRY}/omnibus-csghub:${CSGHUB_VERSION} AS omnibus
+
+FROM ${REGISTRY}/${OS_RELEASE} AS builder
+WORKDIR /
+
+RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
+            apt update && \
+            apt install -y --no-install-recommends dpkg-dev lsb-release && \
+            apt clean && \
+            rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
+        else \
+            if command -v dnf >/dev/null; then \
+                dnf install -y rpm-build rpmdevtools && \
+                dnf clean all; \
+            else \
+                yum install -y rpm-build rpmdevtools && \
+                yum clean all; \
+            fi; \
+            rm -rf /var/cache/yum /tmp/* /var/tmp/* /var/log/*; \
+        fi
+
+ENV PACK_DIR=/tmp/omnibus-csghub
+
+COPY ./packages/debian-based/. ${PACK_DIR}/
+COPY --from=omnibus /opt/. ${PACK_DIR}/opt/
+
+RUN cd ${PACK_DIR} && mkdir -p etc/systemd/system && \
+    cp -a opt/csghub/etc/csghub/templates/system etc/systemd/system
+
+ARG TARGETARCH
+ARG CSGHUB_VERSION
+RUN VERSION=$(echo ${CSGHUB_VERSION}|sed 's/^v//') && \
+    PACKAGE_NAME=omnibus-csghub_${VERSION}_$(lsb_release -cs)_${TARGETARCH} && \
+    mv ${PACK_DIR} ${PACKAGE_NAME} && \
+    sed -i "s/TAG/$VERSION/g" ${PACKAGE_NAME}/DEBIAN/control && \
+    dpkg-deb --build ${PACKAGE_NAME} ${PACKAGE_NAME}.deb
+
+FROM scratch AS output
+COPY --from=builder /*.deb /

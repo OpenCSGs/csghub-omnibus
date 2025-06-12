@@ -1,4 +1,0 @@
-debian/etc/* ./etc
-debian/opt/* ./opt
-debian/tmp/opt/csghub/embedded/bin/* ./opt/csghub/embedded/bin
-debian/tmp/opt/csghub/embedded/sv/postgresql/* ./opt/csghub/embedded/sv/postgresql
