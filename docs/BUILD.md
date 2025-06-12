@@ -26,6 +26,8 @@ docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
 
 Most images are go programs, which do not rely much on the operating environment. However, for postgresql, redis, runit, nginx and other components, they rely on the system dynamic link library environment, so they need to be built for different operating systems and kernel versions.
 
+Because they are all Docker builds, please make sure that the kernel version of the Docker host running the runner is the expected version.
+
 ### How to build single component image
 
 **Prerequisites：**
