@@ -1,4 +1,7 @@
+ARG REGISTRY=docker.io
+ARG GITLAB_REGISTRY=git-devops.opencsg.com:5050/product/infra/deployment-automation/standard/omnibus
 ARG OS_RELEASE=ubuntu:22.04
+ARG OS_TAG=ubuntu_22.04
 
 ARG CSGHUB_VERSION=v1.7.0-ee
 ARG RUNIT_VERSION=2.1.2
@@ -21,60 +24,60 @@ ARG STARSHIP_BILLING=v0.2.0
 ARG STARSHIP_AGENTIC=v0.2.0
 
 ## Install Runit Service Daemon
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-${RUNIT_VERSION} AS runit
+FROM ${GITLAB_REGISTRY}/omnibus-runit:${RUNIT_VERSION}-${OS_TAG} AS runit
 
 ## Install csghub-ctl, gomplate, htpasswd, ssh host key pairs
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:toolbox-${TOOLBOX_VERSION} AS toolbox
+FROM ${GITLAB_REGISTRY}/omnibus-toolbox:${TOOLBOX_VERSION}-${OS_TAG} AS toolbox
 
 ## Install Consul
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/hashicorp/consul:${CONSUL_VERSION} AS consul
+FROM ${REGISTRY}/hashicorp/consul:${CONSUL_VERSION} AS consul
 
 ## Install Minio
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:minio-${MINIO_VERSION} AS minio
+FROM ${GITLAB_REGISTRY}/omnibus-minio:${MINIO_VERSION}-${OS_TAG} AS minio
 
 ## Install PostgreSQL
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:patroni-${PATRONI_VERSION} AS patroni
+FROM ${GITLAB_REGISTRY}/omnibus-patroni:${PATRONI_VERSION}-${OS_TAG} AS patroni
 
 ## Install Redis
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:redis-${REDIS_VERSION} AS redis
+FROM ${GITLAB_REGISTRY}/omnibus-redis:${REDIS_VERSION}-${OS_TAG} AS redis
 
 ## Install Registry
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/registry:${REGISTRY_VERSION} AS registry
+FROM ${REGISTRY}/registry:${REGISTRY_VERSION} AS registry
 
 ## Install Gitaly
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/gitaly:${GITALY_VERSION} AS gitaly
+FROM ${REGISTRY}/gitaly:${GITALY_VERSION} AS gitaly
 
 ## Install Gitlab-Shell
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/gitlab-shell:${GITLAB_SHELL_VERSION} AS gitlab-shell
+FROM ${REGISTRY}/gitlab-shell:${GITLAB_SHELL_VERSION} AS gitlab-shell
 
 ## Install Temporal
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:temporal-${TEMPORAL_VERSION} AS temporal
+FROM ${GITLAB_REGISTRY}/omnibus-temporal:${TEMPORAL_VERSION}-${OS_TAG} AS temporal
 
 ## Install NATS
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_nats:${NATS_VERSION} AS nats
+FROM ${REGISTRY}/csghub_nats:${NATS_VERSION} AS nats
 
 ## Install Casdoor
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/casbin/casdoor:${CASDOOR_VERSION} AS casdoor
+FROM ${REGISTRY}/casbin/casdoor:${CASDOOR_VERSION} AS casdoor
 
 ## Install Nginx
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:nginx-${NGINX_VERSION} AS nginx
+FROM ${GITLAB_REGISTRY}/omnibus-nginx:${NGINX_VERSION}-${OS_TAG} AS nginx
 
 ## Install csghub-server
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_server:${CSGHUB_VERSION} AS server
+FROM ${REGISTRY}/csghub_server:${CSGHUB_VERSION} AS server
 
 ## Install csghub-portal
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/csghub_portal:${CSGHUB_VERSION} AS portal
+FROM ${REGISTRY}/csghub_portal:${CSGHUB_VERSION} AS portal
 
 ## Install Starship
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-web:${STARSHIP_VERSION} AS starship
+FROM ${REGISTRY}/starship-web:${STARSHIP_VERSION} AS starship
 
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-billing:${STARSHIP_BILLING} AS billing
+FROM ${REGISTRY}/starship-billing:${STARSHIP_BILLING} AS billing
 
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-portal:${STARSHIP_FRONTEND} AS frontend
+FROM ${REGISTRY}/starship-portal:${STARSHIP_FRONTEND} AS frontend
 
-FROM opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/starship-agentic:${STARSHIP_AGENTIC} AS agentic
+FROM ${REGISTRY}/starship-agentic:${STARSHIP_AGENTIC} AS agentic
 
-FROM ${OS_RELEASE}
+FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
 LABEL org.opencontainers.image.licenses="Apache-2.0, AGPL-3.0, GPL-2.0-only" \

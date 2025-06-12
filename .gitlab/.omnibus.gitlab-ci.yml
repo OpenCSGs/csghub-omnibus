@@ -35,6 +35,9 @@ build-omnibus:
       # 收集所有组件的构建参数
       BUILD_ARGS=$(jq -r '.version_manifest.components[] | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' "$VERSION_MANIFESTS" | tr '\n' ' ')
       
+      OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
+      BUILD_ARGS+= ( "--build-arg" "OS_TAG=${OS_TAG}" )
+     
       docker buildx build \
         --provenance false \
         --platform linux/arm64,linux/amd64 \
