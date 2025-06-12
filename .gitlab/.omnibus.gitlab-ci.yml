@@ -36,10 +36,13 @@ build-omnibus:
   script:
     - |
       # 收集所有组件的构建参数
-      BUILD_ARGS=$(jq -r '.version_manifest.components[] | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' "$VERSION_MANIFESTS" | tr '\n' ' ')
+      BUILD_ARGS=$(jq -r '.version_manifest.components[] | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' opt/csghub/version-manifests.json | tr '\n' ' ')
       
       OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
-      BUILD_ARGS+=( "--build-arg" "OS_TAG=${OS_TAG}" )
+      BUILD_ARGS+=( 
+        "--build-arg" "OS_TAG=${OS_TAG}" 
+        "--build-arg" "CSGHUB_VERSION=${CI_COMMIT_TAG}"
+      )
       
       # 初始化标签数组
         TAGS=(
@@ -58,7 +61,6 @@ build-omnibus:
         --provenance false \
         --platform "${BUILD_PLATFORMS}" \
         "${BUILD_ARGS[@]}" \
-        --build-arg "CSGHUB_VERSION=${CI_COMMIT_TAG}" \
         "${TAGS[@]}" \
         -f Dockerfile \
         --push .

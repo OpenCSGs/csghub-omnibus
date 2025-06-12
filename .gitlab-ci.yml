@@ -6,10 +6,6 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "web"'
     - when: never
 
-default:
-  tags:
-    - ${TAG}
-
 include:
   - local: '.gitlab/.omnibus.gitlab-ci.yml'
 
