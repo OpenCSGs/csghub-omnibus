@@ -3,6 +3,9 @@ spec:
     component_name:
       description: "Name of the component to build"
       default: 'default'
+    tag:
+      description: "Runner tags"
+      default: 'ubuntu_22.04'
 ---
 build-$[[ inputs.component_name ]]:
   stage: build
@@ -53,3 +56,5 @@ build-$[[ inputs.component_name ]]:
       EOF
   interruptible: true
   retry: 2
+  tags:
+    - $[[ inputs.tag ]]

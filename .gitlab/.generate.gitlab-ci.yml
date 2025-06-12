@@ -74,6 +74,7 @@ generate_child_pipelines:
         - local: .gitlab/.component.gitlab-ci.yml
           inputs:
             component_name: "$COMPONENT"
+            tag: "$[[ inputs.tag ]]"
       EOF
       done
   artifacts:
