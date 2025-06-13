@@ -1,8 +1,9 @@
 ARG REGISTRY=docker.io
 ARG OS_RELEASE=ubuntu:22.04
 ARG CSGHUB_VERSION=v1.8.0-ce
+ARG OS_TAG=ubuntu_22.04
 
-FROM ${REGISTRY}/omnibus-csghub:${CSGHUB_VERSION} AS omnibus
+FROM ${REGISTRY}/omnibus-csghub:${CSGHUB_VERSION}-${OS_TAG} AS omnibus
 
 FROM ${REGISTRY}/${OS_RELEASE} AS builder
 WORKDIR /

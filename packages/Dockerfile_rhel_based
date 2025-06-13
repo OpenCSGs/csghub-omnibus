@@ -1,9 +1,9 @@
 ARG REGISTRY=docker.io
-ARG OS_RELEASE=hxsoong/kylin:v10-sp1
+ARG OS_RELEASE=centos:7
 ARG CSGHUB_VERSION=v1.8.0-ce
-ARG OS_TAG=kylin_v10-sp1
+ARG OS_TAG=centos_7
 
-FROM ${REGISTRY}/omnibus-csghub:${CSGHUB_VERSION} AS omnibus
+FROM ${REGISTRY}/omnibus-csghub:${CSGHUB_VERSION}-${OS_TAG} AS omnibus
 
 FROM ${REGISTRY}/${OS_RELEASE} AS builder
 WORKDIR /root
