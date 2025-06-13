@@ -9,6 +9,7 @@ stages:
   - generate
   - trigger
   - build
+  - upload
 
 variables:
   # Docker

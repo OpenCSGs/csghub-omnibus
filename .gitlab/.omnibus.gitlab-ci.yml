@@ -13,11 +13,14 @@ default:
 stages:
   - build
   - package
+  - upload
 
 variables:
   # Docker
   DOCKER_HOST: "tcp://docker:2375"
   DOCKER_TLS_CERTDIR: ""
+  # Package
+  PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/omnibus/${CI_COMMIT_TAG}"
 
 build-omnibus-$[[ inputs.tag ]]:
   stage: build
@@ -136,3 +139,14 @@ pack-omnibus-$[[ inputs.tag ]]:
   artifacts:
     paths:
       - packages/linux_*
+
+upload-omnibus-$[[ inputs.tag ]]:
+  stage: upload
+  image: ${REGISTRY}/curlimages/curl:latest
+  script:
+    - |
+      for FILE in packages/linux_*/*; do
+        curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${FILE} "${PACKAGE_REGISTRY_URL}/$(basename $FILE)"
+      done
+  needs:
+    - pack-omnibus-$[[ inputs.tag ]]
