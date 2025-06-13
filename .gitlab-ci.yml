@@ -95,12 +95,23 @@ generate_child_pipelines:
             tag: "$OS_TAG"
       EOF
       done
+      
+      cat > omnibus-child-pipelines.yml <<EOF
+      ---
+      include:
+        - local: .gitlab/.omnibus.gitlab-ci.yml
+          rules:
+            - when: manual
+      variables:
+        CI_COMMIT_TAG: ${CSGHUB_VERSION}
+      EOF
   rules:
     - if: $CI_COMMIT_TAG
       when: never
   artifacts:
     paths:
       - component-child-pipelines.yml
+      - omnibus-child-pipelines.yml
 
 trigger-child-component:
   stage: trigger
@@ -108,6 +119,8 @@ trigger-child-component:
   trigger:
     include:
       - artifact: component-child-pipelines.yml
+        job: generate_child_pipelines
+      - artifact: omnibus-child-pipelines.yml
         job: generate_child_pipelines
     forward:
       pipeline_variables: true
@@ -127,3 +140,5 @@ trigger-child-omnibus:
     forward:
       pipeline_variables: true
     strategy: depend
+  rules:
+    - if: $CI_COMMIT_TAG
