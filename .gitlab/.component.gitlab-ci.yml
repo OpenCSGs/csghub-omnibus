@@ -13,7 +13,7 @@ variables:
   DOCKER_TLS_CERTDIR: ""
 
 build-$[[ inputs.component_name ]]:
-  stage: build
+  stage: prepare
   image: ${REGISTRY}/docker:27.3
   before_script:
     - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories

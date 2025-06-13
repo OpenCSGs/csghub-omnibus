@@ -8,6 +8,7 @@ workflow:
 stages:
   - generate
   - trigger
+  - prepare
   - build
   - upload
 
@@ -88,9 +89,6 @@ generate_child_pipelines:
       for COMPONENT in $COMPONENTS; do
         cat >> component-child-pipelines.yml <<EOF
         - local: .gitlab/.component.gitlab-ci.yml
-          rules:
-            - if: '\$CI_COMMIT_TAG'
-              when: never
           inputs:
             component_name: "$COMPONENT"
             tag: "$OS_TAG"
@@ -101,16 +99,14 @@ generate_child_pipelines:
       ---
       include:
         - local: .gitlab/.omnibus.gitlab-ci.yml
-          rules:
-            - when: manual
           inputs:
             tag: "$OS_TAG"
+      
       variables:
         CI_COMMIT_TAG: ${CSGHUB_VERSION}
       EOF
   rules:
-    - if: $CI_COMMIT_TAG
-      when: never
+    - if: '$OS_RELEASE && $CSGHUB_VERSION != ""'
   artifacts:
     paths:
       - component-child-pipelines.yml
@@ -129,8 +125,7 @@ trigger-child-component:
       pipeline_variables: true
     strategy: depend
   rules:
-    - if: $CI_COMMIT_TAG
-      when: never
+    - if: '$OS_RELEASE && $CSGHUB_VERSION != ""'
 
 trigger-child-omnibus:
   stage: trigger
