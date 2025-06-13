@@ -40,6 +40,7 @@ RUN VERSION=$(echo ${CSGHUB_VERSION}|sed 's/^v//') && \
     PACKAGE_NAME=omnibus-csghub_${VERSION}_$(lsb_release -cs)_${TARGETARCH} && \
     mv ${PACK_DIR} ${PACKAGE_NAME} && \
     sed -i "s/TAG/$VERSION/g" ${PACKAGE_NAME}/DEBIAN/control && \
+    chmod -R 0755 ${PACKAGE_NAME}/DEBIAN && \
     dpkg-deb --build ${PACKAGE_NAME} ${PACKAGE_NAME}.deb
 
 FROM scratch AS output
