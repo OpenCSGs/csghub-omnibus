@@ -47,7 +47,7 @@ RUN \
     REL=$(echo "${CSGHUB_VERSION}" | sed -e 's/^.*-//') && \
     sed -i "s/TAG/${VERSION}/g;s/REL/$REL/g;s/ARCH/$RPM_ARCH/g" /root/rpmbuild/SPECS/omnibus-csghub.spec && \
     echo "Building for TARGETARCH=$TARGETARCH → RPM_ARCH=$RPM_ARCH" && \
-    rpmbuild \
+    QA_RPATHS=$(( 0x0001|0x0002 )) rpmbuild \
         --define "_topdir /root/rpmbuild" \
         --target "$RPM_ARCH" \
         -bb /root/rpmbuild/SPECS/omnibus-csghub.spec
