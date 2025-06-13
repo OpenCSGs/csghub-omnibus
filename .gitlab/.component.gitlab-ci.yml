@@ -52,8 +52,8 @@ build-$[[ inputs.component_name ]]:
       OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
       
       IMAGE="$CI_REGISTRY_IMAGE/omnibus-$[[ inputs.component_name ]]:${COMPONENT_VERSION}-${OS_TAG}"
-      IMAGE_CNT=$(docker manifest inspect ${IMAGE} | egrep -c 'amd64|arm64' 2>/dev/null)
-      if [[ $IMAGE_CNT -lt 2 && $REBUILD_FORCE == "true" ]]; then
+      IMAGE_CNT=$(docker manifest inspect ${IMAGE} 2>/dev/null | egrep -c 'amd64|arm64')
+      if [[ $IMAGE_CNT -lt 2 || $REBUILD_FORCE == "true" ]]; then
         # Building docker images
         docker buildx build \
           --provenance false \
