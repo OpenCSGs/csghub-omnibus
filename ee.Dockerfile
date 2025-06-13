@@ -176,22 +176,57 @@ RUN sed -i 's/8080/8182/g' ${CSGHUB_HOME}/etc/temporal_ui/config-template.yaml &
       ${CSGHUB_EMBEDDED}/sv/web/project/{gunicorn_config.py,uwsgi.ini}
 
 ENV PATH=$PATH:/opt/csghub/embedded/bin
-
-RUN apt update && \
-    apt install -y --no-install-recommends \
-      ca-certificates \
-      libicu70 \
-      libreadline8  \
-      netcat \
-      libaprutil1 \
-      libgeoip1 \
-      libgd3 \
-      libxml2 \
-      libxslt1.1 \
-      libcurl3-gnutls \
-      libpq-dev \
-      vim lsof && \
-    apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
+RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
+        apt update && \
+        apt install -y --no-install-recommends \
+          ca-certificates \
+          libicu70 \
+          libreadline8 \
+          netcat \
+          libaprutil1 \
+          libgeoip1 \
+          libgd3 \
+          libxml2 \
+          libxslt1.1 \
+          libcurl3-gnutls \
+          libpq-dev \
+          vim lsof && \
+        apt clean && \
+        rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
+    else \
+        if command -v dnf >/dev/null; then \
+            dnf install -y \
+              ca-certificates \
+              icu \
+              readline \
+              nmap-ncat \
+              apr-util \
+              geoip \
+              gd \
+              libxml2 \
+              libxslt \
+              libcurl \
+              postgresql-devel \
+              vim lsof && \
+            dnf clean all; \
+        else \
+            yum install -y \
+              ca-certificates \
+              icu \
+              readline \
+              nmap-ncat \
+              apr-util \
+              geoip \
+              gd \
+              libxml2 \
+              libxslt \
+              libcurl \
+              postgresql-devel \
+              vim lsof && \
+            yum clean all; \
+        fi; \
+        rm -rf /var/cache/yum /tmp/* /var/tmp/* /var/log/*; \
+    fi
 
 RUN chmod +x -R /opt/csghub/bin && \
     chmod +x -R /opt/csghub/embedded/bin && \
