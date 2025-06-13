@@ -102,6 +102,8 @@ generate_child_pipelines:
         - local: .gitlab/.omnibus.gitlab-ci.yml
           rules:
             - when: manual
+          inputs:
+            tag: "$OS_TAG"
       variables:
         CI_COMMIT_TAG: ${CSGHUB_VERSION}
       EOF
