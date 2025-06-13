@@ -8,6 +8,12 @@ stages:
   - build
   - package
 
+variables:
+  # Docker
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
+  CI_DEBUG_TRACE: true
+
 build-omnibus:
   stage: build
   image: ${REGISTRY}/docker:27.3
@@ -39,35 +45,45 @@ build-omnibus:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
   script:
     - |
+      cat <<'EOF' | bash -s
       # 收集所有组件的构建参数
       BUILD_ARGS=$(jq -r '.version_manifest.components[] | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' opt/csghub/version-manifests.json | tr '\n' ' ')
       
       OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
       BUILD_ARGS+=( 
+        "--build-arg" "OS_RELEASE=${OS_RELEASE}" 
         "--build-arg" "OS_TAG=${OS_TAG}" 
+        "--build-arg" "REGISTRY=${REGISTRY}"
         "--build-arg" "CSGHUB_VERSION=${CI_COMMIT_TAG}"
       )
       
       # 初始化标签数组
-        TAGS=(
-          "-t" "${ACR_REGISTRY}/omnibus-csghub:${CI_COMMIT_TAG}-${OS_TAG}"
-        )
+      TAGS=(
+        "-t" "${ACR_REGISTRY}/opencsg_public/omnibus-csghub:${CI_COMMIT_TAG}-${OS_TAG}"
+      )
       
       # 如果是 ubuntu:22.04，添加额外标签
       if [ "$OS_RELEASE" = "ubuntu:22.04" ]; then
-      TAGS+=(
-        "-t" "${ACR_REGISTRY}/omnibus-csghub:${CI_COMMIT_TAG}"
-        "-t" "${ACR_REGISTRY}/omnibus-csghub:latest"
-      )
+        TAGS+=(
+          "-t" "${ACR_REGISTRY}/opencsg_public/omnibus-csghub:${CI_COMMIT_TAG}"
+          "-t" "${ACR_REGISTRY}/opencsg_public/omnibus-csghub:latest"
+        )
       fi
-    
+      
+      if [[ "$CI_COMMIT_TAG" =~ ce ]]; then
+        DOCKERFILE=Dockerfile
+      else
+        DOCKERFILE=ee.Dockerfile
+      fi
+      
       docker buildx build \
         --provenance false \
-        --platform "${BUILD_PLATFORMS}" \
-        "${BUILD_ARGS[@]}" \
-        "${TAGS[@]}" \
-        -f Dockerfile \
+        --platform ${BUILD_PLATFORMS} \
+        ${BUILD_ARGS[@]} \
+        ${TAGS[@]} \
+        -f ${DOCKERFILE} \
         --push .
+      EOF
   interruptible: true
   rules:
     - if: $CI_COMMIT_TAG
@@ -79,6 +95,7 @@ pack-omnibus:
     - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
   script:
     - |
+      cat <<'EOF' | bash -s
       OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
       BUILD_ARGS+=( 
         "--build-arg" "OS_RELEASE=${OS_RELEASE}" 
@@ -89,10 +106,11 @@ pack-omnibus:
       
       docker buildx build \
         --provenance false \
-        --platform "${BUILD_PLATFORMS}" \
-        "${BUILD_ARGS[@]}" \
+        --platform ${BUILD_PLATFORMS} \
+        ${BUILD_ARGS[@]} \
         -f packages/Dockerfile_debian_based \
         -o packages .
+      EOF
   dependencies:
     - build-omnibus
   interruptible: true

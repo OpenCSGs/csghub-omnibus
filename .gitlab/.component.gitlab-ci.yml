@@ -7,6 +7,11 @@ spec:
       description: "Runner tags"
       default: 'ubuntu_22.04'
 ---
+variables:
+  # Docker
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
+
 build-$[[ inputs.component_name ]]:
   stage: build
   image: ${REGISTRY}/docker:27.3
@@ -49,7 +54,7 @@ build-$[[ inputs.component_name ]]:
       docker buildx build \
         --provenance false \
         --platform ${BUILD_PLATFORMS} \
-        "${build_args[@]}" \
+        ${build_args[@]} \
         -t "$CI_REGISTRY_IMAGE/omnibus-$[[ inputs.component_name ]]:${COMPONENT_VERSION}-${OS_TAG}" \
         -f "dockerfiles/$[[ inputs.component_name ]]/Dockerfile_$[[ inputs.component_name ]]" \
         --push .
