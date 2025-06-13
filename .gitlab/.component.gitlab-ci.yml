@@ -50,14 +50,21 @@ build-$[[ inputs.component_name ]]:
       done < <(jq -r '.components[0].environments | to_entries[] | "\(.key)=\(.value)"' "${VERSION_MANIFESTS}")
       
       OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
-      # Building docker images
-      docker buildx build \
-        --provenance false \
-        --platform ${BUILD_PLATFORMS} \
-        ${build_args[@]} \
-        -t "$CI_REGISTRY_IMAGE/omnibus-$[[ inputs.component_name ]]:${COMPONENT_VERSION}-${OS_TAG}" \
-        -f "dockerfiles/$[[ inputs.component_name ]]/Dockerfile_$[[ inputs.component_name ]]" \
-        --push .
+      
+      IMAGE="$CI_REGISTRY_IMAGE/omnibus-$[[ inputs.component_name ]]:${COMPONENT_VERSION}-${OS_TAG}"
+      IMAGE_CNT=$(docker manifest inspect ${IMAGE} | egrep -c 'amd64|arm64' 2>/dev/null)
+      if [[ $IMAGE_CNT -lt 2 && $REBUILD_FORCE == "true" ]]; then
+        # Building docker images
+        docker buildx build \
+          --provenance false \
+          --platform ${BUILD_PLATFORMS} \
+          ${build_args[@]} \
+          -t "${IMAGE}" \
+          -f "dockerfiles/$[[ inputs.component_name ]]/Dockerfile_$[[ inputs.component_name ]]" \
+          --push .
+      else
+        echo "Image ${IMAGE} already exists."
+      fi
       EOF
   interruptible: true
   retry: 2
