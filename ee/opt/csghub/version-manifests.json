@@ -53,13 +53,13 @@
       {
         "name": "gitaly",
         "description": "Service for dealing with Git repositories access and operations",
-        "version": "17.5.0",
+        "version": "v17.5.0",
         "repository": "https://gitlab.com/gitlab-org/gitaly"
       },
       {
         "name": "gitlab-shell",
         "description": "GitLab Shell handles git commands for GitLab",
-        "version": "17.5.0",
+        "version": "v17.5.0",
         "repository": "https://gitlab.com/gitlab-org/gitlab-shell"
       },
       {

@@ -5,7 +5,7 @@
       "description": "Version manifest for tracking components and dependencies.",
       "generated_date": "2025-05-26",
       "author": "OpenCSG Infra Team",
-      "version": "1.8.0-ce"
+      "version": "v1.8.0-ce"
     },
     "components": [
       {
@@ -23,13 +23,13 @@
       {
         "name": "gitaly",
         "description": "Service for dealing with Git repositories access and operations",
-        "version": "17.5.0",
+        "version": "v17.5.0",
         "repository": "https://gitlab.com/gitlab-org/gitaly"
       },
       {
         "name": "gitlab-shell",
         "description": "GitLab Shell handles git commands for GitLab",
-        "version": "17.5.0",
+        "version": "v17.5.0",
         "repository": "https://gitlab.com/gitlab-org/gitlab-shell"
       },
       {
@@ -41,7 +41,7 @@
       {
         "name": "casdoor",
         "description": "An open-source Identity and Access Management (IAM) / Single-Sign-On (SSO) platform with web UI supporting OAuth 2.0, OIDC, SAML and CAS.",
-        "version": "1.799.0",
+        "version": "v1.799.0",
         "repository": "https://github.com/casdoor/casdoor"
       },
       {
@@ -53,13 +53,13 @@
       {
         "name": "csghub-server",
         "description": "CSGHub backend service",
-        "version": "1.8.0-ce",
+        "version": "v1.8.0-ce",
         "repository": "https://github.com/OpenCSGs/csghub-server"
       },
       {
         "name": "csghub-portal",
         "description": "CSGHub frontend portal",
-        "version": "1.8.0-ce",
+        "version": "v1.8.0-ce",
         "repository": "https://github.com/OpenCSGs/csghub"
       }
     ]
