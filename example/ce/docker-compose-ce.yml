@@ -1,6 +1,6 @@
 services:
   csghub:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.7.1-ce
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.8.0-ce
     hostname: 'csghub.example.com'
     environment:
       CSGHUB_OMNIBUS_CONFIG: |

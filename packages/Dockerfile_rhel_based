@@ -1,6 +1,6 @@
 ARG REGISTRY=docker.io
 ARG OS_RELEASE=hxsoong/kylin:v10-sp1
-ARG CSGHUB_VERSION=v1.7.1-ce
+ARG CSGHUB_VERSION=v1.8.0-ce
 ARG OS_TAG=kylin_v10-sp1
 
 FROM ${REGISTRY}/omnibus-csghub:${CSGHUB_VERSION} AS omnibus
