@@ -43,32 +43,19 @@ readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
 readonly ENV_DIR="/opt/csghub/etc/server/env"
 
 # Build command arguments
-args=("start" "server")
+## Migration init
+args=("migration" "init")
+[[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
+
+# Database init
+(cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" || true)&
+
+## Migration migrate
+args=("migration" "migrate")
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 # Database setup
 (cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" || true)&
-
-# Wait to initialize
-while true; do
-  res=$(chpst -e {{ $envDir }} /scripts/pg_exists "tags")
-  if [ "$res" -gt 0 ]; then
-    break
-  fi
-done
-
-# Clean up any existing processes
-echo "Checking for existing csghub_server processes..."
-if pgrep -f "$SERVER_BIN" >/dev/null; then
-    echo "Found existing csghub_server process, attempting graceful shutdown..."
-    pkill -f "$SERVER_BIN" || true
-
-    # Force kill if still running after graceful attempt
-    if pgrep -f "$SERVER_BIN" >/dev/null; then
-        echo "Forcing termination of remaining processes..."
-        pkill -9 -f "$SERVER_BIN" || true
-    fi
-fi
 
 # Load local sql scripts
 cd /opt/csghub/service/server
@@ -102,6 +89,7 @@ if pgrep -f "$SERVER_BIN sync sync-as-client" >/dev/null; then
     sleep 1
 fi
 
+# Start multi-sync
 args=("sync" "sync-as-client")
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
