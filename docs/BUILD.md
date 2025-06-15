@@ -64,9 +64,35 @@ example：
 
 This will pull image from `opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/hxsoong/kylin:v10-sp1`.
 
-
+**It will trigger omnibus-csghub docker images building and output deb or rpm packages.**
 
 _Notes: All images will pulled from `opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public`, you can overwrite by set `REGISTRY=<new registry>`. If you are not sure how to transfer multiple images, please upload your image to the default image address directly._
+
+### How to build omnibus-csghub image
+
+Just create a git tag and push to remote.
+
+example:
+
+```shell
+git tag v1.8.0-ee
+# default
+git push --tags
+# or building for specified platform
+git push -o ci.variable="OS_RELEASE=hxsoong/kylin:v10-sp1" --tags
+```
+
+If tags already exists and you want to build image for another platform with specfied tag:
+
+```shell
+git push -o ci.variable="OS_RELEASE=hxsoong/kylin:v10-sp1" -o ci.variable="CSGHUB_VERSION=v1.8.0-ee" --tags
+```
+
+If you want to rebuild images before, you should execute below:
+
+```shell
+git push -o ci.variable="REBUILD_FORCE=true" --tags
+```
 
 ## How to Build KyLin V10 Docker Image
 
