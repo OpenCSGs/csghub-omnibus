@@ -1,58 +1,29 @@
 #!/bin/sh
 exec 1>&2
 
-if pgrep "mirror repo-sync" >/dev/null; then
-    echo "Stopping "mirror repo-sync" processes..."
+FULL_NAME='/opt/csghub/embedded/bin/csghub-server.*mirror repo-sync'
+if pgrep -f "$FULL_NAME" >/dev/null; then
+    echo "Stopping server processes..."
 
     # First try graceful termination
-    pkill -TERM "mirror repo-sync"
-#!/bin/sh
-exec 1>&2
-
-if pgrep "mirror repo-sync" >/dev/null; then
-    echo "Stopping "mirror repo-sync" processes..."
-
-    # First try graceful termination
-    pkill -TERM "mirror repo-sync"
+    pkill -TERM -f "$FULL_NAME"
 
     # Wait for processes to exit
     sleep 2
 
     # Check if any processes remain
-    if pgrep "mirror repo-sync" >/dev/null; then
-        echo "Force killing remaining "mirror repo-sync" processes..."
-        pkill -KILL "mirror repo-sync" || true
+    if pgrep -f "$FULL_NAME" >/dev/null; then
+        echo "Force killing remaining server processes..."
+        pkill -KILL -f "$FULL_NAME" || true
     fi
 
     # Final verification
-    if pgrep "mirror repo-sync" >/dev/null; then
-        echo "Warning: Some "mirror repo-sync" processes still running!"
+    if pgrep -f "$FULL_NAME" >/dev/null; then
+        echo "Warning: Some server processes still running!"
         exit 1
     else
-        echo ""mirror repo-sync" stopped successfully"
+        echo "server stopped successfully"
     fi
 else
-    echo "No "mirror repo-sync" processes running"
+    echo "No server processes running"
 fi
-
-
-    # Wait for processes to exit
-    sleep 2
-
-    # Check if any processes remain
-    if pgrep "mirror repo-sync" >/dev/null; then
-        echo "Force killing remaining "mirror repo-sync" processes..."
-        pkill -KILL "mirror repo-sync" || true
-    fi
-
-    # Final verification
-    if pgrep "mirror repo-sync" >/dev/null; then
-        echo "Warning: Some "mirror repo-sync" processes still running!"
-        exit 1
-    else
-        echo ""mirror repo-sync" stopped successfully"
-    fi
-else
-    echo "No "mirror repo-sync" processes running"
-fi
-

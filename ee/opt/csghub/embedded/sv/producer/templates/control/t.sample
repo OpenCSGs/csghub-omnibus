@@ -1,31 +1,23 @@
 #!/bin/sh
 exec 1>&2
 
-if pgrep "celery -A config beat" >/dev/null; then
+if pgrep -f "celery -A config beat" >/dev/null; then
     echo "Stopping "celery -A config beat" processes..."
 
     # First try graceful termination
-    pkill -TERM "celery -A config beat"
-#!/bin/sh
-exec 1>&2
-
-if pgrep "celery -A config beat" >/dev/null; then
-    echo "Stopping "celery -A config beat" processes..."
-
-    # First try graceful termination
-    pkill -TERM "celery -A config beat"
+    pkill -TERM -f "celery -A config beat"
 
     # Wait for processes to exit
     sleep 2
 
     # Check if any processes remain
-    if pgrep "celery -A config beat" >/dev/null; then
+    if pgrep -f "celery -A config beat" >/dev/null; then
         echo "Force killing remaining "celery -A config beat" processes..."
-        pkill -KILL "celery -A config beat" || true
+        pkill -KILL -f "celery -A config beat" || true
     fi
 
     # Final verification
-    if pgrep "celery -A config beat" >/dev/null; then
+    if pgrep -f "celery -A config beat" >/dev/null; then
         echo "Warning: Some "celery -A config beat" processes still running!"
         exit 1
     else
@@ -34,25 +26,3 @@ if pgrep "celery -A config beat" >/dev/null; then
 else
     echo "No "celery -A config beat" processes running"
 fi
-
-
-    # Wait for processes to exit
-    sleep 2
-
-    # Check if any processes remain
-    if pgrep "celery -A config beat" >/dev/null; then
-        echo "Force killing remaining "celery -A config beat" processes..."
-        pkill -KILL "celery -A config beat" || true
-    fi
-
-    # Final verification
-    if pgrep "celery -A config beat" >/dev/null; then
-        echo "Warning: Some "celery -A config beat" processes still running!"
-        exit 1
-    else
-        echo ""celery -A config beat" stopped successfully"
-    fi
-else
-    echo "No "celery -A config beat" processes running"
-fi
-
