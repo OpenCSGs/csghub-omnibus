@@ -98,15 +98,15 @@ generate_child_pipelines:
       
       cat > omnibus-child-pipelines.yml <<EOF
       ---
-      variables:
-        CI_COMMIT_TAG: "\${CSGHUB_VERSION}"
-      
       include:
         - local: .gitlab/.omnibus.gitlab-ci.yml
           inputs:
             tag: "$OS_TAG"
           rules:
             - if: \$CSGHUB_VERSION != ""
+      
+      variables:
+        CI_COMMIT_TAG: ${CSGHUB_VERSION}
       EOF
   except:
     - tags
