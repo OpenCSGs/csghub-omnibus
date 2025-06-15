@@ -27,8 +27,8 @@ variables:
   # Git
   GIT_SUBMODULE_FORCE_HTTPS: true
   GIT_SUBMODULE_STRATEGY: recursive
-  GIT_SUBMODULE_DEPTH: 1
-  GIT_DEPTH: 1
+  GIT_SUBMODULE_DEPTH: 10
+  GIT_DEPTH: 10
   # OS
   OS_RELEASE: "ubuntu:22.04"
   TAG: ubuntu_22.04
