@@ -333,10 +333,10 @@ image_builder_kaniko_args = ["--compressed-caching=false","--single-snapshot","-
 {{ $notification := (datasource "config").notification -}}
 {{- $notifyListen := $notification.listen -}}
 {{- $notifyParts := $notifyListen | strings.Split ":" -}}
-{{- $notifyHost := index $casdoorParts 1 | default "127.0.0.1" -}}
+{{- $notifyHost := index $notifyParts 0 | default "127.0.0.1" -}}
 {{- $notifyPort := "8095" -}}
 {{- if eq (len $notifyParts) 2 -}}
-  {{- $notifyPort = index $notifyPort 1 -}}
+  {{- $notifyPort = index $notifyParts 1 -}}
 {{- end -}}
 [notification]
 host = {{ printf "http://%s" $notifyHost | quote }}
