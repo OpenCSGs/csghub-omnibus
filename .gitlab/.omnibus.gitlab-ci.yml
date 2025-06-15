@@ -136,6 +136,8 @@ pack-omnibus-$[[ inputs.tag ]]:
   dependencies:
     - build-omnibus-$[[ inputs.tag ]]
   interruptible: true
+  rules:
+    - if: $CI_COMMIT_TAG
   artifacts:
     paths:
       - packages/linux_*
@@ -150,3 +152,5 @@ upload-omnibus-$[[ inputs.tag ]]:
       done
   needs:
     - pack-omnibus-$[[ inputs.tag ]]
+  rules:
+    - if: $CI_COMMIT_TAG
