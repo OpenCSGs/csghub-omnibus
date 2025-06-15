@@ -76,7 +76,6 @@ build-omnibus-$[[ inputs.tag ]]:
       if [ "$OS_RELEASE" = "ubuntu:22.04" ]; then
         TAGS+=(
           "-t" "${ACR_REGISTRY}/opencsg_public/omnibus-csghub:${CI_COMMIT_TAG}"
-          "-t" "${ACR_REGISTRY}/opencsg_public/omnibus-csghub:latest"
         )
       fi
 
