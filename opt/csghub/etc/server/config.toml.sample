@@ -342,6 +342,6 @@ image_builder_kaniko_args = ["--compressed-caching=false","--single-snapshot","-
 host = {{ printf "http://%s" $notifyHost | quote }}
 port = {{ $notifyPort }}
 mailer_host = {{ $notification.smtp.host | quote }}
-mailer_port = {{ $notification.smtp.port | quote }}
+mailer_port = {{ $notification.smtp.port }}
 mailer_username = {{ $notification.smtp.username | quote }}
 mailer_password = {{ $notification.smtp.password | quote }}

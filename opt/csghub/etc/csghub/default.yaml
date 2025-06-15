@@ -295,7 +295,7 @@ notification:
   listen: "127.0.0.1:8095"       # IP and port for the notification service to listen on
   smtp:
     host: "smtp.example.com"     # SMTP server hostname for email notifications
-    port: "465"                  # SMTP server port (typically 465 for SSL, 587 for STARTTLS)
+    port: 465                    # SMTP server port (typically 465 for SSL, 587 for STARTTLS)
     username: ""                 # SMTP authentication username (leave empty if not required)
     password: ""                 # SMTP authentication password (leave empty if not required)
 
