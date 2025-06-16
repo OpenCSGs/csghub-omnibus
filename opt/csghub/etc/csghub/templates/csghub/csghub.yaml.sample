@@ -10,6 +10,7 @@ csghub:
 
 ## Nginx configuration
 #nginx:
+#  enable: true
 #  data: "/var/opt/csghub/nginx"
 #  ssl_certificate: "/etc/csghub/ssl/csghub.example.com.crt"
 #  ssl_certificate_key: "/etc/csghub/ssl/csghub.example.com.key"
@@ -287,6 +288,7 @@ moderation:
 # - Responsible for news notifications inside and outside the site.
 ##########################################################################
 #notification:
+#  enable: true
 #  listen: "127.0.0.1:8095"       # IP and port for the notification service to listen on
 #  smtp:
 #    host: "smtp.example.com"     # SMTP server hostname for email notifications
