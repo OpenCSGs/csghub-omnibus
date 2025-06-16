@@ -93,6 +93,3 @@ services:
     depends_on:
       - csghub
     restart: always
-
-
-

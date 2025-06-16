@@ -18,23 +18,3 @@ services:
       - ./csghub/data:/var/opt/csghub
     restart: always
     shm_size: '256m'
-
-
-services:
-  csghub:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.8.0-ce
-    hostname: 'csghub.example.com'
-    environment:
-      CSGHUB_OMNIBUS_CONFIG: |
-        csghub:
-          external_url: "http://csghub.example.com"
-    ports:
-      - '8075:8075'
-      - '5432:5432'
-      - '9000:9000'
-    volumes:
-      - ./csghub/etc:/etc/csghub
-      - ./csghub/logs:/var/log/csghub
-      - ./csghub/data:/var/opt/csghub
-    restart: always
-    shm_size: '256m'
