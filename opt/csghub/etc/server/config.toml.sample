@@ -305,7 +305,8 @@ check_file_size_enabled = {{ $git.check_file_size_enabled }}
 max_un_lfs_file_size = {{ $git.max_un_lfs_file_size }}
 skip_lfs_file_validation = {{ $git.skip_lfs_file_validation }}
 
-{{ $image_builder := $runner.image_builder -}}
+{{ if $runner.enable }}
+{{- $image_builder := $runner.image_builder -}}
 [runner]
 {{- if $deploy.mergingNamespace }}
 image_builder_namespace = {{ $deploy.namespace | quote }}
@@ -329,8 +330,10 @@ image_builder_kaniko_args = ["--compressed-caching=false","--single-snapshot","-
 # --skip-tls-verify : Disable TLS certificate validation for registries.
 # Uncomment the following line to enable pull images from a private registry without https
 # image_builder_kaniko_args = ["--insecure", "--skip-tls-verify"]
+{{- end }}
 
 {{ $notification := (datasource "config").notification -}}
+{{- if $notification.enable }}
 {{- $notifyListen := $notification.listen -}}
 {{- $notifyParts := $notifyListen | strings.Split ":" -}}
 {{- $notifyHost := index $notifyParts 0 | default "127.0.0.1" -}}
@@ -345,3 +348,4 @@ mailer_host = {{ $notification.smtp.host | quote }}
 mailer_port = {{ $notification.smtp.port }}
 mailer_username = {{ $notification.smtp.username | quote }}
 mailer_password = {{ $notification.smtp.password | quote }}
+{{- end }}
