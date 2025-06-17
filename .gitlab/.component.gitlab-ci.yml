@@ -27,7 +27,7 @@ build-$[[ inputs.component_name ]]:
   script:
     - |
       cat <<'EOF' | bash -s
-      set -e 
+
       # Components
       VERSION_MANIFESTS="dockerfiles/$[[ inputs.component_name ]]/version-manifests.json"
       
