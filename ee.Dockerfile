@@ -179,7 +179,7 @@ ENV PATH=$PATH:/opt/csghub/embedded/bin
 RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         apt update && \
         UBUNTU_VERSION=$(grep -oP 'VERSION_ID="\K[\d.]+' /etc/os-release) && \
-        if [ "$(echo "$UBUNTU_VERSION >= 24.04" | bc -l)" -eq 1 ]; then \
+        if dpkg --compare-versions "$UBUNTU_VERSION" ge "24.04"; then \
             # Ubuntu 24.04+ (新包名带 t64 后缀)
             apt install -y --no-install-recommends \
                 ca-certificates \
@@ -217,7 +217,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         if command -v dnf >/dev/null; then \
             # CentOS/RHEL 8/9 (dnf)
             CENTOS_VERSION=$(grep -oP 'VERSION_ID="\K[\d.]+' /etc/os-release) && \
-            if [ "$(echo "$CENTOS_VERSION >= 9" | bc -l)" -eq 1 ]; then \
+            if [ "${CENTOS_VERSION%%.*}" -ge 9 ]; then \
                 # CentOS 9+ (libmaxminddb 替代 GeoIP)
                 dnf install -y \
                     ca-certificates \
