@@ -85,8 +85,18 @@ build-omnibus-$[[ inputs.tag ]]:
         DOCKERFILE=ee.Dockerfile
       fi
 
-      IMAGE_CNT=$(docker manifest inspect ${IMAGE} 2>/dev/null| egrep -c 'amd64|arm64')
-      if [[ $IMAGE_CNT -lt 2 || $REBUILD_FORCE == "true" ]]; then
+      BUILD_PLATFORMS_CNT=$(echo "$BUILD_PLATFORMS" | tr ',' '\n' | wc -l)
+      if [[ $BUILD_PLATFORMS_CNT -eq 1 ]]; then
+        if docker manifest inspect ${IMAGE} >/dev/null 2>&1; then
+          IMAGE_CNT=1
+        else
+          IMAGE_CNT=0
+        fi
+      elif [[ $BUILD_PLATFORMS_CNT -eq 2 ]]; then
+        IMAGE_CNT=$(docker manifest inspect ${IMAGE} 2>/dev/null| egrep -c 'amd64|arm64')
+      fi
+
+      if [[ $IMAGE_CNT -ne $BUILD_PLATFORMS_CNT || $REBUILD_FORCE == "true" ]]; then
         docker buildx build \
           --provenance false \
           --platform ${BUILD_PLATFORMS} \
