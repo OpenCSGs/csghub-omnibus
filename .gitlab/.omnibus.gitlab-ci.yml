@@ -151,6 +151,8 @@ pack-omnibus-$[[ inputs.tag ]]:
   artifacts:
     paths:
       - packages/linux_*
+      - packages/*.deb
+      - packages/*.rpm
 
 upload-omnibus-$[[ inputs.tag ]]:
   stage: upload
