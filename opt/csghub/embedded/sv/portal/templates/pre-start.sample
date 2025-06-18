@@ -19,7 +19,7 @@ set -e
 {{- file.Write (printf "%s/CSGHUB_PORTAL_ON_PREMISE" $envDir) "true" }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_SENSITIVE_CHECK" $envDir) "false" }}
 
-{{- $seedFile := "/opt/csghub/etc/server/seed" -}}
+{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
 {{- $seed := "" -}}
 {{- if file.Exists $seedFile -}}
   {{- $seed = file.Read $seedFile -}}

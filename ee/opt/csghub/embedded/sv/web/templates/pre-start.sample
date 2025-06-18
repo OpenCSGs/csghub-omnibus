@@ -82,7 +82,7 @@ set -e
 
 {{- file.Write (printf "%s/ACCOUNTING_OP_MODE" $envDir) "has_balance|consume" }}
 {{- file.Write (printf "%s/ACCOUNTING_API_BASE" $envDir) $csghub.external_url }}
-{{- $seedFile := "/opt/csghub/etc/server/seed" -}}
+{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
 {{- $seed := "" -}}
 {{- if file.Exists $seedFile -}}
   {{- $seed = file.Read $seedFile -}}

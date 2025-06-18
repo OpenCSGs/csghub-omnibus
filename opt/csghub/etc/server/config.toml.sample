@@ -21,7 +21,7 @@ saas = {{ $server.saas }}
 instance_id = ""
 enable_swagger = {{ $server.enable_swagger }}
 enable_https = {{ $server.enable_https }}
-{{- $seedFile := "/opt/csghub/etc/server/seed" -}}
+{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
 {{- $seed := "" -}}
 {{- if file.Exists $seedFile -}}
   {{- $seed = file.Read $seedFile -}}
