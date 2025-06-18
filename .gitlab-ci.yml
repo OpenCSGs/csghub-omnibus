@@ -35,7 +35,7 @@ variables:
 
 generate_component_list:
   stage: list
-  image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/docker:27.3
+  image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/docker:28.2
   script:
     - |
       # Initialize with default OS_RELEASE if not set

@@ -14,14 +14,14 @@ variables:
 
 build-$[[ inputs.component_name ]]:
   stage: prepare
-  image: ${REGISTRY}/docker:27.3
+  image: ${REGISTRY}/docker:28.2
   before_script:
     - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
     - apk update && apk add jq bash
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
     - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
   services:
-    - name: ${REGISTRY}/docker:27.3-dind
+    - name: ${REGISTRY}/docker:28.2-dind
       command: [ "--feature=containerd-snapshotter", "--experimental" ]
       alias: docker
   script:

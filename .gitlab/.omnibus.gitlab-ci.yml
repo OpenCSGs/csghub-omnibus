@@ -6,7 +6,7 @@ spec:
 ---
 default:
   services:
-    - name: ${REGISTRY}/docker:27.3-dind
+    - name: ${REGISTRY}/docker:28.2-dind
       command: [ "--feature=containerd-snapshotter", "--experimental" ]
       alias: docker
 
@@ -25,7 +25,7 @@ variables:
 
 build-omnibus-$[[ inputs.tag ]]:
   stage: build
-  image: ${REGISTRY}/docker:27.3
+  image: ${REGISTRY}/docker:28.2
   before_script:
     - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
     - apk update && apk add jq bash
@@ -104,7 +104,7 @@ build-omnibus-$[[ inputs.tag ]]:
 
 pack-omnibus-$[[ inputs.tag ]]:
   stage: package
-  image: ${REGISTRY}/docker:27.3
+  image: ${REGISTRY}/docker:28.2
   before_script:
     - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
     - apk add jq bash
