@@ -160,7 +160,7 @@ upload-omnibus-$[[ inputs.tag ]]:
   image: ${REGISTRY}/curlimages/curl:latest
   script:
     - |
-      for FILE in packages/linux_*/*; do
+      for FILE in $(find packages -name "*.deb" -o -name "*.rpm"); do
         curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${FILE} "${PACKAGE_REGISTRY_URL}/$(basename $FILE)"
       done
   needs:
