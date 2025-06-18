@@ -17,7 +17,7 @@ chown -R registry:registry {{ $dataDir }}
 {{- $htpasswdFile := printf "%s/.htpasswd" $dataDir }}
 {{- $encrypt := printf "%s:%s" $user (crypto.Bcrypt $password) }}
 {{- file.Write $htpasswdFile $encrypt }}
-{{- file.Write "/etc/csghub/init_registry_password" (printf "%s:%s" $user $password) }}
+{{- file.Write "/etc/csghub/init_registry_password" (printf "%s:%s\n" $user $password) }}
 {{- end }}
 
 {{- $minio := (datasource "config").minio }}

@@ -11,5 +11,5 @@ set -e
 {{- $user := $temporalUI.auth.user }}
 {{- $password := $temporalUI.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
 {{- file.Write (printf "%s/.htpasswd" $configDir) (printf "%s:%s" $user ($password | crypto.Bcrypt)) }}
-{{- file.Write "/etc/csghub/init_temporal_password" (printf "%s:%s" $user $password) }}
+{{- file.Write "/etc/csghub/init_temporal_password" (printf "%s:%s\n" $user $password) }}
 

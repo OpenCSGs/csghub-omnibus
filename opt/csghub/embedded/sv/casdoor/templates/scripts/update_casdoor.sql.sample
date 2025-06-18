@@ -66,12 +66,18 @@ $$;
 {{- $initPassFile := "/etc/csghub/init_root_password" -}}
 {{- $pass := "" -}}
 {{- if file.Exists $initPassFile -}}
-  {{- $pass = file.Read $initPassFile -}}
+  {{- $content := file.Read $initPassFile | trimSpace }}
+  {{- $parts := strings.Split ":" $content }}
+  {{- if gt (len $parts) 1 }}
+    {{- $pass = index $parts 1 -}}
+  {{- else }}
+    {{- $pass = $content -}}
+  {{- end }}
 {{- end -}}
 {{- if not $pass -}}
   {{- $pass = random.Alpha 24 -}}
-  {{- file.Write $initPassFile $pass -}}
-{{- end }}
+  {{- file.Write $initPassFile (printf "root:%s\n" $pass) -}}
+{{- end -}}
 DO $$
 BEGIN
     IF EXISTS (
