@@ -46,7 +46,7 @@ generate_component_list:
       if [ "${CI_COMMIT_BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then 
         CHANGED_DOCKERFILES=""
       else
-        CHANGED_DOCKERFILES=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} | grep '^dockerfiles/[^/]*' | awk -F'/' '{print $2}' | sort -u)
+        CHANGED_DOCKERFILES=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} | grep '^dockerfiles/.*/*manifests' | awk -F'/' '{print $2}' | sort -u)
       fi 
       
       if [ -n "$CHANGED_DOCKERFILES" ]; then

@@ -3,7 +3,7 @@
       {
         "name": "toolbox",
         "description": "Containerized tooling for system operations",
-        "version": "1.2.2",
+        "version": "1.2.3",
         "environments": {
           "OS_RELEASE": "ubuntu:22.04",
           "TOOLBOX_VERSION": "1.2.3",
