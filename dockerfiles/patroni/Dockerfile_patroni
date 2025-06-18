@@ -54,7 +54,7 @@ RUN wget https://ftp.postgresql.org/pub/source/v${POSTGRESQL_VERSION}/postgresql
       --with-openssl \
       --with-icu \
       --with-readline && \
-    make world && make install-world
+    make world -j4 && make install-world -j2
 
 # Compile zhparser
 ENV PGHOME=${CSGHUB_SRV_HOME}/postgresql
@@ -68,7 +68,7 @@ RUN wget http://www.xunsearch.com/scws/down/scws-${SCWS_VERSION}.tar.bz2 && \
 
 ENV SCWS_HOME=${CSGHUB_EMBEDDED}
 RUN git clone https://github.com/amutu/zhparser.git && \
-    cd /zhparser && make && make install
+    cd /zhparser && make -j2&& make install
 
 ## Install Python
 RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
@@ -124,7 +124,7 @@ RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VER
       --enable-optimizations \
       --enable-shared \
       --with-ensurepip=install && \
-    make && make altinstall
+    make -j2 && make altinstall -j2
 
 ## Install patroni
 ENV PYTHONHOME=${CSGHUB_EMBEDDED}/python

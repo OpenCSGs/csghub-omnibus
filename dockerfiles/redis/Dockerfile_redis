@@ -38,7 +38,7 @@ ARG REDIS_VERSION=6.2.14
 RUN wget --no-check-certificate -O /redis.tar.gz https://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
     mkdir /redis && tar --strip-components=1 -xzf /redis.tar.gz -C /redis && \
     cd /redis/deps && make hiredis linenoise hdr_histogram lua jemalloc && \
-    cd /redis && make BUILD_TLS=no && make install PREFIX=${CSGHUB_SRV_HOME}/redis && \
+    cd /redis && make BUILD_TLS=no -j2 && make install PREFIX=${CSGHUB_SRV_HOME}/redis && \
     rm -rf /redis*
 
 RUN chmod +x -R ${CSGHUB_SRV_HOME}/redis/bin

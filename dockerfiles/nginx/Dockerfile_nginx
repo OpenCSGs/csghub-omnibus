@@ -88,7 +88,7 @@ RUN wget --no-check-certificate https://nginx.org/download/nginx-${NGINX_VERSION
       --with-pcre-jit \
       --with-threads \
       --with-debug && \
-    make && make install && \
+    make -j2&& make install && \
     rm -rf /nginx* /quickjs /njs
 
 RUN chmod +x -R ${CSGHUB_SRV_HOME}/nginx/bin
