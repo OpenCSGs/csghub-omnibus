@@ -154,48 +154,92 @@ COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/server/bin/
 ENV PATH=$PATH:/opt/csghub/embedded/bin
 RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         apt update && \
-        apt install -y --no-install-recommends \
-          ca-certificates \
-          libicu70 \
-          libreadline8 \
-          netcat \
-          libaprutil1 \
-          libgeoip1 \
-          libgd3 \
-          libxml2 \
-          libxslt1.1 \
-          libcurl3-gnutls \
-          vim lsof && \
+        UBUNTU_VERSION=$(grep -oP 'VERSION_ID="\K[\d.]+' /etc/os-release) && \
+        if [ "$(echo "$UBUNTU_VERSION >= 24.04" | bc -l)" -eq 1 ]; then \
+            # Ubuntu 24.04+ (新包名带 t64 后缀)
+            apt install -y --no-install-recommends \
+                ca-certificates \
+                libicu74 \
+                libreadline8t64 \
+                netcat-openbsd \
+                libaprutil1t64 \
+                libgeoip1t64 \
+                libgd3 \
+                libxml2 \
+                libxslt1.1 \
+                libcurl4t64 \
+                libpq-dev \
+                vim lsof; \
+        else \
+            # Ubuntu 22.04 or older (旧包名)
+            apt install -y --no-install-recommends \
+                ca-certificates \
+                libicu70 \
+                libreadline8 \
+                netcat-openbsd \
+                libaprutil1 \
+                libgeoip1 \
+                libgd3 \
+                libxml2 \
+                libxslt1.1 \
+                libcurl3-gnutls \
+                libpq-dev \
+                vim lsof; \
+        fi && \
         apt clean && \
         rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
     else \
+        # CentOS/RHEL 部分
         if command -v dnf >/dev/null; then \
-            dnf install -y \
-              ca-certificates \
-              icu \
-              readline \
-              nmap-ncat \
-              apr-util \
-              geoip \
-              gd \
-              libxml2 \
-              libxslt \
-              libcurl \
-              vim lsof && \
+            # CentOS/RHEL 8/9 (dnf)
+            CENTOS_VERSION=$(grep -oP 'VERSION_ID="\K[\d.]+' /etc/os-release) && \
+            if [ "$(echo "$CENTOS_VERSION >= 9" | bc -l)" -eq 1 ]; then \
+                # CentOS 9+ (libmaxminddb 替代 GeoIP)
+                dnf install -y \
+                    ca-certificates \
+                    icu \
+                    readline \
+                    nmap-ncat \
+                    apr-util \
+                    libmaxminddb \
+                    gd \
+                    libxml2 \
+                    libxslt \
+                    libcurl \
+                    postgresql-devel \
+                    vim lsof; \
+            else \
+                # CentOS 8 (GeoIP)
+                dnf install -y \
+                    ca-certificates \
+                    icu \
+                    readline \
+                    nmap-ncat \
+                    apr-util \
+                    GeoIP \
+                    gd \
+                    libxml2 \
+                    libxslt \
+                    libcurl \
+                    postgresql-devel \
+                    vim lsof; \
+            fi && \
             dnf clean all; \
         else \
+            # CentOS 7 (yum)
             yum install -y \
-              ca-certificates \
-              icu \
-              readline \
-              nmap-ncat \
-              apr-util \
-              geoip \
-              gd \
-              libxml2 \
-              libxslt \
-              libcurl \
-              vim lsof && \
+                ca-certificates \
+                libicu \
+                readline \
+                nmap-ncat \
+                apr-util \
+                GeoIP \
+                gd \
+                libxml2 \
+                libxslt \
+                libcurl \
+                postgresql-devel \
+                vim lsof && \
             yum clean all; \
         fi; \
         rm -rf /var/cache/yum /tmp/* /var/tmp/* /var/log/*; \
