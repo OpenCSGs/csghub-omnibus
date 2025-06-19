@@ -13,13 +13,13 @@ Conflicts:      %{name} < %{version}
 Obsoletes:      %{name} <= %{version}
 BuildArch:      ARCH
 
+AutoReq:        no
+AutoProv:       no
+
 %description
 An all-in-one package for deploying and managing CSGHub.
 Bundles all necessary components, dependencies, and tools,
 ensuring quick and reliable installation without complex setup.
-
-AutoReq:        no
-AutoProv:       no
 
 %files
 %defattr(-,root,root,-)
