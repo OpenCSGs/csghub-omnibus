@@ -92,6 +92,11 @@ case "$1" in
     echo "Copy systemd unit files."
     cp -f /opt/csghub/etc/csghub/templates/system/csghub-runsvdir.service /etc/systemd/system/
 
+    if [ ! -f "/etc/csghub/csghub.yaml" ]; then
+      cp -f /opt/csghub/etc/csghub/templates/csghub /etc/csghub
+      mv /etc/csghub/csghub.yaml.sample /etc/csghub/csghub.yaml
+    fi
+
     echo "Starting csghub services..."
     systemctl daemon-reload || true
     systemctl start csghub-runsvdir.service || true
