@@ -247,16 +247,16 @@ csghub:
 # Moderation Service Configuration
 # - Manages sensitive contents checking
 ##########################################################################
-moderation:
-  enable: false
-  address: "http://127.0.0.1:8089"   ## Moderation service endpoint
-  encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
-  sensitive_check:
-    access_key_id: ""                ## Access key ID for the moderation service
-    access_key_secret: ""            ## Access key secret for the moderation service
-    region: ""                       ## Service region identifier
-    endpoint: ""                     ## Custom endpoint URL for the moderation service
-    enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
+#moderation:
+#  enable: false
+#  address: "http://127.0.0.1:8089"   ## Moderation service endpoint
+#  encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
+#  sensitive_check:
+#    access_key_id: ""                ## Access key ID for the moderation service
+#    access_key_secret: ""            ## Access key secret for the moderation service
+#    region: ""                       ## Service region identifier
+#    endpoint: ""                     ## Custom endpoint URL for the moderation service
+#    enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
 
 ##########################################################################
 ## Portal Service Configuration
