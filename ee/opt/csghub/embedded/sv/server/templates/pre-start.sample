@@ -61,7 +61,7 @@ args=("migration" "migrate")
 
 # Load local sql scripts
 cd /opt/csghub/service/server
-[ -x "/scripts/pg_executor" ] && chpst -e {{ $envDir }} /scripts/pg_executor
+[ -x "/opt/csghub/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_executor
 
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}
