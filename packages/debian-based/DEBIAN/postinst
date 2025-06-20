@@ -46,7 +46,8 @@ create_symlinks() {
 
             if [ -e "$link" ]; then
                 if [ -L "$link" ]; then
-                    echo "Skipped: Symbolic link already exists - $link -> $(readlink -f "$link")"
+                    # echo "Skipped: Symbolic link already exists - $link -> $(readlink -f "$link")"
+                    :
                 else
                     echo "Warning: Target exists but is not a symbolic link - $link" >&2
                 fi
@@ -87,6 +88,9 @@ case "$1" in
     echo "Re-linking all ...."
     create_symlinks "/opt/csghub/bin" "/usr/bin"
     create_symlinks "/opt/csghub/embedded/python/bin" "/opt/csghub/embedded/bin"
+
+    echo "Copy systemd unit files."
+    cp -f /opt/csghub/etc/csghub/templates/system/csghub-runsvdir.service /etc/systemd/system/
 
     echo "Starting csghub services..."
     systemctl daemon-reload || true

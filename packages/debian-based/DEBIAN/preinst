@@ -37,7 +37,7 @@ preinst_version_check() {
 
 echo "Stopping csghub services..."
 if systemctl is-active --quiet csghub-runsvdir.service; then
-    echo "Service csghub-runsvdir.service is active, stopping it..."
+    echo "Service csghub-runsvdir.service is active, stopped."
     systemctl stop csghub-runsvdir.service || true
 else
     echo "Service csghub-runsvdir.service is not active."
