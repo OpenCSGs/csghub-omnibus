@@ -4,12 +4,23 @@ License: Apache
 Vendor: OpenCSG, Inc. <support@opencsg.com>
 Architecture: any
 Maintainer: OpenCSG, Inc. <support@opencsg.com>
-Depends: ca-certificates,libicu70,libreadline8,libaprutil1,libgeoip1,libgd3,libxml2,libxslt1.1,libcurl3-gnutls,netcat,lsof
+Depends: ca-certificates,
+         netcat-openbsd,
+         lsof,
+         libgd3,
+         libxml2,
+         libxslt1.1,
+         libpq-dev,
+         libicu70 | libicu74 (>= 74),
+         libreadline8 | libreadline8t64 (>= 8.2),
+         libaprutil1 | libaprutil1t64 (>= 1.6.3),
+         libgeoip1 | libgeoip1t64 (>= 1.6.12),
+         libcurl3-gnutls | libcurl4t64 (>= 8.5.0)
 Conflicts: omnibus-csghub
 Replaces: omnibus-csghub
 Section: misc
 Priority: extra
 Homepage: https://opencsg.com/
 Description: An all-in-one package for deploying and managing CSGHub.
-  Bundles all necessary components, dependencies, and tools, ensuring
-  quick and reliable installation without complex setup.
+ Bundles all necessary components, dependencies, and tools, ensuring
+ quick and reliable installation without complex setup.
