@@ -11,7 +11,7 @@ ENV GOPROXY=https://goproxy.cn,direct
 
 COPY ./toolbox/logger/. /logger/
 ## Install logger
-RUN cd /logger && CGO_ENABLED=0 go build -buildvcs=false -o /logger
+RUN cd /logger && CGO_ENABLED=0 go build -buildvcs=false -o /logger/logger
 
 ## Install minio
 FROM ${REGISTRY}/minio/minio:${MINIO_VERSION} AS minio-server
@@ -31,6 +31,6 @@ RUN mkdir -p ${CSGHUB_SRV_HOME}/{minio,logger}/bin
 
 COPY --from=minio-server /usr/bin/minio ${CSGHUB_SRV_HOME}/minio/bin/
 COPY --from=minio-client /usr/bin/mc ${CSGHUB_SRV_HOME}/minio/bin/
-COPY --from=minio-logger /logger ${CSGHUB_SRV_HOME}/logger/bin/
+COPY --from=minio-logger /logger/logger ${CSGHUB_SRV_HOME}/logger/bin/
 
 RUN chmod +x -R ${CSGHUB_SRV_HOME}/minio/bin ${CSGHUB_SRV_HOME}/logger/bin
