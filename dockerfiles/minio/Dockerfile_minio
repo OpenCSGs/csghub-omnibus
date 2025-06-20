@@ -11,7 +11,7 @@ ENV GOPROXY=https://goproxy.cn,direct
 
 COPY ./toolbox/logger/. /logger/
 ## Install logger
-RUN cd /logger && go build -buildvcs=false -o /logger
+RUN cd /logger && CGO_ENABLED=0 go build -buildvcs=false -o /logger
 
 ## Install minio
 FROM ${REGISTRY}/minio/minio:${MINIO_VERSION} AS minio-server
