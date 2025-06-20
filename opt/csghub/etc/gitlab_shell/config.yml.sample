@@ -68,7 +68,13 @@ audit_usernames: false
 # This section configures the built-in SSH server. Ignored when running on OpenSSH.
 sshd:
   # Address which the SSH server listens on. Defaults to [::]:22.
-  listen: {{ printf "[::]:%d" $gitlabShell.listen_port | quote }}
+  {{- $gitlabShellListen := $gitlabShell.listen }}
+  {{- $gitlabShellParts := $gitlabShellListen | strings.Split ":" }}
+  {{- $gitlabShellPort := "22" }}
+  {{- if eq (len $gitlabShellParts) 2 }}
+    {{- $gitlabShellPort = index $gitlabShellParts 1 }}
+  {{- end }}
+  listen: {{ printf "[::]:%s" $gitlabShellPort | quote }}
   # Set to true if gitlab-sshd is being fronted by a load balancer that implements
   # the PROXY protocol.
   proxy_protocol: false

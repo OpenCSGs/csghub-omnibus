@@ -379,7 +379,7 @@ moderation:
 ##########################################################################
 #gitlab_shell:
 #  enable: true
-#  listen_port: 2222             ## SSH listen port
+#  listen_port: 22222             ## SSH listen port
 #  ssh_port: 2222
 #  log:
 #    dir: "/var/log/csghub/gitlab_shell"  ## Log directory
