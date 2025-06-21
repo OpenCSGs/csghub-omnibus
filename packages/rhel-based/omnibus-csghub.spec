@@ -71,8 +71,7 @@ if [ "$1" = 0 ]; then  # Only on complete uninstall
     systemctl disable csghub-runsvdir.service >/dev/null 2>&1 || :
 
     # Backup configuration
-    BACKUP_DIR="$HOME/csghub-backup-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$BACKUP_DIR"
+    BACKUP_DIR="$HOME/csghub-backup-$(date +%s)"
     [ -d "/etc/csghub" ] && cp -a /etc/csghub "$BACKUP_DIR" && \
         echo "CSGHub configuration backed up to: $BACKUP_DIR"
 fi
