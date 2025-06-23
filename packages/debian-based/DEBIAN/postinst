@@ -82,7 +82,9 @@ case "$1" in
       if [ -e /etc/csghub ]; then
         rm -rf /etc/csghub || true
       fi
-      mv /etc/csghub.bak /etc/csghub
+      if [ -e /etc/csghub.bak ]; then
+        mv /etc/csghub.bak /etc/csghub
+      fi
     fi
 
     echo "Re-linking all ...."
