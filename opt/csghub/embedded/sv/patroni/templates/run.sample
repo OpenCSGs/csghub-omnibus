@@ -12,6 +12,8 @@ fi
 set -e
 
 {{- $configDir := (datasource "config").patroni.config_dir | default "/var/opt/csghub/patroni" }}
+chown -R postgres:postgres {{ $dataDir }} || true
+
 cd {{ $configDir }}
 exec chpst -e /opt/csghub/etc/patroni/env -P \
   -u postgres:postgres \

@@ -12,6 +12,8 @@ fi
 set -e
 
 {{- $dataDir := (datasource "config").redis.data | default "/var/opt/csghub/redis" }}
+chown -R redis:redis {{ $dataDir }} || true
+
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/redis/env -P \
   -u redis:redis \

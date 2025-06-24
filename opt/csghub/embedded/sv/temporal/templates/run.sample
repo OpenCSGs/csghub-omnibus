@@ -12,8 +12,9 @@ fi
 export TEMPORAL_HOME
 
 {{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
-cd {{ $dataDir }}
+chown -R temporal:temporal {{ $dataDir }} || true
 
+cd {{ $dataDir }}
 # Setup temporal database
 chpst -e {{ $dataDir }}/env -P \
   -u temporal:temporal \

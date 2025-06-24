@@ -12,6 +12,8 @@ if [ -x ./pre-start ]; then
 fi
 
 {{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
+chown -R casdoor:casdoor {{ $dataDir }} || true
+
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/casdoor/env -P \
   -u casdoor:casdoor \

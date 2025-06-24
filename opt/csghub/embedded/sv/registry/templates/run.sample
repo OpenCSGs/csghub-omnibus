@@ -12,6 +12,8 @@ fi
 set -e
 
 {{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
+chown -R registry:registry {{ $dataDir }} || true
+
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/registry/env -P \
   -u registry:registry \

@@ -12,6 +12,8 @@ fi
 set -e
 
 {{- $dataDir := (datasource "config").minio.data | default "/var/opt/csghub/minio/data" }}
+chown -R minio:minio {{ $dataDir }} || true
+
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/minio/env -P \
   -u minio:minio \
