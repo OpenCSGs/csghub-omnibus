@@ -77,7 +77,7 @@ csghub:
 #    accesskey: "minio"                ## S3 access key
 #    secretkey: ""                     ## S3 secret key
 #    region: "cn-north-1"              ## AWS region name
-#    regionendpoint: "127.0.0.1:9000"  ## S3 endpoint URL
+#    endpoint: "127.0.0.1:9000"  ## S3 endpoint URL
 #    bucket_lookup: "auto"             ## Bucket lookup style
 #    bucket: "csghub-server"           ## Default bucket name
 #    encrypt: false                    ## Server-side encryption
@@ -277,7 +277,7 @@ csghub:
 #    accesskey: "minio"                ## S3 access key
 #    secretkey: ""                     ## S3 secret key
 #    region: "cn-north-1"              ## AWS region
-#    regionendpoint: "127.0.0.1:9000"  ## S3 endpoint
+#    endpoint: "127.0.0.1:9000"  ## S3 endpoint
 #    forcepathstyle: false             ## Path-style access
 #    bucket: "csghub-server"           ## Bucket name
 #    encrypt: false                    ## Server-side encryption
