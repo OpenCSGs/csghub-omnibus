@@ -78,6 +78,7 @@ csghub:
 #    secretkey: ""                     ## S3 secret key
 #    region: "cn-north-1"              ## AWS region name
 #    endpoint: "127.0.0.1:9000"  ## S3 endpoint URL
+#    internal_endpoint: "127.0.0.1:9000" # S3 internal endpoint URL
 #    bucket_lookup: "auto"             ## Bucket lookup style
 #    bucket: "csghub-server"           ## Default bucket name
 #    encrypt: false                    ## Server-side encryption
