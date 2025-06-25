@@ -81,6 +81,7 @@ http {
     proxy_connect_timeout 300s;
     proxy_redirect off;
     proxy_http_version 1.1;
+    proxy_intercept_errors on;
 
     # Connection upgrade mapping
     map $http_upgrade $connection_upgrade {
@@ -216,10 +217,15 @@ http {
             proxy_set_header X-Forwarded-Proto http;
         }
 
-        # Custom error page handling for 50x errors
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
-            root {{ $dataDir }}/html;
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
+          root {{ $dataDir }}/html;
+          internal;
         }
     }
 
@@ -267,9 +273,10 @@ http {
         }
 
         # Custom error page handling for 50x errors
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
+        error_page 500 502 503 504 /500.html;
+        location = /500.html {
             root {{ $dataDir }}/html;
+            internal;
         }
     }
     {{- end }}
@@ -322,6 +329,17 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_read_timeout 900;
         }
+
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
+          root {{ $dataDir }}/html;
+          internal;
+        }
     }
 
     {{ $casdoor := (datasource "config").casdoor -}}
@@ -359,9 +377,11 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
+        # Custom error page handling for 50x errors
+        error_page 500 502 503 504 /500.html;
+        location = /500.html {
             root {{ $dataDir }}/html;
+            internal;
         }
     }
 
@@ -434,9 +454,11 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
+        # Custom error page handling for 50x errors
+        error_page 500 502 503 504 /500.html;
+        location = /500.html {
             root {{ $dataDir }}/html;
+            internal;
         }
     }
     {{- end }}
