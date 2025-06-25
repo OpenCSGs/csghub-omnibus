@@ -1,7 +1,6 @@
 services:
   csghub:
     image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.8.0-ee
-    hostname: 'csghub.example.com'
     environment:
       CSGHUB_OMNIBUS_CONFIG: |
         csghub:
@@ -18,6 +17,7 @@ services:
         server:
           dataflow:
             address: "http://dataflow:8000"
+          saas: 
         starship:
           enable: true
     ports:
