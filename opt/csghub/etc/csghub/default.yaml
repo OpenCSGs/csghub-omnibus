@@ -386,7 +386,6 @@ gitaly:
 gitlab_shell:
   enable: true
   data: "/var/opt/csghub/gitlab_shell"
-  listen: "127.0.0.1:22222"             # SSH listen port
   ssh_port: 2222
   log:
     dir: "/var/log/csghub/gitlab_shell"  # Log directory

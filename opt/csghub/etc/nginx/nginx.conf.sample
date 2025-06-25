@@ -11,16 +11,7 @@ events {
     use epoll;                   # Use epoll for scalable I/O
 }
 
-{{- $nginx := (datasource "config").nginx }}
-{{- $gitlabShell := (datasource "config").gitlab_shell }}
-# Stream configuration for TCP/UDP traffic
-stream {
-    server {
-        listen {{ $gitlabShell.ssh_port }};             # Listen on TCP port 2222
-        proxy_pass {{ $gitlabShell.listen }};  # Forward traffic to GitLab Shell on port 2222
-    }
-}
-
+{{ $nginx := (datasource "config").nginx }}
 # HTTP block configuration
 http {
     # Disable server version token in responses
