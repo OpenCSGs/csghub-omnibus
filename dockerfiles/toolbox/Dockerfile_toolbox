@@ -13,7 +13,7 @@ ENV GOPROXY=https://goproxy.cn,direct
 RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         apt update && \
         apt install -y --no-install-recommends \
-          wget \
+          wget xz-utils \
           apache2-utils \
           openssh-client \
           build-essential \
@@ -23,7 +23,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
     else \
         if command -v dnf >/dev/null; then \
             dnf install -y \
-              wget \
+              wget xz \
               httpd-tools \
               openssh-clients \
               gcc gcc-c++ make \
@@ -31,7 +31,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
             dnf clean all; \
         else \
             yum install -y \
-              wget \
+              wget xz \
               httpd-tools \
               openssh-clients \
               gcc gcc-c++ make \
