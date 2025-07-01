@@ -34,6 +34,12 @@ else
   psql -U postgres -c "ALTER USER $USER_NAME WITH ENCRYPTED PASSWORD '$PASSWORD' CREATEDB;"
 fi
 
+# Check if we need to grant superuser for existing user
+if [[ $USER_NAME == *"server"* ]]; then
+  echo "Granting superuser privileges to $USER_NAME..."
+  psql -U postgres -c "ALTER USER $USER_NAME WITH SUPERUSER;"
+fi
+
 # Check if database already exists
 if psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" | grep -q 1; then
   echo -e "\033[34mNotice: Database '$DB_NAME' already exists. (Skipping creation)\033[0m"
