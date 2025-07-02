@@ -16,13 +16,14 @@ if [ -e /dev/watchdog ]; then
 fi
 
 {{- $dataDir := (datasource "config").patroni.data_dir | default "/var/opt/csghub/postgresql" }}
+[[ ! -d "{{ $dataDir }}" ]] && mkdir -p "{{ $dataDir }}"
 chown -R postgres:postgres {{ $dataDir }} || true
 
 {{- file.Write (printf "%s/PGHOME" $envDir) "/opt/csghub/embedded/sv/postgresql" }}
 {{- file.Write (printf "%s/PGDATA" $envDir) (printf "%s/data" $dataDir) }}
-{{- file.Write (printf "%s/MANPATH" $envDir) (printf "%s/share/man:%s" (env.Getenv "PGHOME") (env.Getenv "MANPATH")) }}
+{{- file.Write (printf "%s/MANPATH" $envDir) "/opt/csghub/embedded/sv/postgresql/share/man:$MANPATH" }}
 {{- file.Write (printf "%s/PYTHONHOME" $envDir) "/opt/csghub/embedded/python" }}
-{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) (printf "%s/lib:%s/lib:%s" (env.Getenv "PYTHONHOME") (env.Getenv "PGHOME") (env.Getenv "LD_LIBRARY_PATH")) }}
+{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "/opt/csghub/embedded/python/lib:/opt/csghub/embedded/sv/postgresql/lib:$LD_LIBRARY_PATH" }}
 {{- file.Write (printf "%s/PATRONI_HOME" $envDir) "/opt/csghub/embedded/sv/patroni" }}
-{{- file.Write (printf "%s/PYTHONPATH" $envDir) (printf "%s/lib/python3.11/site-packages:%s/lib/python3.11/site-packages" (env.Getenv "PATRONI_HOME") (env.Getenv "PYTHONHOME")) }}
-{{- file.Write (printf "%s/PATH" $envDir) (printf "%s/bin:%s/bin:%s" (env.Getenv "PYTHONHOME") (env.Getenv "PGHOME") (env.Getenv "PATH")) }}
+{{- file.Write (printf "%s/PYTHONPATH" $envDir) "/opt/csghub/embedded/sv/patroni/lib/python3.11/site-packages:/opt/csghub/embedded/python/lib/python3.11/site-packages" }}
+{{- file.Write (printf "%s/PATH" $envDir) "/opt/csghub/embedded/python/bin:/opt/csghub/embedded/sv/postgresql/bin:$PATH" }}

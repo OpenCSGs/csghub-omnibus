@@ -11,6 +11,7 @@ fi
 # fail on errors
 set -e
 
+{{- $dataDir := (datasource "config").patroni.data_dir | default "/var/opt/csghub/patroni" }}
 {{- $configDir := (datasource "config").patroni.config_dir | default "/var/opt/csghub/patroni" }}
 chown -R postgres:postgres {{ $dataDir }} || true
 

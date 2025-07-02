@@ -17,9 +17,9 @@ chown -R postgres:postgres {{ $dataDir }} || true
 
 {{- file.Write (printf "%s/PGHOME" $envDir) "/opt/csghub/embedded/sv/postgresql" }}
 {{- file.Write (printf "%s/PGDATA" $envDir) $dataDir }}
-{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) (printf "%s:%s/lib" (env.Getenv "LD_LIBRARY_PATH") (env.Getenv "PGHOME")) }}
-{{- file.Write (printf "%s/MANPATH" $envDir) (printf "%s:%s/share/man" (env.Getenv "MANPATH") (env.Getenv "PGHOME")) }}
-{{- file.Write (printf "%s/PATH" $envDir) (printf "%s/bin:$PATH" (env.Getenv "PGHOME")) }}
+{{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "$LD_LIBRARY_PATH:/opt/csghub/embedded/sv/postgresql/lib" }}
+{{- file.Write (printf "%s/MANPATH" $envDir) "$MANPATH:/opt/csghub/embedded/sv/postgresql/share/man" }}
+{{- file.Write (printf "%s/PATH" $envDir) "/opt/csghub/embedded/sv/postgresql/bin:$PATH" }}
 
 if [ ! -f "{{ $dataDir }}/PG_VERSION" ]; then
     if [ -f {{ $dataDir }}/postgresql.conf ]; then
