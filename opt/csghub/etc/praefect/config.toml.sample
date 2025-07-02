@@ -78,7 +78,7 @@ enabled = {{ $praefect.failover.enabled }}
 
 [background_verification]
 delete_invalid_records = {{ $praefect.background_verification.delete_invalid_records }}
-verification_interval = "{{ $praefect.background_verification.verification_interval | quote }}"
+verification_interval = {{ $praefect.background_verification.verification_interval | quote }}
 
 {{ if has $praefect "virtual_storage" }}
 {{- range $vs := $praefect.virtual_storage }}

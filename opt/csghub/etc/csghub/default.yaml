@@ -438,7 +438,7 @@ praefect:
   # Reconcile configuraiton
   reconciliation:
     scheduling_interval: "1m" # Reconciliation scheduling interval
-    histogram_buckets: "[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]" # Histogram buckets
+    histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10] # Histogram buckets
 
   # Failover configuration
   failover:
@@ -449,12 +449,17 @@ praefect:
   # Prometheus configuration
   prometheus_listen_addr: "127.0.0.1:9652"
   prometheus:
-    grpc_latency_buckets: "[ 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0 ]"
+    grpc_latency_buckets: [ 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0 ]
 
   # Background verification configuration
   background_verification:
     delete_invalid_records: false
     verification_interval: "72h"
+
+  # Sentry configuration
+  sentry: {}
+    # sentry_environment: ""
+    # sentry_dsn: ""
 
 ##########################################################################
 # MinIO Configuration
