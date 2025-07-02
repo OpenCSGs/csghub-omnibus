@@ -79,11 +79,9 @@ create_symlinks() {
 case "$1" in
   configure)
     if [ -n "$2" ]; then
-      if [ -e /etc/csghub ]; then
-        rm -rf /etc/csghub || true
-      fi
-      if [ -e /etc/csghub.bak ]; then
-        mv /etc/csghub.bak /etc/csghub
+      if [ ! -e /etc/csghub/csghub.yaml ]; then
+        mkdir -p /etc/csghub || true
+        cp /opt/csghub/etc/csghub/templates/csghub/csghub.yaml.sample /etc/csghub/csghub.yaml
       fi
     fi
 

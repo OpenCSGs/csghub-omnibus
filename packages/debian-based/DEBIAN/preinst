@@ -51,12 +51,6 @@ case "$1" in
   upgrade)
     preinst_version_check "$1" "$2" "$3"
 
-    echo "Backup configuration files..."
-    if [ -e /etc/csghub.bak ]; then
-      rm -rf /etc/csghub.bak || true
-    fi
-    cp -af /etc/csghub /etc/csghub.bak
-
     echo "Remove executables..."
     if [ -e /opt/csghub ]; then
       rm -rf /opt/csghub || true

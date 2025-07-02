@@ -49,6 +49,12 @@ for binfile in /opt/csghub/bin/*; do
     [ -f "$binfile" ] && ln -sf "$binfile" /usr/bin/ 2>/dev/null || :
 done
 
+# Create central configuration file
+if [ ! -e /etc/csghub/csghub.yaml ]; then
+    mkdir -p /etc/csghub || true
+    cp /opt/csghub/etc/csghub/templates/csghub/csghub.yaml.sample /etc/csghub/csghub.yaml
+fi
+
 # Enable and start service
 systemctl daemon-reload >/dev/null 2>&1 || :
 systemctl enable csghub-runsvdir.service >/dev/null 2>&1 || :
