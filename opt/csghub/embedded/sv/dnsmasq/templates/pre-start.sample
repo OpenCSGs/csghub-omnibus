@@ -44,3 +44,6 @@ if [ -f "/etc/resolv.conf" ]; then
   fi
 fi
 
+# Grant dnsmasq permission to bind to port numbers below 1024
+# You can using `getcap /opt/csghub/embedded/sv/dnsmasq/bin/dnsmasq` verify
+setcap 'cap_net_bind_service=+ep' /opt/csghub/embedded/sv/dnsmasq/bin/dnsmasq
