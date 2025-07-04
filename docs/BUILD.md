@@ -5,8 +5,8 @@
 ```shell
 cd omnibus-csghub
 docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
-  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.8.0-ce \
-  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:latest \
+  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.8.0-ce \
+  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:latest \
   -f Dockerfile \
   --push .
 ```
@@ -16,8 +16,8 @@ docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
 ```shell
 cd omnibus-csghub
 docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
-  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:v1.8.0-ee \
-  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:latest \
+  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.8.0-ee \
+  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:latest \
   -f ee.Dockerfile \
   --push .
 ```
@@ -62,11 +62,11 @@ example：
 
 ![image-20250612122940476](./assets/image-20250612122940476.png)
 
-This will pull image from `opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/hxsoong/kylin:v10-sp1`.
+This will pull image from `opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/hxsoong/kylin:v10-sp1`.
 
 **It will trigger omnibus-csghub docker images building and output deb or rpm packages.**
 
-_Notes: All images will pulled from `opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public`, you can overwrite by set `REGISTRY=<new registry>`. If you are not sure how to transfer multiple images, please upload your image to the default image address directly._
+_Notes: All images will pulled from `opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq`, you can overwrite by set `REGISTRY=<new registry>`. If you are not sure how to transfer multiple images, please upload your image to the default image address directly._
 
 ### How to build omnibus-csghub image
 

@@ -20,7 +20,7 @@ variables:
   # Build settings
   BUILDX_NO_DEFAULT_ATTESTATIONS: 1
   BUILD_PLATFORMS: "linux/arm64,linux/amd64"
-  REGISTRY: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public"
+  REGISTRY: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq"
   # Go Env
   GO111MODULE: "on"
   GOPROXY: "https://goproxy.cn,direct"

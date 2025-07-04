@@ -14,7 +14,7 @@ DOCKER_BUILD_ARGS := $(shell \
 )
 
 # 镜像仓库配置
-REGISTRY := opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public
+REGISTRY := opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq
 IMAGE_NAME := omnibus-csghub
 
 # 从 manifest 获取版本号，如果没有则使用默认值

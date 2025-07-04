@@ -176,7 +176,7 @@ runner:
     usePublicDomain: true     # Use a dedicate domain name
 
     autoConfigure: true         # knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
-    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public"   # Pull images from registry
+    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq"   # Pull images from registry
     mergingNamespace: true      # minimize the creation of namespaces.
 
     # Knative service settings
@@ -190,8 +190,8 @@ runner:
   # Image builder configuration
   image_builder:
     namespace: "image-factory"  # Builder namespace
-    git_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/alpine/git:2.36.2"  # Git image
-    kaniko_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/kaniko-project-executor:v1.23.2"  # Kaniko image
+    git_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/alpine/git:2.36.2"  # Git image
+    kaniko_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/bitnami/kaniko:1.23.2"  # Kaniko image
     job_ttl: 120                # Job time-to-live in minutes
     status_ttl: 300
 

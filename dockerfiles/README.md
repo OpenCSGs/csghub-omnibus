@@ -17,7 +17,7 @@ docker buildx build \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg RUNIT_VERSION=${RUNIT_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:runit-${RUNIT_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:runit-${RUNIT_VERSION} \
   --file dockerfiles/Dockerfile_runit \
   --push .
 ```
@@ -32,7 +32,7 @@ docker buildx build \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg MINIO_VERSION=${MINIO_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:minio-${MINIO_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:minio-${MINIO_VERSION} \
   --file dockerfiles/Dockerfile_minio \
   --push .
 ```
@@ -51,7 +51,7 @@ docker buildx build \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg GOMPLATE_VERSION=${GOMPLATE_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:toolbox-${TOOLBOX_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:toolbox-${TOOLBOX_VERSION} \
   --file dockerfiles/Dockerfile_toolbox \
   --push .
 ```
@@ -67,7 +67,7 @@ docker buildx build \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg TEMPORAL_VERSION=${TEMPORAL_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:temporal-${TEMPORAL_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:temporal-${TEMPORAL_VERSION} \
   --file dockerfiles/Dockerfile_temporal \
   --push .
 ```
@@ -83,7 +83,7 @@ docker buildx build \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg REDIS_VERSION=${REDIS_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:redis-${REDIS_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:redis-${REDIS_VERSION} \
   --file dockerfiles/Dockerfile_redis \
   --push .
 ```
@@ -101,7 +101,7 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg POSTGRESQL_VERSION=${POSTGRESQL_VERSION} \
   --build-arg SCWS_VERSION=${SCWS_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} \
   --file dockerfiles/Dockerfile_postgresql \
   --push .
 ```
@@ -123,7 +123,7 @@ docker buildx build \
   --build-arg SCWS_VERSION=${SCWS_VERSION} \
   --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
   --build-arg PATRONI_VERSION=${PATRONI_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:patroni-${PATRONI_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:patroni-${PATRONI_VERSION} \
   --file dockerfiles/Dockerfile_patroni \
   --push .
 ```
@@ -139,7 +139,7 @@ docker buildx build \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg NGINX_VERSION=${NGINX_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/omnibus-csghub:nginx-${NGINX_VERSION} \
+  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:nginx-${NGINX_VERSION} \
   --file dockerfiles/Dockerfile_nginx \
   --push .
 ```
