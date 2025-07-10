@@ -348,4 +348,6 @@ mailer_host = {{ $notification.smtp.host | quote }}
 mailer_port = {{ $notification.smtp.port }}
 mailer_username = {{ $notification.smtp.username | quote }}
 mailer_password = {{ $notification.smtp.password | quote }}
+broadcast_user_page_size = 100
+broadcast_email_page_size = 100
 {{- end }}
