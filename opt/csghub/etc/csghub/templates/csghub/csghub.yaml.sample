@@ -116,6 +116,9 @@ csghub:
 #    meter_duration_send_subject: "accounting.metering.duration" ## Just keep it
 #    meter_token_send_subject: "accounting.metering.token"       ## Just keep it
 #    meter_quota_send_subject: "accounting.metering.quota"       ## Just keep it
+#    site_internal_msg_subject: "site.internal.msg" # Just keep it
+#    high_priority_msg_subject: "notification.message.high" # Just keep it
+#    normal_priority_msg_subject: "notification.message.normal" # Just keep it
 
 #  ## Proxy configuration
 #  proxy: ["opencsg.com", "sync.opencsg.com"]  ## Allowed proxy domains
@@ -296,7 +299,26 @@ csghub:
 #    port: 465                    # SMTP server port (typically 465 for SSL, 587 for STARTTLS)
 #    username: ""                 # SMTP authentication username (leave empty if not required)
 #    password: ""                 # SMTP authentication password (leave empty if not required)
+#notification:
+#  enable: true
+#  listen: "127.0.0.1:8095"       # IP and port for the notification service to listen on
+#  repo_sync_timezone: "Asia/Shanghai"  # Default timezone
+#  broadcast_user_page_size: 100
+#  broadcast_email_page_size: 100
 
+#  smtp:
+#    host: "smtp.example.com"     # SMTP server hostname for email notifications
+#    port: 465                    # SMTP server port (typically 465 for SSL, 587 for STARTTLS)
+#    username: ""                 # SMTP authentication username (leave empty if not required)
+#    password: ""                 # SMTP authentication password (leave empty if not required)
+
+#  feishu:
+#    app_id: ""                    # FeiShu bot Application Id
+#    app_secret: ""                # FeiShu bot Application Secret
+#    batch_send_message_cron_expression: "*/10 * * * *"  # used to control the interval time of batch aggregation Feishu message job
+#    max_request_content_size: 20480                     # limit the size of FeiShu message sent at a time (cannot exceed 30k)
+#    max_delay_duration: 3600                            # configures the longest delay time for each message
+#    chat_ids_cache_ttl: 21600                           # configures the cache expiration time of Feishu chat ids
 ##########################################################################
 ## Gitaly Service Configuration
 ## - Git repository storage service for all Git operations

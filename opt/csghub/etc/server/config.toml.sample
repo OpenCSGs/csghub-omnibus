@@ -186,6 +186,9 @@ meter_request_subject = {{ $serverNats.meter_request_subject | quote }}
 meter_duration_send_subject = {{ $serverNats.meter_duration_send_subject | quote }}
 meter_token_send_subject = {{ $serverNats.meter_token_send_subject | quote }}
 meter_quota_send_subject = {{ $serverNats.meter_quota_send_subject | quote }}
+site_internal_msg_subject = {{ $serverNats.site_internal_msg_subject | quote }}
+high_priority_msg_subject = {{ $serverNats.high_priority_msg_subject | quote }}
+normal_priority_msg_subject = {{ $serverNats.normal_priority_msg_subject | quote }}
 
 {{ $accounting := (datasource "config").accounting }}
 {{- $actParts := $accounting.listen | strings.Split ":" -}}
@@ -348,6 +351,18 @@ mailer_host = {{ $notification.smtp.host | quote }}
 mailer_port = {{ $notification.smtp.port }}
 mailer_username = {{ $notification.smtp.username | quote }}
 mailer_password = {{ $notification.smtp.password | quote }}
-broadcast_user_page_size = 100
-broadcast_email_page_size = 100
+repo_sync_timezone = {{ $notification.repo_sync_timezone | quote }}
+broadcast_user_page_size = {{ $notification.broadcast_user_page_size }}
+broadcast_email_page_size = {{ $notification.broadcast_email_page_size }}
+
+{{ $feiShu := $notification.feiShu -}}
+[feishu]
+app_id = {{ $feiShu.app_id | quote }}
+app_secret = {{ $feiShu.app_secret | quote }}
+batch_send_message_cron_expression = {{ $feiShu.batch_send_message_cron_expression | quote }}
+max_request_content_size = {{ $feiShu.max_request_content_size }}
+max_delay_duration = {{ $feiShu.max_delay_duration }}
+chat_ids_cache_ttl = {{ $feiShu.chat_ids_cache_ttl }}
 {{- end }}
+
+
