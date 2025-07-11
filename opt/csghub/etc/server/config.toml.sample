@@ -355,14 +355,14 @@ repo_sync_timezone = {{ $notification.repo_sync_timezone | quote }}
 broadcast_user_page_size = {{ $notification.broadcast_user_page_size }}
 broadcast_email_page_size = {{ $notification.broadcast_email_page_size }}
 
-{{ $feiShu := $notification.feiShu -}}
+{{ $feishu := $notification.feishu -}}
 [feishu]
-app_id = {{ $feiShu.app_id | quote }}
-app_secret = {{ $feiShu.app_secret | quote }}
-batch_send_message_cron_expression = {{ $feiShu.batch_send_message_cron_expression | quote }}
-max_request_content_size = {{ $feiShu.max_request_content_size }}
-max_delay_duration = {{ $feiShu.max_delay_duration }}
-chat_ids_cache_ttl = {{ $feiShu.chat_ids_cache_ttl }}
+app_id = {{ $feishu.app_id | quote }}
+app_secret = {{ $feishu.app_secret | quote }}
+batch_send_message_cron_expression = {{ $feishu.batch_send_message_cron_expression | quote }}
+max_request_content_size = {{ $feishu.max_request_content_size }}
+max_delay_duration = {{ $feishu.max_delay_duration }}
+chat_ids_cache_ttl = {{ $feishu.chat_ids_cache_ttl }}
 {{- end }}
 
 
