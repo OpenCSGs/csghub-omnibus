@@ -6,7 +6,7 @@ spec:
 ---
 default:
   services:
-    - name: ${REGISTRY}/docker:28.2-dind
+    - name: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/docker:28.2-dind
       command: [ "--feature=containerd-snapshotter", "--experimental" ]
       alias: docker
   retry: 2
@@ -26,7 +26,7 @@ variables:
 
 build-omnibus-$[[ inputs.tag ]]:
   stage: build
-  image: ${REGISTRY}/docker:28.2
+  image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/docker:28.2
   before_script:
     - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
     - apk update && apk add jq bash
@@ -50,7 +50,7 @@ build-omnibus-$[[ inputs.tag ]]:
       jq . opt/csghub/version-manifests.json
     - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
     - apk add jq bash
-    - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
+    - docker run --privileged --rm opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/tonistiigi/binfmt --install all
     - echo "$ACR_PASSWORD" | docker login -u $ACR_USERNAME $ACR_REGISTRY --password-stdin
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
   script:
@@ -115,11 +115,11 @@ build-omnibus-$[[ inputs.tag ]]:
 
 pack-omnibus-$[[ inputs.tag ]]:
   stage: package
-  image: ${REGISTRY}/docker:28.2
+  image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/docker:28.2
   before_script:
     - sed -i 's|http[s]*://dl-cdn.alpinelinux.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
     - apk add jq bash
-    - docker run --privileged --rm ${REGISTRY}/tonistiigi/binfmt --install all
+    - docker run --privileged --rm opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/tonistiigi/binfmt --install all
   script:
     - |
       cat <<'EOF' | bash -s
@@ -157,7 +157,7 @@ pack-omnibus-$[[ inputs.tag ]]:
 
 upload-omnibus-$[[ inputs.tag ]]:
   stage: upload
-  image: ${REGISTRY}/curlimages/curl:latest
+  image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsg_public/curlimages/curl:latest
   script:
     - |
       for FILE in $(find packages -name "*.deb" -o -name "*.rpm"); do
