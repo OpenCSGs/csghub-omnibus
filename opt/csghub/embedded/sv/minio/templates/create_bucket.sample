@@ -17,11 +17,12 @@ MINIO_SECRET_KEY={{ $password }}               # Secret key
 # Validate argument count
 if [ "$#" -ne 1 ]; then
     echo "Error: Script requires exactly one argument - bucket name"
-    echo "Usage: $0 <bucket_name>"
+    echo "Usage: $0 <bucket_name> <anonymous>"
     exit 1
 fi
 
 BUCKET_NAME=$1
+ANONYMOUS="${2:-private}"
 
 # Validate bucket name format
 if [[ ! "$BUCKET_NAME" =~ ^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$ ]]; then
@@ -30,6 +31,13 @@ if [[ ! "$BUCKET_NAME" =~ ^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$ ]]; then
     echo "1. Be 3-63 characters long"
     echo "2. Contain only lowercase letters, numbers, and hyphens"
     echo "3. Start and end with a letter or number"
+    exit 1
+fi
+
+# Validate Anonymous policy format
+if [[ "$ANONYMOUS" != "public" && "$ANONYMOUS" != "private" ]]; then
+    echo "Error: Invalid anonymous access policy"
+    echo "Anonymous access policy must be set to 'public' or 'private'"
     exit 1
 fi
 
@@ -61,4 +69,14 @@ if "$MC_PATH" mb "$MINIO_ALIAS/$BUCKET_NAME"; then
 else
     echo "Failed to create bucket"
     exit 1
+fi
+
+# Set Anonymous access policy
+echo "Setting bucket policy to: $ANONYMOUS"
+if [[ "$ANONYMOUS" == "public" ]]; then
+    "$MC_PATH" anonymous set download "$MINIO_ALIAS/$BUCKET_NAME"
+    echo "Bucket is now publicly readable"
+else
+    "$MC_PATH" anonymous set none "$MINIO_ALIAS/$BUCKET_NAME"
+    echo "Bucket is now private"
 fi

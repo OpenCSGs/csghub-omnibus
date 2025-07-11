@@ -287,6 +287,8 @@ csghub:
 #    encrypt: false                    ## Server-side encryption
 #    secure: false                     ## Use HTTPS
 
+#  additionalS3:
+#    bucket: "csghub-portal"
 ##########################################################################
 # Notification Configuration
 # - Responsible for news notifications inside and outside the site.
@@ -840,4 +842,4 @@ csghub:
 # # Starship-Billing #######################################################
 # billing:
 #   enable: false             # Whether billing functionality is enabled
-#   listen: "127.0.0.1:8185"  # Network address and port for Billing service# 
+#   listen: "127.0.0.1:8185"  # Network address and port for Billing service

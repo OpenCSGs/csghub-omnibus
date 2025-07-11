@@ -289,8 +289,11 @@ portal:
     region: "cn-north-1"        # AWS region
     endpoint: ""  # S3 endpoint
     force_path_style: false       # Path-style access
-    bucket: "csghub-portal"     # Bucket name
+    bucket: "csghub-portal-public"     # Bucket name
     secure: false               # Use HTTPS
+
+  additionalS3:
+    bucket: "csghub-portal"
 
 ##########################################################################
 # Notification Configuration
