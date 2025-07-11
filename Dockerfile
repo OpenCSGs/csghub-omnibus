@@ -59,10 +59,10 @@ FROM ${REGISTRY}/casbin/casdoor:${CASDOOR_VERSION} AS casdoor
 FROM ${GITLAB_REGISTRY}/omnibus-nginx:${NGINX_VERSION}-${OS_TAG} AS nginx
 
 ## Install csghub-server
-FROM ${REGISTRY}/csghub_server:${CSGHUB_VERSION} AS server
+FROM ${REGISTRY}/csghub-server:${CSGHUB_VERSION} AS server
 
 ## Install csghub-portal
-FROM ${REGISTRY}/csghub_portal:${CSGHUB_VERSION} AS portal
+FROM ${REGISTRY}/csghub-portal:${CSGHUB_VERSION} AS portal
 
 FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
