@@ -45,16 +45,16 @@ FROM ${GITLAB_REGISTRY}/omnibus-redis:${REDIS_VERSION}-${OS_TAG} AS redis
 FROM ${REGISTRY}/registry:${REGISTRY_VERSION} AS registry
 
 ## Install Gitaly
-FROM ${REGISTRY}/gitaly:${GITALY_VERSION} AS gitaly
+FROM ${REGISTRY}/gitlab-org/build/cng/gitaly:${GITALY_VERSION} AS gitaly
 
 ## Install Gitlab-Shell
-FROM ${REGISTRY}/gitlab-shell:${GITLAB_SHELL_VERSION} AS gitlab-shell
+FROM ${REGISTRY}/gitlab-org/build/cng/gitlab-shell:${GITLAB_SHELL_VERSION} AS gitlab-shell
 
 ## Install Temporal
 FROM ${GITLAB_REGISTRY}/omnibus-temporal:${TEMPORAL_VERSION}-${OS_TAG} AS temporal
 
 ## Install NATS
-FROM ${REGISTRY}/csghub_nats:${NATS_VERSION} AS nats
+FROM ${REGISTRY}/nats:${NATS_VERSION} AS nats
 
 ## Install Casdoor
 FROM ${REGISTRY}/casbin/casdoor:${CASDOOR_VERSION} AS casdoor
