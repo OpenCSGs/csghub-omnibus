@@ -11,16 +11,7 @@ events {
     use epoll;                   # Use epoll for scalable I/O
 }
 
-{{- $nginx := (datasource "config").nginx }}
-{{- $gitlabShell := (datasource "config").gitlab_shell }}
-# Stream configuration for TCP/UDP traffic
-stream {
-    server {
-        listen {{ $gitlabShell.ssh_port }};             # Listen on TCP port 2222
-        proxy_pass 127.0.0.1:2222;  # Forward traffic to GitLab Shell on port 2222
-    }
-}
-
+{{ $nginx := (datasource "config").nginx }}
 # HTTP block configuration
 http {
     # Disable server version token in responses
@@ -90,6 +81,7 @@ http {
     proxy_connect_timeout 300s;
     proxy_redirect off;
     proxy_http_version 1.1;
+    proxy_intercept_errors on;
 
     # Connection upgrade mapping
     map $http_upgrade $connection_upgrade {
@@ -225,10 +217,14 @@ http {
             proxy_set_header X-Forwarded-Proto http;
         }
 
-        # Custom error page handling for 50x errors
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
+            internal;
         }
     }
 
@@ -275,10 +271,14 @@ http {
             proxy_set_header Connection $connection_upgrade;
         }
 
-        # Custom error page handling for 50x errors
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
+            internal;
         }
     }
     {{- end }}
@@ -331,6 +331,16 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_read_timeout 900;
         }
+
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
+            root {{ $dataDir }}/html;
+            internal;
+        }
     }
 
     {{ $casdoor := (datasource "config").casdoor -}}
@@ -368,9 +378,14 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
+            internal;
         }
     }
 
@@ -443,9 +458,14 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
+            internal;
         }
     }
     {{- end }}
@@ -547,10 +567,14 @@ http {
             proxy_cache off;
         }
 
-
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
+            internal;
         }
     }
     {{- end }}

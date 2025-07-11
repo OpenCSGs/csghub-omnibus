@@ -224,8 +224,8 @@ http {
         error_page 503 /503.html;
 
         location ~ ^/(404|500|502|503)(-custom)?\.html$ {
-          root {{ $dataDir }}/html;
-          internal;
+            root {{ $dataDir }}/html;
+            internal;
         }
     }
 
@@ -272,9 +272,13 @@ http {
             proxy_set_header Connection $connection_upgrade;
         }
 
-        # Custom error page handling for 50x errors
-        error_page 500 502 503 504 /500.html;
-        location = /500.html {
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
             internal;
         }
@@ -337,8 +341,8 @@ http {
         error_page 503 /503.html;
 
         location ~ ^/(404|500|502|503)(-custom)?\.html$ {
-          root {{ $dataDir }}/html;
-          internal;
+            root {{ $dataDir }}/html;
+            internal;
         }
     }
 
@@ -377,9 +381,13 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # Custom error page handling for 50x errors
-        error_page 500 502 503 504 /500.html;
-        location = /500.html {
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
             internal;
         }
@@ -454,9 +462,13 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # Custom error page handling for 50x errors
-        error_page 500 502 503 504 /500.html;
-        location = /500.html {
+        # Custom error page handling for 404,50x errors
+        error_page 404 /404.html;
+        error_page 500 /500.html;
+        error_page 502 /502.html;
+        error_page 503 /503.html;
+
+        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
             internal;
         }
