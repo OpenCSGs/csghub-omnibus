@@ -1,5 +1,16 @@
 {{- $csghub := (datasource "config").csghub }}
+{{- $url := conv.URL $csghub.external_url -}}
+{{- $urlParts := $url.Host | strings.Split ":" -}}
+{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
 {{- $casdoor := (datasource "config").casdoor }}
+{{- $casdoorListen := $casdoor.listen -}}
+{{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
+{{- $casdoorHost := index $casdoorParts 0 -}}
+{{- $casdoorPort := index $casdoorParts 1 -}}
+{{- if eq $casdoorHost "127.0.0.1" -}}
+{{- $casdoorHost = $host -}}
+{{- end -}}
+{{- $casdoorEndpoint := printf "%s://%s:%s" $url.Scheme $casdoorHost $casdoorPort -}}
 --
 -- Record Timestamp
 --
@@ -31,20 +42,32 @@ SELECT pg_catalog.set_config('search_path', 'public', false);
 -- Connect to casdoor management database
 \connect {{ $casdoor.db.name }}
 
--- Dynamically update redirect_uris in application table (only if table exists)
+-- Dynamically update application table (only if table exists)
 DO $$
 BEGIN
     IF EXISTS (
         SELECT 1 FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name = 'application'
     ) THEN
+        -- Update avatar or logo local url
         EXECUTE format('
             UPDATE
                 application
             SET
-                redirect_uris = ''["{{ $csghub.external_url }}/api/v1/callback/casdoor"]''
+                redirect_uris = ''["{{ $csghub.external_url }}/api/v1/callback/casdoor"]'',
+                logo = ''{{ $casdoorEndpoint }}''||substring(logo from ''(/files/avatar/.*)'')
             WHERE
-                name = ''CSGHub''
+                name in (''CSGHub'',''Starship'')
+        ');
+
+        -- Update form_side_html
+        EXECUTE format('
+            UPDATE
+                application
+            SET
+                form_side_html = regexp_replace(form_side_html, ''http://\d+\.\d+\.\d+\.\d+:\d+'', ''{{ $casdoorEndpoint }}'', ''g'')
+            WHERE
+                name in (''CSGHub'',''Starship'')
         ');
 
         -- Disable User Signup for Build-in Application
@@ -62,7 +85,30 @@ BEGIN
 END
 $$;
 
--- Dynamically update admin password in user table (only if table exists)
+-- Dynamically update organization table (only if table exists)
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'organization'
+    ) THEN
+        -- Update website_url, logo, favicon, default_avatar with local url
+        EXECUTE format('
+            UPDATE
+                organization
+            SET
+                website_url = ''{{ $casdoorEndpoint }}'',
+                logo = ''{{ $casdoorEndpoint }}''||substring(logo from ''(/files/avatar/.*)''),
+                favicon = ''{{ $casdoorEndpoint }}''||substring(favicon from ''(/files/avatar/.*)''),
+                default_avatar = ''{{ $casdoorEndpoint }}''||substring(default_avatar from ''(/files/avatar/.*)'')
+            WHERE
+                name = ''OpenCSG''
+        ');
+    END IF;
+END
+$$;
+
+-- Dynamically update user table (only if table exists)
 {{- $initPassFile := "/etc/csghub/init_root_password" -}}
 {{- $pass := "" -}}
 {{- if file.Exists $initPassFile -}}
@@ -77,7 +123,7 @@ $$;
 {{- if not $pass -}}
   {{- $pass = random.Alpha 24 -}}
   {{- file.Write $initPassFile (printf "root:%s\n" $pass) -}}
-{{- end -}}
+{{- end }}
 DO $$
 BEGIN
     IF EXISTS (
@@ -94,11 +140,20 @@ BEGIN
                 name = ''admin''
                 AND password_type = ''plain''
         ';
+
+        EXECUTE '
+            UPDATE
+                "user"
+            SET
+                avatar = ''{{ $casdoorEndpoint }}''||substring(avatar from ''(/files/avatar/.*)'')
+            WHERE
+                avatar ~ ''.*/files/avatar/OpenCSG/.*\.png''
+        ';
     END IF;
 END
 $$;
 
--- Dynamically update GitLab_Provider in provider table (only if table exists)
+-- Dynamically update provider table (only if table exists)
 {{- $starship := (datasource "config").starship }}
 {{- $oauth := $starship.oauth }}
 DO $$
@@ -107,6 +162,7 @@ BEGIN
         SELECT 1 FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name = 'provider'
     ) THEN
+        -- Update gitlab provider
         EXECUTE '
             UPDATE
                 "provider"
@@ -117,7 +173,17 @@ BEGIN
                 custom_token_url = ''{{ printf "%s/oauth/token" $oauth.issuer }}'',
                 custom_user_info_url = ''{{ printf "%s/api/v4/user" $oauth.issuer }}''
             WHERE
-                name = ''GitLab_Provider'';
+                name = ''GitLab_Provider''
+        ';
+
+        -- Update custom logo
+        EXECUTE '
+            UPDATE
+                "provider"
+            SET
+                custom_logo = ''{{ $casdoorEndpoint }}''||substring(custom_logo from ''(/files/avatar/.*)'')
+            WHERE
+                custom_logo ~ ''.*/files/avatar/OpenCSG/.*\.png''
         ';
     END IF;
 END
