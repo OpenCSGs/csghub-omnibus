@@ -10,6 +10,8 @@ so all description fields are truncated using the following command:
 `yq eval 'del(.. | select(has("description")).description)' manifests.yaml > simple_lws.yaml`
 */}}
 
+{{- $runner := (datasource "config").runner -}}
+{{- $deploy := $runner.deploy -}}
 # manifests.yaml
 apiVersion: v1
 kind: Namespace
@@ -7901,7 +7903,7 @@ spec:
             - --zap-log-level=2
           command:
             - /manager
-          image: opencsg-registry.cn-beijing.cr.aliyuncs.com/public/lws:v0.6.1
+          image: {{ or $deploy.registry "docker.io/opencsghq" }}/lws:v0.6.1
           livenessProbe:
             httpGet:
               path: /healthz

@@ -1322,7 +1322,7 @@ spec:
         - args:
             - server
           env: []
-          image: {{ $deploy.registry }}/argoproj/argocli:v3.5.12
+          image: {{ or $deploy.registry "quay.io" }}/argoproj/argocli:v3.5.12
           name: argo-server
           ports:
             - containerPort: 2746
@@ -1377,7 +1377,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.name
-          image: {{ $deploy.registry }}/argoproj/workflow-controller:v3.5.12
+          image: {{ or $deploy.registry "quay.io" }}/argoproj/workflow-controller:v3.5.12
           livenessProbe:
             failureThreshold: 3
             httpGet:

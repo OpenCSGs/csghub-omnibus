@@ -13394,7 +13394,7 @@ metadata:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/version: "1.16.1"
 spec:
-  image: {{ $deploy.registry }}/serving/cmd/queue:v1.16.1
+  image: {{ or $deploy.registry "gcr.io" }}/knative-releases/knative.dev/serving/cmd/queue:v1.16.1
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -13500,7 +13500,7 @@ data:
   {{- if $registry.enable }}
   registries-skipping-tag-resolving: "{{ regexp.Find "^[^/]+" $runner.registry.prefix }},opencsg-registry.cn-beijing.cr.aliyuncs.com"
   {{- end }}
-  queue-sidecar-image: {{ $deploy.registry }}/serving/cmd/queue:v1.16.1
+  queue-sidecar-image: {{ or $deploy.registry "gcr.io" }}/knative-releases/knative.dev/serving/cmd/queue:v1.16.1
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -13776,7 +13776,7 @@ spec:
       serviceAccountName: activator
       containers:
         - name: activator
-          image: {{ $deploy.registry }}/serving/cmd/activator:v1.16.1
+          image: {{ or $deploy.registry "gcr.io" }}/knative-releases/knative.dev/serving/cmd/activator:v1.16.1
           resources:
             requests:
               cpu: 300m
@@ -13905,7 +13905,7 @@ spec:
       serviceAccountName: controller
       containers:
         - name: autoscaler
-          image: {{ $deploy.registry }}/serving/cmd/autoscaler:v1.16.1
+          image: {{ or $deploy.registry "gcr.io" }}/knative-releases/knative.dev/serving/cmd/autoscaler:v1.16.1
           resources:
             requests:
               cpu: 100m
@@ -14013,7 +14013,7 @@ spec:
       serviceAccountName: controller
       containers:
         - name: controller
-          image: {{ $deploy.registry }}/serving/cmd/controller:v1.16.1
+          image: {{ or $deploy.registry "gcr.io" }}/knative-releases/knative.dev/serving/cmd/controller:v1.16.1
           resources:
             requests:
               cpu: 100m
@@ -14162,7 +14162,7 @@ spec:
       serviceAccountName: controller
       containers:
         - name: webhook
-          image: {{ $deploy.registry }}/serving/cmd/webhook:v1.16.1
+          image: {{ or $deploy.registry "gcr.io" }}/knative-releases/knative.dev/serving/cmd/webhook:v1.16.1
           resources:
             requests:
               cpu: 100m
@@ -14605,7 +14605,7 @@ spec:
         app: net-kourier-controller
     spec:
       containers:
-        - image: {{ $deploy.registry }}/net-kourier/cmd/kourier:v1.16.1
+        - image: {{ or $deploy.registry "gcr.io" }}/knative-releases/knative.dev/net-kourier/cmd/kourier:v1.16.1
           name: controller
           env:
             - name: CERTS_SECRET_NAMESPACE
@@ -14954,7 +14954,7 @@ spec:
       serviceAccountName: controller
       containers:
         - name: autoscaler-hpa
-          image: {{ $deploy.registry }}/serving/cmd/autoscaler-hpa:v1.16.1
+          image: {{ or $deploy.registry "gcr.io" }}/knative-releases/knative.dev/serving/cmd/autoscaler-hpa:v1.16.1
           resources:
             requests:
               cpu: 30m
