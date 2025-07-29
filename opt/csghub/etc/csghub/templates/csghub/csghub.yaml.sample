@@ -88,7 +88,7 @@ csghub:
 #  model:
 #    deploy_timeout: 30          ## Deployment timeout in minutes
 #    download_endpoint: "https://hub.opencsg.com"  ## Model download URL
-#    docker_reg_base: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/"  ## Docker registry prefix
+#    docker_reg_base: "opencsg-registry.cn-beijing.cr.aliyuncs.com/"  ## Docker registry prefix
 
 #  ## Dataset processing settings
 #  dataset:
