@@ -40,4 +40,4 @@ if pgrep -f "/opt/csghub/bin/kyml" >/dev/null; then
 fi
 
 # Start the new kyml process
-/opt/csghub/bin/kyml -file {{ $chome }}/service/runner/yamls -create -kubeconfig /etc/csghub/.kube/config > {{ $logDir }}/autoConfigure.log 2>&1 &
+/opt/csghub/bin/kyml -file {{ $chome }}/service/runner/yamls -create -kubeconfig /etc/csghub/.kube/config > {{ $logDir }}/auto_configure.log 2>&1 &

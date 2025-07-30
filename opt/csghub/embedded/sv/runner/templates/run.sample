@@ -4,7 +4,7 @@
 exec 2>&1
 
 {{- $deploy := (datasource "config").runner.deploy }}
-{{- if $deploy.autoConfigure }}
+{{- if $deploy.auto_configure }}
 # Run the pre-start script to ensure that the service meets the startup conditions
 if [ -x ./pre-start ]; then
   ./pre-start

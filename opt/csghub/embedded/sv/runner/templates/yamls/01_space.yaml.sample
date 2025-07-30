@@ -24,7 +24,7 @@ data:
   {{- $username := $registry.auth.username }}
   {{- $password := $registry.auth.password | default (crypto.PBKDF2 $username "opencsg" 2048 8) }}
   .dockerconfigjson: {{ printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" $endpoint $username $password (printf "%s:%s" $username $password | base64.Encode) | base64.Encode }}
-{{- if not $deploy.mergingNamespace }}
+{{- if not $deploy.merging_namespace }}
 apiVersion: v1
 kind: Secret
 metadata:

@@ -14368,7 +14368,7 @@ metadata:
     app.kubernetes.io/version: "1.16.1"
 ---
 # kourier.yaml
-{{- if not $deploy.mergingNamespace }}
+{{- if not $deploy.merging_namespace }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -14384,7 +14384,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kourier-bootstrap
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: knative-serving
   {{- else }}
   namespace: kourier-system
@@ -14619,7 +14619,7 @@ spec:
             - name: METRICS_DOMAIN
               value: "knative.dev/samples"
             - name: KOURIER_GATEWAY_NAMESPACE
-              {{- if $deploy.mergingNamespace }}
+              {{- if $deploy.merging_namespace }}
               value: "knative-serving"
               {{- else }}
               value: "kourier-system"
@@ -14694,7 +14694,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: 3scale-kourier-gateway
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: knative-serving
   {{- else }}
   namespace: kourier-system
@@ -14814,7 +14814,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kourier
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: knative-serving
   {{- else }}
   namespace: kourier-system
@@ -14846,7 +14846,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kourier-internal
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: knative-serving
   {{- else }}
   namespace: kourier-system
@@ -14874,7 +14874,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: 3scale-kourier-gateway
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: knative-serving
   {{- else }}
   namespace: kourier-system
@@ -14903,7 +14903,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: 3scale-kourier-gateway-pdb
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: knative-serving
   {{- else }}
   namespace: kourier-system

@@ -8,7 +8,7 @@ metadata:
   labels:
     kubernetes.io/metadata.name: argo
 ---
-{{- if not $deploy.mergingNamespace }}
+{{- if not $deploy.merging_namespace }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -31,7 +31,7 @@ metadata:
     kubernetes.io/metadata.name: {{ $image_builder.namespace }}
 {{- end }}
 ---
-{{- if not $deploy.mergingNamespace }}
+{{- if not $deploy.merging_namespace }}
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -1410,7 +1410,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: executor
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: {{ $deploy.namespace }}
   {{- else }}
   namespace: workflows
@@ -1423,7 +1423,7 @@ rules:
     verbs:
       - create
       - patch
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   - apiGroups:
       - ""
     resources:
@@ -1471,7 +1471,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: executor
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: {{ $deploy.namespace }}
   {{- else }}
   namespace: workflows
@@ -1481,7 +1481,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: executor
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: {{ $deploy.namespace }}
   {{- else }}
   namespace: workflows
@@ -1493,12 +1493,12 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: executor
-    {{- if $deploy.mergingNamespace }}
+    {{- if $deploy.merging_namespace }}
     namespace: {{ $deploy.namespace }}
     {{- else }}
     namespace: workflows
     {{- end }}
-{{- if not $deploy.mergingNamespace }}
+{{- if not $deploy.merging_namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -1539,7 +1539,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: argo-image-factory-secret-access
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: {{ $deploy.namespace }}
   {{- else }}
   namespace: {{ $image_builder.namespace }}
@@ -1557,7 +1557,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: argo-image-factory-secret-access
-  {{- if $deploy.mergingNamespace }}
+  {{- if $deploy.merging_namespace }}
   namespace: {{ $deploy.namespace }}
   {{- else }}
   namespace: {{ $image_builder.namespace }}
@@ -1571,7 +1571,7 @@ subjects:
     name: argo
     namespace: argo
 ---
-{{- if not $deploy.mergingNamespace }}
+{{- if not $deploy.merging_namespace }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:

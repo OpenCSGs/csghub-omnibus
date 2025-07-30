@@ -21,7 +21,7 @@ set -e
 {{- $urlParts := $url.Host | strings.Split ":" -}}
 {{- $host := index $urlParts 0 -}}
 {{- $deploy := $runner.deploy }}
-{{- if and $deploy.usePublicDomain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+{{- if and $deploy.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
 {{- $rootDomain := "example.com" }}
 {{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
 {{- $hostParts := strings.Split "." $host }}

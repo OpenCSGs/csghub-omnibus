@@ -30,16 +30,16 @@ storage:
   {{- if has $registry.storage "s3" }}
   {{- $auth := $registry.storage.s3 }}
   s3:
-    accesskey: {{ $auth.accesskey | default $user }}
-    secretkey: {{ $auth.secretkey | default $password }}
+    accesskey: {{ $auth.access_key | default $user }}
+    secretkey: {{ $auth.secret_key | default $password }}
     region: {{ $auth.region | default "cn-north-1" }}
-    regionendpoint: {{ $auth.regionendpoint | default (printf "http://%s:9000" $host) }}
-    forcepathstyle: {{ $auth.forcepathstyle | default false }}
+    regionendpoint: {{ $auth.region_endpoint | default (printf "http://%s:9000" $host) }}
+    forcepathstyle: {{ $auth.force_path_style | default false }}
     bucket: {{ $auth.bucket | default "csghub-registry" }}
     encrypt: {{ $auth.encrypt | default false }}
     secure: {{ $auth.secure | default false }}
     v4auth: {{ $auth.v4auth | default true }}
-    skipverify: {{ $auth.skipverify | default true }}
+    skipverify: {{ $auth.skip_verify | default true }}
   {{- end }}
   {{- end }}
   redirect:

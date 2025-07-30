@@ -106,7 +106,11 @@ endpoint = {{ $s3.endpoint | default (printf "%s:9000" $host) | quote }}
 internal_endpoint = {{ $s3.internal_endpoint | quote }}
 bucket = {{ $s3.bucket | quote }}
 enable_ssl = {{ $s3.encrypt }}
-bucket_lookup = {{ $s3.bucket_lookup | quote }}
+{{- if $s3.path_style }}
+bucket_lookup = "path"
+{{- else }}
+bucket_lookup = "auto"
+{{- end }}
 
 [jwt]
 signing_key = {{ $gitaly.jwt_secret | quote }}
@@ -123,7 +127,7 @@ builder_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }
 runner_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
 runner_server_port = {{ $runner.listen_port }}
 internal_root_domain = {{ printf "%s.app.internal" $deploy.namespace | quote }}
-{{- if $deploy.usePublicDomain }}
+{{- if $deploy.use_public_domain }}
 {{- $rootDomain := "example.com" }}
 {{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
 {{- $hostParts := strings.Split "." $host }}
@@ -311,7 +315,7 @@ skip_lfs_file_validation = {{ $git.skip_lfs_file_validation }}
 {{ if $runner.enable }}
 {{- $image_builder := $runner.image_builder -}}
 [runner]
-{{- if $deploy.mergingNamespace }}
+{{- if $deploy.merging_namespace }}
 image_builder_namespace = {{ $deploy.namespace | quote }}
 {{- else }}
 image_builder_namespace = {{ $image_builder.namespace | quote }}

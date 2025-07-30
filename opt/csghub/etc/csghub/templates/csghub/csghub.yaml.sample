@@ -74,15 +74,15 @@ csghub:
 
 #  ## S3-compatible storage configuration
 #  s3:
-#    accesskey: "minio"                ## S3 access key
-#    secretkey: ""                     ## S3 secret key
-#    region: "cn-north-1"              ## AWS region name
+#    access_key: "minio"                 ## S3 access key
+#    secret_key: ""                      ## S3 secret key
+#    region: "cn-north-1"                ## AWS region name
 #    endpoint: ""  ## S3 endpoint URL
-#    internal_endpoint: "127.0.0.1:9000" # S3 internal endpoint URL
-#    bucket_lookup: "auto"             ## Bucket lookup style
-#    bucket: "csghub-server"           ## Default bucket name
-#    encrypt: false                    ## Server-side encryption
-#    secure: false                     ## Use HTTPS
+#    internal_endpoint: "127.0.0.1:9000" ## S3 internal endpoint URL
+#    path_style: "true"                  ## Bucket lookup style
+#    bucket: "csghub-server"             ## Default bucket name
+#    encrypt: false                      ## Server-side encryption
+#    secure: false                       ## Use HTTPS
 
 #  ## Model deployment configuration
 #  model:
@@ -121,7 +121,8 @@ csghub:
 #    normal_priority_msg_subject: "notification.message.normal" # Just keep it
 
 #  ## Proxy configuration
-#  proxy: ["opencsg.com", "sync.opencsg.com"]  ## Allowed proxy domains
+#  proxy:
+#    hosts: ["opencsg.com", "sync.opencsg.com"]  ## Allowed proxy domains
 
 #  ## Instrumentation settings
 #  instrumentation:
@@ -171,11 +172,11 @@ csghub:
 #    namespace: "spaces"         ## Kubernetes namespace
 #    timeout: 60                 ## Deployment timeout in minutes
 
-#    usePublicDomain: true    ## Use a dedicate domain name
+#    use_public_domain: true    ## Use a dedicate domain name
 
-#    autoConfigure: true         ## knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
+#    auto_configure: true         ## knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
 #    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq"   ## Pull images from registry
-#    mergingNamespace: true      ## minimize the creation of namespaces.
+#    merging_namespace: true      ## minimize the creation of namespaces.
 
 #    ## Knative service settings
 #    knative:
@@ -189,13 +190,13 @@ csghub:
 #  image_builder:
 #    namespace: "image-factory"  ## Builder namespace
 #    git_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/alpine/git:2.36.2"  ## Git image
-#    kaniko_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/public/kaniko-project-executor:v1.23.2"  ## Kaniko image
+#    kaniko_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/bitnami/kaniko:1.23.2"  ## Kaniko image
 #    job_ttl: 120                ## Job time-to-live in minutes
 #    status_ttl: 300
 
 #  ## Container registry settings
 #  registry:
-#    prefix: "registry.example.com:5000/csghub/"  ## Image prefix
+#    prefix: "registry.example.com:5000/csghub/"  ## Image prefix, eg: csghub.example.com:5000/csghub/
 #    pull_secret: "csghub-docker-credential"      ## Pull secret name
 
 #  ## GPU resource configuration
@@ -278,17 +279,18 @@ csghub:
 
 #  ## S3 storage configuration
 #  s3:
-#    accesskey: "minio"                ## S3 access key
-#    secretkey: ""                     ## S3 secret key
+#    access_key: "minio"                ## S3 access key
+#    secret_key: ""                     ## S3 secret key
 #    region: "cn-north-1"              ## AWS region
 #    endpoint: ""  ## S3 endpoint
-#    forcepathstyle: false             ## Path-style access
-#    bucket: "csghub-server"           ## Bucket name
+#    force_path_style: false             ## Path-style access
+#    bucket: "csghub-portal-public"           ## Bucket name
 #    encrypt: false                    ## Server-side encryption
 #    secure: false                     ## Use HTTPS
 
 #  additionalS3:
 #    bucket: "csghub-portal"
+
 ##########################################################################
 # Notification Configuration
 # - Responsible for news notifications inside and outside the site.
@@ -296,14 +298,7 @@ csghub:
 #notification:
 #  enable: true
 #  listen: "127.0.0.1:8095"       # IP and port for the notification service to listen on
-#  smtp:
-#    host: "smtp.example.com"     # SMTP server hostname for email notifications
-#    port: 465                    # SMTP server port (typically 465 for SSL, 587 for STARTTLS)
-#    username: ""                 # SMTP authentication username (leave empty if not required)
-#    password: ""                 # SMTP authentication password (leave empty if not required)
-#notification:
-#  enable: true
-#  listen: "127.0.0.1:8095"       # IP and port for the notification service to listen on
+
 #  repo_sync_timezone: "Asia/Shanghai"  # Default timezone
 #  broadcast_user_page_size: 100
 #  broadcast_email_page_size: 100
@@ -321,6 +316,7 @@ csghub:
 #    max_request_content_size: 20480                     # limit the size of FeiShu message sent at a time (cannot exceed 30k)
 #    max_delay_duration: 3600                            # configures the longest delay time for each message
 #    chat_ids_cache_ttl: 21600                           # configures the cache expiration time of Feishu chat ids
+
 ##########################################################################
 ## Gitaly Service Configuration
 ## - Git repository storage service for all Git operations
@@ -478,6 +474,7 @@ csghub:
 #  sentry: {}
 #    # sentry_environment: ""
 #    # sentry_dsn: ""
+
 ##########################################################################
 ## MinIO Configuration
 ## - S3-compatible object storage service
@@ -494,11 +491,12 @@ csghub:
 
 #  ## Environment variables
 #  environments:
-#    MINIO_OPTS: " --console-address=:9001"  ## Console options
+#    MINIO_CONSOLE_ADDRESS: ":9002"          ## Console options
+#    MINIO_OPTS: " --console-address=:9002"  ## Console options
 
 ## Logger configuration section
 #logger:
-#  enable: true ## Enable or disable logging system
+#  enable: false ## Enable or disable logging system
 
 ##########################################################################
 ## Consul Configuration
@@ -668,16 +666,16 @@ csghub:
 #    # rootdirectory: "/var/opt/csghub/registry" ## Root directory for storing registry files
 #    # maxthreads: 100                           ## Maximum concurrent file operations
 #    s3:
-#      accesskey: "minio"        ## S3 access key
-#      secretkey: ""             ## S3 secret key
+#      access_key: "minio"        ## S3 access key
+#      secret_key: ""             ## S3 secret key
 #      region: "cn-north-1"      ## AWS region
-#      regionendpoint: "http://127.0.0.1:9000"  ## S3 endpoint
+#      region_endpoint: "http://127.0.0.1:9000"  ## S3 endpoint
 #      bucket: "csghub-registry"  ## Bucket name
-#      forcepathstyle: false     ## Force path-style URLs for S3 (true/false)
+#      force_path_style: false     ## Force path-style URLs for S3 (true/false)
 #      secure: false             ## Use HTTPS
 #      encrypt: false            ## Server-side encryption (true/false)
 #      v4auth: true              ## Use AWS Signature Version 4 (true/false)
-#      skipverify: true          ## Skip TLS certificate verification (true/false)
+#      skip_verify: true          ## Skip TLS certificate verification (true/false)
 
 ##########################################################################
 ## NATS Configuration

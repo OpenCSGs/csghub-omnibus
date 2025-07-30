@@ -83,7 +83,7 @@ server:
     region: "cn-north-1"        # AWS region name
     endpoint: ""  # S3 endpoint URL
     internal_endpoint: "127.0.0.1:9000" # S3 internal endpoint URL
-    bucket_lookup: "auto"       # Bucket lookup style
+    path_style: "true"       # Bucket lookup style
     bucket: "csghub-server"     # Default bucket name
     encrypt: false              # Server-side encryption
     secure: false               # Use HTTPS
@@ -176,11 +176,11 @@ runner:
     namespace: "spaces"         # Kubernetes namespace
     timeout: 60                 # Deployment timeout in minutes
 
-    usePublicDomain: true     # Use a dedicate domain name
+    use_public_domain: true     # Use a dedicate domain name
 
-    autoConfigure: true         # knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
+    auto_configure: true         # knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
     registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq"   # Pull images from registry
-    mergingNamespace: true      # minimize the creation of namespaces.
+    merging_namespace: true      # minimize the creation of namespaces.
 
     # Knative service settings
     knative:
@@ -284,13 +284,14 @@ portal:
 
   # S3 storage configuration
   s3:
-    access_key: "minio"          # S3 access key
-    secret_key: ""               # S3 secret key
-    region: "cn-north-1"        # AWS region
+    access_key: "minio"             # S3 access key
+    secret_key: ""                  # S3 secret key
+    region: "cn-north-1"            # S3 region
     endpoint: ""  # S3 endpoint
-    force_path_style: false       # Path-style access
-    bucket: "csghub-portal-public"     # Bucket name
-    secure: false               # Use HTTPS
+    force_path_style: false         # S3 Path-style access
+    bucket: "csghub-portal-public"  # S3 Bucket name
+    encrypt: false                  # S3 Server-side encryption
+    secure: false                   # Use HTTPS
 
   additionalS3:
     bucket: "csghub-portal"
@@ -673,15 +674,16 @@ registry:
       # rootdirectory: "/var/opt/csghub/registry" # Root directory for storing registry files
       # maxthreads: 100                           # Maximum concurrent file operations
     s3:
-      accesskey: "minio"         # S3 access key
-      secretkey: ""              # S3 secret key
+      access_key: "minio"         # S3 access key
+      secret_key: ""              # S3 secret key
       region: "cn-north-1"       # AWS region
-      regionendpoint: ""         # S3 endpoint, eg: http://csghub.example.com:9000
+      region_endpoint: ""         # S3 endpoint, eg: http://csghub.example.com:9000
       bucket: "csghub-registry"  # Bucket name
-      forcepathstyle: false      # Force path-style URLs for S3 (true/false)
+      force_path_style: false      # Force path-style URLs for S3 (true/false)
       secure: false              # Use HTTPS
+      encrypt: false             # Server-side encryption (true/false)
       v4auth: true               # Use AWS Signature Version 4 (true/false)
-      skipverify: true           # Skip TLS certificate verification (true/false)
+      skip_verify: true           # Skip TLS certificate verification (true/false)
 
 ##########################################################################
 # NATS Configuration
@@ -693,6 +695,7 @@ nats:
   auth:
     user: "natsadmin"           # NATS username
     password: ""                # NATS password
+    
 ##########################################################################
 # Temporal Configuration
 # - Workflow orchestration engine
