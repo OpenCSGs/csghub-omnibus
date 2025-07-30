@@ -160,7 +160,7 @@ COPY --from=server /root/.duckdb ${CSGHUB_SRV_HOME}/server/.duckdb
 RUN rm ${CSGHUB_HOME}/etc/server/starhub
 
 ## Install csghub-portal
-COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/server/bin/
+COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/portal/bin/
 
 ## Install starship-web
 COPY --from=starship /code/. ${CSGHUB_SRV_HOME}/web/

@@ -149,7 +149,7 @@ COPY --from=server /root/.duckdb ${CSGHUB_SRV_HOME}/server/.duckdb
 RUN rm ${CSGHUB_HOME}/etc/server/starhub
 
 ## Install csghub-portal
-COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/server/bin/
+COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/portal/bin/
 
 ENV PATH=$PATH:/opt/csghub/embedded/bin
 RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
