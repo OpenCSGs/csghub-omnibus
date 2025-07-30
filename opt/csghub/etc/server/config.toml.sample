@@ -122,11 +122,15 @@ valid_hour = 24
 {{- $rproxy := (datasource "config").rproxy -}}
 {{- $registry := (datasource "config").registry -}}
 {{- $registryPort := $registry.listen | regexp.Find ":([0-9]+)" | strings.TrimPrefix ":" -}}
+{{- $deployNamespace := $deploy.namespace }}
+{{- if eq $deploy.merging_namespace "Single" }}
+{{- $deployNamespace = "csghub" }}
+{{- end }}
 [space]
 builder_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
 runner_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
 runner_server_port = {{ $runner.listen_port }}
-internal_root_domain = {{ printf "%s.app.internal" $deploy.namespace | quote }}
+internal_root_domain = {{ printf "%s.app.internal" $deployNamespace| quote }}
 {{- if $deploy.use_public_domain }}
 {{- $rootDomain := "example.com" }}
 {{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
@@ -314,12 +318,14 @@ skip_lfs_file_validation = {{ $git.skip_lfs_file_validation }}
 
 {{ if $runner.enable }}
 {{- $image_builder := $runner.image_builder -}}
-[runner]
-{{- if $deploy.merging_namespace }}
-image_builder_namespace = {{ $deploy.namespace | quote }}
-{{- else }}
-image_builder_namespace = {{ $image_builder.namespace | quote }}
+{{- $imageBuilderNamespace := $image_builder.namespace }}
+{{- if eq $deploy.merging_namespace "Multi" }}
+  {{- $imageBuilderNamespace = $deployNamespace }}
+{{- else if eq $deploy.merging_namespace "Single" }}
+  {{- $imageBuilderNamespace = "csghub" }}
 {{- end }}
+[runner]
+image_builder_namespace = {{ $imageBuilderNamespace | quote }}
 image_builder_git_image = {{ $image_builder.git_image | quote }}
 image_builder_kaniko_image = {{ $image_builder.kaniko_image | quote }}
 image_builder_job_ttl = {{ $image_builder.job_ttl }}

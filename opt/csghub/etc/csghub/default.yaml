@@ -180,7 +180,7 @@ runner:
 
     auto_configure: true         # knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
     registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq"   # Pull images from registry
-    merging_namespace: true      # minimize the creation of namespaces.
+    merging_namespace: "Disable"  # Merging mode: "Multi" (reduce namespaces) or "Single" (merge to one namespace) or "Disable" (Disable merging)
 
     # Knative service settings
     knative:

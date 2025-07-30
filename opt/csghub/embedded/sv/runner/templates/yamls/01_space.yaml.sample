@@ -1,13 +1,19 @@
 {{- $runner := (datasource "config").runner -}}
 {{- $deploy := $runner.deploy -}}
-{{- $image_builder := $runner.image_builder -}}
+{{- $imageBuilder := $runner.image_builder -}}
 {{- $runnerRegistry := $runner.registry -}}
+{{- $deployNamespace := $deploy.namespace }}
+{{- if eq $deploy.merging_namespace "Single" }}
+{{- $deployNamespace = "csghub" }}
+{{- else if eq $deploy.merging_namespace "Multi" }}
+{{- $deployNamespace = $imageBuilder.namespace }}
+{{- end }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ $deploy.namespace }}
+  name: {{ $deployNamespace }}
   labels:
-    kubernetes.io/metadata.name: {{ $deploy.namespace }}
+    kubernetes.io/metadata.name: {{ $deployNamespace }}
 ---
 {{- $registry := (datasource "config").registry }}
 {{- if $registry.enable }}
@@ -15,7 +21,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ $runnerRegistry.pull_secret }}
-  namespace: {{ $deploy.namespace }}
+  namespace: {{ $deployNamespace }}
   annotations:
     helm.sh/resource-policy: keep
 type: kubernetes.io/dockerconfigjson
@@ -24,12 +30,12 @@ data:
   {{- $username := $registry.auth.username }}
   {{- $password := $registry.auth.password | default (crypto.PBKDF2 $username "opencsg" 2048 8) }}
   .dockerconfigjson: {{ printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" $endpoint $username $password (printf "%s:%s" $username $password | base64.Encode) | base64.Encode }}
-{{- if not $deploy.merging_namespace }}
+{{- if eq $deploy.merging_namespace "Disable" }}
 apiVersion: v1
 kind: Secret
 metadata:
   name: {{ $runnerRegistry.pull_secret }}
-  namespace: {{ $image_builder.namespace }}
+  namespace: {{ $imageBuilder.namespace }}
   annotations:
     helm.sh/resource-policy: keep
 type: kubernetes.io/dockerconfigjson
