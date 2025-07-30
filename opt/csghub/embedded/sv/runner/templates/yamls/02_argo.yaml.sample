@@ -12,7 +12,7 @@
 {{- if eq $deploy.merging_namespace "Multi" -}}
 {{- $argoWorkflowNamespace = $deploy.namespace -}}
 {{- $argoWorkflowQuotaNamespace = $deploy.namespace -}}
-{{- else if $deploy.merging_namespace "Single" -}}
+{{- else if eq $deploy.merging_namespace "Single" -}}
 {{- $argoWorkflowNamespace = $defaultNamespace -}}
 {{- $argoWorkflowQuotaNamespace = $defaultNamespace -}}
 {{- end -}}
