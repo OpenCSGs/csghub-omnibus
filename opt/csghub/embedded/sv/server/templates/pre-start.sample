@@ -48,14 +48,14 @@ args=("migration" "init")
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 # Database init
-(cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" || true)&
+cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" || true
 
 ## Migration migrate
 args=("migration" "migrate")
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 # Database setup
-(cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" || true)&
+cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}" || true
 
 # Load local sql scripts
 cd /opt/csghub/service/server
