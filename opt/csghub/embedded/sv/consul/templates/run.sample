@@ -6,7 +6,7 @@ exec 2>&1
 # Exit if execute with any errors
 set -e
 
-{{- $dataDir := (datasource "config").consul.data | default "/var/opt/csghub/consul" }}
+{{- $dataDir := (datasource "config").consul.data_dir | default "/var/opt/csghub/consul" }}
 if [ -e {{ $dataDir }}/server_metadata.json ]; then
   rm {{ $dataDir }}/server_metadata.json || true
 fi
