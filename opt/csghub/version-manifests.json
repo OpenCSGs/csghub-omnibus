@@ -5,7 +5,7 @@
       "description": "Version manifest for tracking components and dependencies.",
       "generated_date": "2025-05-26",
       "author": "OpenCSG Infra Team",
-      "version": "v1.9.3-ce"
+      "version": "v1.9.4-ce"
     },
     "components": [
       {
@@ -53,13 +53,13 @@
       {
         "name": "csghub-server",
         "description": "CSGHub backend service",
-        "version": "v1.9.3-ce",
+        "version": "v1.9.4-ce",
         "repository": "https://github.com/OpenCSGs/csghub-server"
       },
       {
         "name": "csghub-portal",
         "description": "CSGHub frontend portal",
-        "version": "v1.9.3-ce",
+        "version": "v1.9.4-ce",
         "repository": "https://github.com/OpenCSGs/csghub"
       }
     ]
