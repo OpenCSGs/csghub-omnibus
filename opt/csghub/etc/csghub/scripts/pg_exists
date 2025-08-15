@@ -4,7 +4,7 @@
 
 set -euo pipefail  # Strict error handling
 
-export PATH=/opt/csghub/embedded/bin/:$PATH
+export PATH=/opt/csghub/embedded/bin/:/opt/csghub/embedded/sv/postgresql/bin/:$PATH
 
 # Validate input parameters
 if [ -z "$DSN" ] || [ -z "$1" ]; then
