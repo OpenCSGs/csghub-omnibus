@@ -1,7 +1,7 @@
 {{- $casdoor := (datasource "config").casdoor -}}
 {{- $db := $casdoor.db -}}
 {{- $pgUser := $db.user -}}
-{{- $pgPassword := crypto.PBKDF2 $pgUser "opencsg" 2048 8 -}}
+{{- $pgPassword := $db.password | default (crypto.PBKDF2 $pgUser "opencsg" 2048 8) -}}
 {{- $dataDir := (datasource "config").casdoor.data -}}
 {{- $csghub := (datasource "config").csghub -}}
 {{- $url := conv.URL $csghub.external_url -}}
