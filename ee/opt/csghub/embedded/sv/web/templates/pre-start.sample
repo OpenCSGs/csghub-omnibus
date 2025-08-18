@@ -30,7 +30,7 @@ set -e
 {{- file.Write (printf "%s/DATABASE_USERNAME" $envDir) $db.user }}
 {{- file.Write (printf "%s/DATABASE_PASSWORD" $envDir) $password }}
 {{- file.Write (printf "%s/DATABASE_NAME" $envDir) $db.name }}
-{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" $db.user $password $db.host $db.port $db.name) }}
+{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" (conv.ToString $db.user) (conv.ToString $password) (conv.ToString $db.host) (conv.ToInt64 $db.port) (conv.ToString $db.name)) }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}

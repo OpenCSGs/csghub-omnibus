@@ -43,7 +43,7 @@ set -e
 
 {{- $db := $portal.db }}
 {{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
-{{- $dsn := printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" $db.user $password $db.host $db.port $db.name }}
+{{- $dsn := printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" (conv.ToString $db.user) (conv.ToString $password) (conv.ToString $db.host) (conv.ToInt64 $db.port) (conv.ToString $db.name) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_DATABASE_DSN" $envDir) $dsn }}
 
 {{- $postgresql := (datasource "config").postgresql }}

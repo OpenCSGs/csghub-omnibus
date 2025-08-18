@@ -39,9 +39,9 @@ port = {{ $server.listen_port }}
 public_domain = {{ $csghub.external_url | quote }}
 {{- $shell_port := $gitlabShell.ssh_port }}
 {{- if eq $shell_port 22 }}
-ssh_domain = {{ printf "git@%s:%d" $host $shell_port | quote }}
+ssh_domain = {{ printf "git@%s:%d" (conv.ToString $host) (conv.ToInt64 $shell_port) | quote }}
 {{- else }}
-ssh_domain = {{ printf "ssh://git@%s:%d" $host $shell_port | quote }}
+ssh_domain = {{ printf "ssh://git@%s:%d" (conv.ToString $host) (conv.ToInt64 $shell_port) | quote }}
 {{- end }}
 
 {{ $mirrorRepo := (datasource "config").mirror_repo }}
@@ -65,7 +65,7 @@ part_size = {{ $mirrorLfs.part_size  }}
 {{- $pgPassword := $postgresql.password | default (crypto.PBKDF2 $pgUser "opencsg" 2048 8) -}}
 [database]
 driver = "pg"
-dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" $pgUser $pgPassword $postgresql.host $postgresql.port $postgresql.name | quote }}
+dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" (conv.ToString $pgUser) (conv.ToString $pgPassword) (conv.ToString $postgresql.host) (conv.ToInt64 $postgresql.port) (conv.ToString $postgresql.name) | quote }}
 timezone = {{ $postgresql.timezone | quote }}
 
 {{ $redis := $server.redis }}
@@ -188,7 +188,7 @@ application_name = {{ $serverCasdoor.application_name | quote }}
 {{- $natsPassword := $nats.auth.password | default (crypto.PBKDF2 $natsUser "opencsg" 2048 8) -}}
 {{- $serverNats := $server.nats -}}
 [nats]
-url = {{ $serverNats.url | default (printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword) | quote }}
+url = {{ $serverNats.url | default (printf "nats://%s:%s@localhost:4222" (conv.ToString $natsUser) (conv.ToString $natsPassword)) | quote }}
 msg_fetch_timeout_in_sec = {{ $serverNats.msg_fetch_timeout_in_sec }}
 meter_request_subject = {{ $serverNats.meter_request_subject | quote }}
 meter_duration_send_subject = {{ $serverNats.meter_duration_send_subject | quote }}

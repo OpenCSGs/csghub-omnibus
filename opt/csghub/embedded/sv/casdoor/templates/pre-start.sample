@@ -11,7 +11,7 @@ set -e
 {{- $casdoor := (datasource "config").casdoor }}
 {{- $db := $casdoor.db }}
 {{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
-{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" $db.user $password $db.host $db.port $db.name) }}
+{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" (conv.ToString $db.user) (conv.ToString $password) (conv.ToString $db.host) (conv.ToInt64 $db.port) (conv.ToString $db.name)) }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
