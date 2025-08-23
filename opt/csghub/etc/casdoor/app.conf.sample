@@ -1,5 +1,5 @@
 {{- $casdoor := (datasource "config").casdoor -}}
-{{- $db := $casdoor.db -}}
+{{- $db := $casdoor.postgresql -}}
 {{- $pgUser := $db.user -}}
 {{- $pgPassword := $db.password | default (crypto.PBKDF2 $pgUser "opencsg" 2048 8) -}}
 {{- $dataDir := (datasource "config").casdoor.data -}}

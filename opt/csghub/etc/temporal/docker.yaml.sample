@@ -10,7 +10,7 @@ persistence:
   datastores:
       {{- $sql := $temporal.persistence.datastores.default.sql }}
       default:
-        {{- $db := $temporal.db }}
+        {{- $db := $temporal.postgresql }}
         sql:
           pluginName: "postgres12"
           databaseName: {{ $db.name | quote }}

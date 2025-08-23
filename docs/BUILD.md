@@ -6,7 +6,6 @@
 cd omnibus-csghub
 docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
   -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.8.0-ce \
-  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:latest \
   -f Dockerfile \
   --push .
 ```
@@ -16,8 +15,9 @@ docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
 ```shell
 cd omnibus-csghub
 docker buildx build --provenance false --platform linux/amd64,linux/arm64 \
-  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.8.0-ee \
-  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:latest \
+  --build-arg REGISTRY=opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq \
+  --build-arg CSGHUB_VERSION=v1.8.0-ee \
+  -t opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.8.0-ee 
   -f ee.Dockerfile \
   --push .
 ```

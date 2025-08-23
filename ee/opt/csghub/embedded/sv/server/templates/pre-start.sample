@@ -32,9 +32,16 @@ set -e
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
 {{- if or $postgresql.enable $patroni.enable }}
-# Create server database
-/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
-/opt/csghub/service/postgresql/create_database "dataflow" "dataflow" "8f444970fcde559c"
+# Rename database casdoor to csghub_casdoor (If database casdoor exists)
+/opt/csghub/bin/csghub-dbm -a rename -d "dataflow" -n "csghub_dataflow"
+# Create server database (current default)
+/opt/csghub/bin/csghub-dbm -a create -d {{ $db.name }} -u {{ $db.user }} -p {{ $password }}
+/opt/csghub/bin/csghub-dbm -a create -d "csghub_dataflow" -u {{ $db.user }} -p {{ $password }}
+/opt/csghub/bin/csghub-dbm -a promote -u {{ $db.user }} -P SUPERUSER
+# If server database exists reset all objects owner to current db user
+/opt/csghub/bin/csghub-dbm -a update -d {{ $db.name }} -N {{ $db.user }}
+/opt/csghub/bin/csghub-dbm -a update -d "csghub_dataflow" -N {{ $db.user }}
+
 {{- end }}
 
 {{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}

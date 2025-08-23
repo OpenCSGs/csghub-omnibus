@@ -40,7 +40,7 @@ SELECT pg_catalog.set_config('search_path', 'public', false);
 -- Name: application; Type: TABLE; Schema: public; Owner: csghub
 --
 -- Connect to casdoor management database
-\connect {{ $casdoor.db.name }}
+\connect {{ $casdoor.postgresql.name }}
 
 -- Dynamically update application table (only if table exists)
 DO $$

@@ -13,7 +13,7 @@ set -e
 # rm -rf {{ $envDir }}/* || true
 
 {{- $temporal := (datasource "config").temporal }}
-{{- $db := $temporal.db }}
+{{- $db := $temporal.postgresql }}
 {{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
 {{- file.Write (printf "%s/DB" $envDir) "postgres12" }}
 {{- file.Write (printf "%s/DBNAME" $envDir) $db.name }}
@@ -21,13 +21,24 @@ set -e
 {{- file.Write (printf "%s/DB_PORT" $envDir) $db.port }}
 {{- file.Write (printf "%s/POSTGRES_USER" $envDir) $db.user }}
 {{- file.Write (printf "%s/POSTGRES_PWD" $envDir) $password }}
+{{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" (conv.ToString $db.user) (conv.ToString $password) (conv.ToString $db.host) (conv.ToInt64 $db.port) (conv.ToString $db.name)) }}
 {{- $visibilityDB := printf "%s_%s" $db.name $temporal.persistence.visibility_store }}
+{{- file.Write (printf "%s/VISIBILITY_DBNAME" $envDir) $visibilityDB }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
 {{- if or $postgresql.enable $patroni.enable }}
-# Create temporal database
-/opt/csghub/service/postgresql/create_database {{ $db.name }} {{ $db.user }} {{ $password }}
-/opt/csghub/service/postgresql/create_database {{ $visibilityDB }} {{ $db.user }} {{ $password }}
+# Rename database temporal to csghub_temporal (If database temporal exists)
+/opt/csghub/bin/csghub-dbm -a rename -d "temporal" -n {{ $db.name }}
+/opt/csghub/bin/csghub-dbm -a rename -d "temporal_visibility" -n {{ $visibilityDB }}
+# Create temporal database (current default)
+/opt/csghub/bin/csghub-dbm -a create -d {{ $db.name }} -u {{ $db.user }} -p {{ $password }}
+/opt/csghub/bin/csghub-dbm -a promote -u {{ $db.user }} -P CREATEDB
+# If temporal database exists reset all objects owner to current db user
+/opt/csghub/bin/csghub-dbm -a update -d {{ $db.name }} -N {{ $db.user }}
+/opt/csghub/bin/csghub-dbm -a update -d {{ $visibilityDB }} -N {{ $db.user }}
 {{- end }}
 
+# Load local sql scripts
+cd /opt/csghub/service/temporal
+[ -x "/opt/csghub/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_executor
