@@ -3,35 +3,35 @@
 {{- $urlParts := $url.Host | strings.Split ":" -}}
 {{- $host := index $urlParts 0 | default "csghub.example.com" -}}
 
-{{- $starship := (datasource "config").starship -}}
-{{- $starshipFrontendListen := $starship.listen.frontend -}}
-{{- $starshipFrontendParts := $starshipFrontendListen | strings.Split ":" -}}
-{{- $starshipFrontendHost := index $starshipFrontendParts 0 -}}
-{{- if eq $starshipFrontendHost "127.0.0.1" -}}
-{{- $starshipFrontendHost = $host -}}
+{{- $csgship := (datasource "config").csgship -}}
+{{- $csgshipFrontendListen := $csgship.listen.frontend -}}
+{{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
+{{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
+{{- if eq $csgshipFrontendHost "127.0.0.1" -}}
+{{- $csgshipFrontendHost = $host -}}
 {{- end -}}
-{{- $starshipFrontendPort := "8001" -}}
-{{- if eq (len $starshipFrontendParts) 2 -}}
-   {{- $starshipFrontendPort = index $starshipFrontendParts 1 -}}
+{{- $csgshipFrontendPort := "8001" -}}
+{{- if eq (len $csgshipFrontendParts) 2 -}}
+   {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
 {{- end }}
-{{- $starshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipFrontendPort -}}
+{{- $csgshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipFrontendPort -}}
 
-{{- $starshipApiListen := $starship.listen.api -}}
-{{- $starshipApiParts := $starshipApiListen | strings.Split ":" -}}
-{{- $starshipApiHost := index $starshipApiParts 0 -}}
-{{- if eq $starshipApiHost "127.0.0.1" -}}
-{{- $starshipApiHost = $host -}}
+{{- $csgshipApiListen := $csgship.listen.api -}}
+{{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
+{{- $csgshipApiHost := index $csgshipApiParts 0 -}}
+{{- if eq $csgshipApiHost "127.0.0.1" -}}
+{{- $csgshipApiHost = $host -}}
 {{- end -}}
-{{- $starshipApiPort := "8002" -}}
-{{- if eq (len $starshipApiParts) 2 -}}
-   {{- $starshipApiPort = index $starshipApiParts 1 -}}
+{{- $csgshipApiPort := "8002" -}}
+{{- if eq (len $csgshipApiParts) 2 -}}
+   {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
 {{- end }}
-{{- $starshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipApiPort -}}
+{{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
 {{- $server := (datasource "config").server }}
 {{- $serverCasdoor := $server.casdoor }}
 window.envConfig = {
-    VITE_APP_BASE_WEB: {{ $starshipEndpoint | squote }},
-    VITE_APP_BASE_API: {{ $starshipApiEndpoint | squote }},
+    VITE_APP_BASE_WEB: {{ $csgshipEndpoint | squote }},
+    VITE_APP_BASE_API: {{ $csgshipApiEndpoint | squote }},
     {{- $csghub := (datasource "config").csghub }}
     {{- $url := conv.URL $csghub.external_url }}
     {{- $urlParts := $url.Host | strings.Split ":" }}

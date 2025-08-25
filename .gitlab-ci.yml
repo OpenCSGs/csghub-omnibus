@@ -54,7 +54,7 @@ generate_component_list:
           CHANGED_COMPONENTS=$(echo "$CHANGED_DOCKERFILES" | tr '\n' ' ')
       else
           # Case 2: No Dockerfiles changed - build all components
-          CHANGED_COMPONENTS=$(ls -d dockerfiles/*/ | xargs -n 1 basename | egrep -v "starship|README.md" | tr '\n' ' ')
+          CHANGED_COMPONENTS=$(ls -d dockerfiles/*/ | xargs -n 1 basename | egrep -v "csgship|README.md" | tr '\n' ' ')
       fi
 
       # Format output (remove trailing space and convert to comma-separated)

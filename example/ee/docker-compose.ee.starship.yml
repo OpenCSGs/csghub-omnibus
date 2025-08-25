@@ -17,7 +17,7 @@ services:
         server:
           dataflow:
             address: "http://dataflow:8000"
-        starship:
+        csgship:
           enable: true
     ports:
       - '80:80'
@@ -85,7 +85,7 @@ services:
     restart: always
 
   secscan:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/starship-secscan:latest
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/csgship-secscan:latest
     volumes:
       - ./csghub/data/worker:/code/data
       - ./csghub/data/worker:/var/opt/gitrepos

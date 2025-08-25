@@ -105,7 +105,7 @@
         "repository": "https://github.com/OpenCSGs/csghub"
       },
       {
-        "name": "starship",
+        "name": "csgship",
         "description": "IDE Coding Assistant",
         "version": "latest"
       }

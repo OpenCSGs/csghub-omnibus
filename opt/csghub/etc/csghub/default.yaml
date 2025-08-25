@@ -782,25 +782,25 @@ casdoor:
     password: ""                  ## Database password
 
 ##########################################################################
-# Starship Configuration
+# Csgship Configuration
 # - IDE AI Coding Assistant
 ##########################################################################
-starship:
-  enable: false                   ## Enable or disable all the following Starship service
+csgship:
+  enable: false                   ## Enable or disable all the following Csgship service
   listen:
-    frontend: "127.0.0.1:8001"    ## External URL for Starship web interface
-    api: "127.0.0.1:8002"         ## External API URL for Starship service
+    frontend: "127.0.0.1:8001"    ## External URL for Csgship web interface
+    api: "127.0.0.1:8002"         ## External API URL for Csgship service
   oauth:
     issuer: "https://gitlab.example.com"
     client_id: "73f1c2922f51d68fa87de8c1ef0e23e8940f3aa42f5ac7a55a1f586c597d7e9c"
     client_secret: "gloas-3ba02f02b3e993664ccdda2c4d76989caa11ce6f07a805b6872d266fbd465831"
 
-## Starship-Web ###########################################################
+## Csgship-Web ###########################################################
 web:
   listen: "127.0.0.1:8183"
   # Database configuration
   postgresql:
-    name: "starship"            ## Database name
+    name: "csgship"            ## Database name
     host: "127.0.0.1"           ## Database host
     port: 5432                  ## Database port
     user: "csghub"              ## Database user
@@ -838,15 +838,15 @@ web:
   megalinter_server:
     endpoint: "http://megalinter-server:9000"
 
-## Starship-Celery ########################################################
+## Csgship-Celery ########################################################
 producer: {}                ## Producer configuration (empty for default settings)
 worker: {}                  ## Worker configuration (empty for default settings)
 
-## Starship-Agentic #######################################################
+## Csgship-Agentic #######################################################
 agentic:
   listen: "127.0.0.1:8184"  ## Network address and port for Agentic service
 
-## Starship-Billing #######################################################
+## Csgship-Billing #######################################################
 billing:
   enable: false             ## Whether billing functionality is enabled
   listen: "127.0.0.1:8185"  ## Network address and port for Billing service

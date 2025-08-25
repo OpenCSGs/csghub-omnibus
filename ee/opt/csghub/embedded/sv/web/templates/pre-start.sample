@@ -35,12 +35,12 @@ set -e
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
 {{- if or $postgresql.enable $patroni.enable }}
-# Rename database starship (If database starship exists)
+# Rename database csgship (If database csgship exists)
 /opt/csghub/bin/csghub-dbm -a rename -d "starship_codegpt" -n {{ $db.name }}
 /opt/csghub/bin/csghub-dbm -a rename -d "starship" -n {{ $db.name }}
-# Create starship database (current default)
+# Create csgship database (current default)
 /opt/csghub/bin/csghub-dbm -a create -d {{ $db.name }} -u {{ $db.user }} -p {{ $password }}
-# If starship database exists reset all objects owner to current db user
+# If csgship database exists reset all objects owner to current db user
 /opt/csghub/bin/csghub-dbm -a update -d {{ $db.name }} -N {{ $db.user }}
 {{- end }}
 
@@ -56,33 +56,33 @@ set -e
 {{- $url := conv.URL $csghub.external_url -}}
 {{- $urlParts := $url.Host | strings.Split ":" -}}
 {{- $host := index $urlParts 0 | default "csghub.example.com" -}}
-{{- $starship := (datasource "config").starship -}}
-{{- $starshipFrontendListen := $starship.listen.frontend -}}
-{{- $starshipFrontendParts := $starshipFrontendListen | strings.Split ":" -}}
-{{- $starshipFrontendHost := index $starshipFrontendParts 0 -}}
-{{- if eq $starshipFrontendHost "127.0.0.1" -}}
-{{- $starshipFrontendHost = $host -}}
+{{- $csgship := (datasource "config").csgship -}}
+{{- $csgshipFrontendListen := $csgship.listen.frontend -}}
+{{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
+{{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
+{{- if eq $csgshipFrontendHost "127.0.0.1" -}}
+{{- $csgshipFrontendHost = $host -}}
 {{- end -}}
-{{- $starshipFrontendPort := "8001" -}}
-{{- if eq (len $starshipFrontendParts) 2 -}}
-   {{- $starshipFrontendPort = index $starshipFrontendParts 1 -}}
+{{- $csgshipFrontendPort := "8001" -}}
+{{- if eq (len $csgshipFrontendParts) 2 -}}
+   {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
 {{- end }}
-{{- $starshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipFrontendPort -}}
+{{- $csgshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipFrontendPort -}}
 
-{{- $starshipApiListen := $starship.listen.api -}}
-{{- $starshipApiParts := $starshipApiListen | strings.Split ":" -}}
-{{- $starshipApiHost := index $starshipApiParts 0 -}}
-{{- if eq $starshipApiHost "127.0.0.1" -}}
-{{- $starshipApiHost = $host -}}
+{{- $csgshipApiListen := $csgship.listen.api -}}
+{{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
+{{- $csgshipApiHost := index $csgshipApiParts 0 -}}
+{{- if eq $csgshipApiHost "127.0.0.1" -}}
+{{- $csgshipApiHost = $host -}}
 {{- end -}}
-{{- $starshipApiPort := "8002" -}}
-{{- if eq (len $starshipApiParts) 2 -}}
-   {{- $starshipApiPort = index $starshipApiParts 1 -}}
+{{- $csgshipApiPort := "8002" -}}
+{{- if eq (len $csgshipApiParts) 2 -}}
+   {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
 {{- end }}
-{{- $starshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipApiPort -}}
+{{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
 
-{{- file.Write (printf "%s/STARSHIP_WEB_URL" $envDir) $starshipEndpoint }}
-{{- file.Write (printf "%s/STARSHIP_API_URL" $envDir) $starshipApiEndpoint }}
+{{- file.Write (printf "%s/csgship_WEB_URL" $envDir) $csgshipEndpoint }}
+{{- file.Write (printf "%s/csgship_API_URL" $envDir) $csgshipApiEndpoint }}
 {{- file.Write (printf "%s/USE_OPENAI_ASSISTANTS_API" $envDir) "false" }}
 
 {{- file.Write (printf "%s/ACCOUNTING_OP_MODE" $envDir) "has_balance|consume" }}
@@ -111,12 +111,12 @@ set -e
 {{ $billing := (datasource "config").billing }}
 {{ $agentic := (datasource "config").agentic }}
 {{ $web := (datasource "config").web }}
-{{- file.Write (printf "%s/STARSHIP_BILLING_API_BASE" $envDir) (printf "http://%s" $billing.listen) }}
+{{- file.Write (printf "%s/csgship_BILLING_API_BASE" $envDir) (printf "http://%s" $billing.listen) }}
 {{- file.Write (printf "%s/BILLING_SVC_API_BASE" $envDir) (printf "http://%s" $billing.listen) }}
 {{- file.Write (printf "%s/AGENTIC_SVC_API_BASE" $envDir) (printf "http://%s" $agentic.listen) }}
 {{- file.Write (printf "%s/WEB_SVC_API_BASE" $envDir) (printf "http://%s" $web.listen) }}
 {{- file.Write (printf "%s/MEGALINTER_SVC_API_BASE" $envDir) $web.megalinter_server.endpoint }}
-{{- file.Write (printf "%s/SYNC_PERMS_GIT_SERVER" $envDir) ($starship.oauth.issuer | strings.TrimPrefix "http://" | strings.TrimPrefix "https://") }}
+{{- file.Write (printf "%s/SYNC_PERMS_GIT_SERVER" $envDir) ($csgship.oauth.issuer | strings.TrimPrefix "http://" | strings.TrimPrefix "https://") }}
 
 {{ $nats := (datasource "config").nats }}
 {{- $natsUser := $nats.auth.user -}}

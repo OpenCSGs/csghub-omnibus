@@ -57,7 +57,7 @@ BEGIN
                 redirect_uris = ''["{{ $csghub.external_url }}/api/v1/callback/casdoor"]'',
                 logo = ''{{ $casdoorEndpoint }}''||substring(logo from ''(/files/avatar/.*)'')
             WHERE
-                name in (''CSGHub'',''Starship'')
+                name in (''CSGHub'',''Csgship'')
         ');
 
         -- Update form_side_html
@@ -67,7 +67,7 @@ BEGIN
             SET
                 form_side_html = regexp_replace(form_side_html, ''http://\d+\.\d+\.\d+\.\d+:\d+'', ''{{ $casdoorEndpoint }}'', ''g'')
             WHERE
-                name in (''CSGHub'',''Starship'')
+                name in (''CSGHub'',''Csgship'')
         ');
 
         -- Disable User Signup for Build-in Application
@@ -154,8 +154,8 @@ END
 $$;
 
 -- Dynamically update provider table (only if table exists)
-{{- $starship := (datasource "config").starship }}
-{{- $oauth := $starship.oauth }}
+{{- $csgship := (datasource "config").csgship }}
+{{- $oauth := $csgship.oauth }}
 DO $$
 BEGIN
     IF EXISTS (

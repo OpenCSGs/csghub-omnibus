@@ -3,30 +3,30 @@
 {{- $urlParts := $url.Host | strings.Split ":" -}}
 {{- $host := index $urlParts 0 | default "csghub.example.com" -}}
 
-{{- $starship := (datasource "config").starship -}}
-{{- $starshipFrontendListen := $starship.listen.frontend -}}
-{{- $starshipFrontendParts := $starshipFrontendListen | strings.Split ":" -}}
-{{- $starshipFrontendHost := index $starshipFrontendParts 0 -}}
-{{- if eq $starshipFrontendHost "127.0.0.1" -}}
-{{- $starshipFrontendHost = $host -}}
+{{- $csgship := (datasource "config").csgship -}}
+{{- $csgshipFrontendListen := $csgship.listen.frontend -}}
+{{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
+{{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
+{{- if eq $csgshipFrontendHost "127.0.0.1" -}}
+{{- $csgshipFrontendHost = $host -}}
 {{- end -}}
-{{- $starshipFrontendPort := "8001" -}}
-{{- if eq (len $starshipFrontendParts) 2 -}}
-   {{- $starshipFrontendPort = index $starshipFrontendParts 1 -}}
+{{- $csgshipFrontendPort := "8001" -}}
+{{- if eq (len $csgshipFrontendParts) 2 -}}
+   {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
 {{- end }}
-{{- $starshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipFrontendPort -}}
+{{- $csgshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipFrontendPort -}}
 
-{{- $starshipApiListen := $starship.listen.api -}}
-{{- $starshipApiParts := $starshipApiListen | strings.Split ":" -}}
-{{- $starshipApiHost := index $starshipApiParts 0 -}}
-{{- if eq $starshipApiHost "127.0.0.1" -}}
-{{- $starshipApiHost = $host -}}
+{{- $csgshipApiListen := $csgship.listen.api -}}
+{{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
+{{- $csgshipApiHost := index $csgshipApiParts 0 -}}
+{{- if eq $csgshipApiHost "127.0.0.1" -}}
+{{- $csgshipApiHost = $host -}}
 {{- end -}}
-{{- $starshipApiPort := "8002" -}}
-{{- if eq (len $starshipApiParts) 2 -}}
-   {{- $starshipApiPort = index $starshipApiParts 1 -}}
+{{- $csgshipApiPort := "8002" -}}
+{{- if eq (len $csgshipApiParts) 2 -}}
+   {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
 {{- end }}
-{{- $starshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipApiPort -}}
+{{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
 
 {{- $casdoor := (datasource "config").casdoor -}}
 {{- $casdoorListen := $casdoor.listen -}}
@@ -420,12 +420,12 @@
     },
     {
       "owner": "admin",
-      "name": "StarShip",
-      "displayName": "StarShip",
+      "name": "Csgship",
+      "displayName": "Csgship",
       "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
-      "homepageUrl": {{ $starshipEndpoint | quote }},
+      "homepageUrl": {{ $csgshipEndpoint | quote }},
       "organization": "OpenCSG",
-      "cert": "starship-cert",
+      "cert": "csgship-cert",
       "enablePassword": true,
       "enableSignUp": true,
       "enableSigninSession": false,
@@ -646,7 +646,7 @@
         "id_token"
       ],
       "redirectUris": [
-        "{{ $starshipApiEndpoint }}/api/v1/account/casdoor/login/callback"
+        "{{ $csgshipApiEndpoint }}/api/v1/account/casdoor/login/callback"
       ],
       "tokenFormat": "JWT",
       "tokenFields": [],
@@ -682,8 +682,8 @@
     },
      {
        "owner": "admin",
-       "name": "starship-cert",
-       "displayName": "StarShip Cert",
+       "name": "csgship-cert",
+       "displayName": "Csgship Cert",
        "scope": "JWT",
        "type": "x509",
        "cryptoAlgorithm": "RS256",
@@ -764,11 +764,11 @@
       "category": "OAuth",
       "type": "Custom",
       "method": "Normal",
-      "clientId": {{ $starship.oauth.client_id | default "" | quote }},
-      "clientSecret": {{ $starship.oauth.client_secret | default "" | quote }},
-      "customAuthUrl": {{ printf "%s/oauth/authorize" $starship.oauth.issuer | default "" | quote }},
-      "customTokenUrl": {{ printf "%s/oauth/token" $starship.oauth.issuer | default "" | quote }},
-      "customUserInfoUrl": {{ printf "%s/api/v4/user" $starship.oauth.issuer | default "" | quote }},
+      "clientId": {{ $csgship.oauth.client_id | default "" | quote }},
+      "clientSecret": {{ $csgship.oauth.client_secret | default "" | quote }},
+      "customAuthUrl": {{ printf "%s/oauth/authorize" $csgship.oauth.issuer | default "" | quote }},
+      "customTokenUrl": {{ printf "%s/oauth/token" $csgship.oauth.issuer | default "" | quote }},
+      "customUserInfoUrl": {{ printf "%s/api/v4/user" $csgship.oauth.issuer | default "" | quote }},
       "customLogo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/gitlab_favicon.png",
       "scopes": "read_user openid profile email",
       "userMapping":
@@ -779,8 +779,8 @@
         "id": "id",
         "username": "username"
       },
-      "issuerUrl": {{ $starship.oauth.issuer | default "" | quote }},
-      "providerUrl": {{ $starship.oauth.issuer | default "" | quote }}
+      "issuerUrl": {{ $csgship.oauth.issuer | default "" | quote }},
+      "providerUrl": {{ $csgship.oauth.issuer | default "" | quote }}
     },
     {
       "owner": "OpenCSG",

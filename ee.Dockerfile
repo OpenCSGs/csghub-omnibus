@@ -18,10 +18,10 @@ ARG NATS_VERSION=2.10.16
 ARG CASDOOR_VERSION=v1.799.0
 ARG DNSMASQ_VERSION=2.91
 ARG NGINX_VERSION=1.27.5
-ARG STARSHIP_VERSION=v0.2.0
-ARG STARSHIP_FRONTEND=v1.2.2
-ARG STARSHIP_BILLING=latest
-ARG STARSHIP_AGENTIC=v0.2.0
+ARG CSGSHIP_VERSION=v0.4.0
+ARG CSGSHIP_FRONTEND=v1.2.1
+ARG CSGSHIP_BILLING=bl-2.0.1
+ARG CSGSHIP_AGENTIC=v0.4.0
 
 ## Install Runit Service Daemon
 FROM ${GITLAB_REGISTRY}/omnibus-runit:${RUNIT_VERSION}-${OS_TAG} AS runit
@@ -68,14 +68,14 @@ FROM ${REGISTRY}/csghub-server:${CSGHUB_VERSION} AS server
 ## Install csghub-portal
 FROM ${REGISTRY}/csghub-portal:${CSGHUB_VERSION} AS portal
 
-## Install Starship
-FROM ${REGISTRY}/starship-web:${STARSHIP_VERSION} AS starship
+## Install Csgship
+FROM ${REGISTRY}/csgship-web:${CSGSHIP_VERSION} AS csgship
 
-FROM ${REGISTRY}/starship-billing:${STARSHIP_BILLING} AS billing
+FROM ${REGISTRY}/csgship-billing:${CSGSHIP_BILLING} AS billing
 
-FROM ${REGISTRY}/starship-portal:${STARSHIP_FRONTEND} AS frontend
+FROM ${REGISTRY}/csgship-portal:${CSGSHIP_FRONTEND} AS frontend
 
-FROM ${REGISTRY}/starship-agentic:${STARSHIP_AGENTIC} AS agentic
+FROM ${REGISTRY}/csgship-agentic:${CSGSHIP_AGENTIC} AS agentic
 
 FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
@@ -162,8 +162,8 @@ RUN rm ${CSGHUB_HOME}/etc/server/starhub
 ## Install csghub-portal
 COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/portal/bin/
 
-## Install starship-web
-COPY --from=starship /code/. ${CSGHUB_SRV_HOME}/web/
+## Install csgship-web
+COPY --from=csgship /code/. ${CSGHUB_SRV_HOME}/web/
 COPY --from=billing /app/. ${CSGHUB_SRV_HOME}/billing/bin/
 COPY --from=frontend /usr/share/nginx/html ${CSGHUB_HOME}/etc/nginx/html
 COPY --from=agentic /code/. ${CSGHUB_SRV_HOME}/agentic/

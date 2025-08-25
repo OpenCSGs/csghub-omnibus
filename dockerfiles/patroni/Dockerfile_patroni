@@ -138,11 +138,11 @@ RUN python3.11 -m pip install \
       --no-cache-dir \
       --prefix=/opt/csghub/embedded/sv/patroni patroni[consul]==${PATRONI_VERSION} psycopg2-binary
 
-# Install dependencies for starship
-COPY ./dockerfiles/starship/. ./starship/
+# Install dependencies for csgship
+COPY ./dockerfiles/csgship/. ./csgship/
 RUN python3.11 -m pip install -U pip && \
     python3.11 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple && \
-    python3.11 -m pip install --default-timeout=60 --no-cache-dir -r /starship/requirements.txt
+    python3.11 -m pip install --default-timeout=60 --no-cache-dir -r /csgship/requirements.txt
 
 RUN ln -sf ${CSGHUB_EMBEDDED}/python/bin/* ${CSGHUB_EMBEDDED}/bin/
 

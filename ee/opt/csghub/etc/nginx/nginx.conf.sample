@@ -472,23 +472,23 @@ http {
     {{- end }}
     {{- end }}
 
-    {{ $starship := (datasource "config").starship -}}
-    {{- if $starship.enable }}
-    {{- $starshipFrontendListen := $starship.listen.frontend -}}
-    {{- $starshipFrontendParts := $starshipFrontendListen | strings.Split ":" -}}
-    {{- $starshipFrontendHost := index $starshipFrontendParts 0 -}}
-    {{- if eq $starshipFrontendHost "127.0.0.1" -}}
-    {{- $starshipFrontendHost = $host -}}
+    {{ $csgship := (datasource "config").csgship -}}
+    {{- if $csgship.enable }}
+    {{- $csgshipFrontendListen := $csgship.listen.frontend -}}
+    {{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
+    {{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
+    {{- if eq $csgshipFrontendHost "127.0.0.1" -}}
+    {{- $csgshipFrontendHost = $host -}}
     {{- end -}}
-    {{- $starshipFrontendPort := "8001" -}}
-    {{- if eq (len $starshipFrontendParts) 2 -}}
-       {{- $starshipFrontendPort = index $starshipFrontendParts 1 -}}
+    {{- $csgshipFrontendPort := "8001" -}}
+    {{- if eq (len $csgshipFrontendParts) 2 -}}
+       {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
     {{- end }}
-    {{- $starshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipFrontendPort -}}
+    {{- $csgshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipFrontendPort -}}
     server {
         {{- if eq $url.Scheme "https" }}
-        listen {{ $starshipFrontendPort }} ssl;
-        server_name {{ $starshipFrontendHost }};
+        listen {{ $csgshipFrontendPort }} ssl;
+        server_name {{ $csgshipFrontendHost }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
@@ -496,8 +496,8 @@ http {
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
-        listen {{ $starshipFrontendPort }};
-        server_name {{ $starshipFrontendHost }};
+        listen {{ $csgshipFrontendPort }};
+        server_name {{ $csgshipFrontendHost }};
         {{- end }}
 
         {{ $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
@@ -508,21 +508,21 @@ http {
         }
     }
 
-    {{ $starshipApiListen := $starship.listen.api -}}
-    {{- $starshipApiParts := $starshipApiListen | strings.Split ":" -}}
-    {{- $starshipApiHost := index $starshipApiParts 0 -}}
-    {{- if eq $starshipApiHost "127.0.0.1" -}}
-    {{- $starshipApiHost = $host -}}
+    {{ $csgshipApiListen := $csgship.listen.api -}}
+    {{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
+    {{- $csgshipApiHost := index $csgshipApiParts 0 -}}
+    {{- if eq $csgshipApiHost "127.0.0.1" -}}
+    {{- $csgshipApiHost = $host -}}
     {{- end -}}
-    {{- $starshipApiPort := "8002" -}}
-    {{- if eq (len $starshipApiParts) 2 -}}
-       {{- $starshipApiPort = index $starshipApiParts 1 -}}
+    {{- $csgshipApiPort := "8002" -}}
+    {{- if eq (len $csgshipApiParts) 2 -}}
+       {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
     {{- end }}
-    {{- $starshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $starshipApiPort -}}
+    {{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
     server {
         {{- if eq $url.Scheme "https" }}
-        listen {{ $starshipApiPort }} ssl;
-        server_name {{ $starshipApiHost }};
+        listen {{ $csgshipApiPort }} ssl;
+        server_name {{ $csgshipApiHost }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
@@ -530,8 +530,8 @@ http {
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
-        listen {{ $starshipApiPort }};
-        server_name {{ $starshipApiHost }};
+        listen {{ $csgshipApiPort }};
+        server_name {{ $csgshipApiHost }};
         {{- end }}
 
         location /agentic {

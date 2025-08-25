@@ -18,7 +18,7 @@ services:
           dataflow:
             address: "http://dataflow:8000"
           saas: 
-        starship:
+        csgship:
           enable: true
     ports:
       - '80:80'
