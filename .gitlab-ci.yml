@@ -6,7 +6,11 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
 stages:
+  - test
   - list
   - trigger
   - prepare
