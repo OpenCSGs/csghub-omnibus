@@ -1,3 +1,483 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b0ee9f849aeaf283edcd8dee7235a11917e0a6b83a2be53d5625db1aa96a353e
-size 12917
+#!/bin/bash
+# Purpose: Automatically create/manage PostgreSQL databases and users with flexible options
+# Usage: ./dbm [OPTIONS]
+
+export PATH=/opt/csghub/embedded/bin/:/opt/csghub/embedded/sv/postgresql/bin/:$PATH
+
+# Default values
+ACTION="create"
+DB_NAME=""
+USER_NAME=""
+PASSWORD=""
+NEW_DB_NAME=""
+NEW_USER_NAME=""
+PRIVILEGES=""
+RANDOM_PASSWORD=false
+GRANT_SUPERUSER=false
+
+# Function to display usage
+usage() {
+    cat << EOF
+Usage: $0 [OPTIONS]
+
+PostgreSQL Database Management Script
+
+Options:
+  -a, --action ACTION      Action to perform: create/update/rename/delete (default: create)
+  -d, --db-name NAME       Database name (required for create/rename)
+  -u, --user-name NAME     User name (required for create/update/rename)
+  -p, --password PASSWORD  User password (optional, random if not provided)
+  -n, --new-db-name NAME   New database name (for rename action)
+  -N, --new-user-name NAME New user name (for rename action)
+  -P, --privileges PRIVS   User privileges (comma-separated for promote action)
+  -s, --superuser          Grant superuser privileges (for user creation)
+  -r, --random-password    Generate random password
+  -h, --help               Show this help message
+EOF
+
+  exit 0
+}
+
+export PGUSER="postgres"
+
+# Format log output
+log() {
+  local log_level="$1"
+  local message="$2"
+  local color
+  local reset="\033[0m"
+  local timestamp="$(date +"%Y-%m-%d %H:%M:%S")"
+
+  # Set color based on log level
+  case "$log_level" in
+    INFO) color="\033[0;32m" ;;  # Green
+    WARN) color="\033[0;33m" ;;  # Yellow
+    ERRO) color="\033[0;31m" ;;  # Red
+    *)    color="\033[0m" ;;     # Reset
+  esac
+
+  # Print logs with timestamp, log level, and color
+  echo -e "${color}[${timestamp}] [${log_level}] ${message}${reset}"
+  [ "$log_level" = "ERRO" ] && return 1
+}
+
+# Function to generate random password
+generate_password() {
+    openssl rand -hex 12
+}
+
+# Function to check if database exists
+database_exists() {
+    psql -tAc "SELECT 1 FROM pg_database WHERE datname='$1'" | grep -q 1
+}
+
+# Function to check if user exists
+user_exists() {
+    psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$1'" | grep -q 1
+}
+
+# Function to create user if not exists
+user_create() {
+  local user=$1
+  local pass=$2
+
+  if [[ -z "$user" ]]; then
+      log "ERRO" "Username is required."
+  fi
+
+  if [[ -z "$pass" ]]; then
+      log "ERRO" "Password is required for user '$user'."
+  fi
+
+  if user_exists "$user"; then
+      log "WARN" "User '$user' already exists."
+      return 0
+  fi
+
+  log "INFO" "Creating user $user..."
+
+  if psql -c "CREATE USER \"$user\" WITH ENCRYPTED PASSWORD '$pass';"; then
+      # Grant superuser if requested
+      if [ "$GRANT_SUPERUSER" = true ]; then
+          log "INFO" "Granting superuser privileges to $user..."
+          psql -c "ALTER USER \"$user\" WITH SUPERUSER;"
+      fi
+
+      log "INFO" "User '$user' created with password '$pass' and privileges."
+      return 0
+  else
+      log "ERRO" "Failed to create user '$user'"
+  fi
+}
+
+# Function to create database and user
+create_database() {
+    local db=$1
+    local user=$2
+    local pass=$3
+
+    user_create "$user" "$pass"
+
+    # Create database if not exists
+    if database_exists "$db"; then
+        log "WARN" "Database '$db' already exists."
+        return 0
+    fi
+
+    log "INFO" "Creating database $db..."
+
+    if psql -c "CREATE DATABASE \"$db\" WITH OWNER \"$user\" ENCODING 'UTF8'"; then
+        psql -c "GRANT ALL PRIVILEGES ON DATABASE \"$db\" TO \"$user\";"
+        psql -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"$user\";"
+
+        log "INFO" "Database '$db' created with owner '$user'."
+        return 0
+    else
+        log "ERRO" "Failed to create database $db."
+    fi
+}
+
+# Function to rename database
+rename_database() {
+    local old_db=$1
+    local new_db=$2
+
+    if ! database_exists "$old_db"; then
+        log "WARN" "Source database '$old_db' does not exist. Skipping rename."
+        return 0
+    fi
+
+    if database_exists "$new_db"; then
+        log "ERRO" "Target database '$new_db' already exists. Cannot rename '$old_db'."
+    fi
+
+    log "INFO" "Renaming database '$old_db' to '$new_db'..."
+
+    psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$old_db';" >/dev/null 2>&1
+
+    if psql -c "ALTER DATABASE \"$old_db\" RENAME TO \"$new_db\";"; then
+        log "INFO" "Database '$old_db' renamed to '$new_db'."
+        return 0
+    else
+        log "ERRO" "Failed to rename database '$old_db'."
+    fi
+}
+
+# Function to rename user
+rename_user() {
+    local old_user=$1
+    local new_user=$2
+
+    if ! user_exists "$old_user"; then
+        log "ERRO" "User '$old_user' does not exist. Skipping rename."
+        return 0
+    fi
+
+    if user_exists "$new_user"; then
+        log "ERRO" "User '$new_user' already exists."
+    fi
+
+    log "INFO" "Renaming user '$old_user' to '$new_user'..."
+
+    if psql -c "ALTER USER \"$old_user\" RENAME TO \"$new_user\";"; then
+        log "INFO" "User '$old_user' renamed to '$new_user'."
+        return 0
+    else
+        log "ERRO" "Failed to rename user '$old_user'."
+    fi
+}
+
+# Function to update user password
+change_user_pass() {
+    local user=$1
+    local pass=$2
+
+    if ! user_exists "$user"; then
+        log "ERRO" "User '$user' does not exist."
+    fi
+
+    log "INFO" "Updating user '$user' password..."
+
+    if psql -c "ALTER USER \"$user\" WITH ENCRYPTED PASSWORD '$pass';"; then
+        log "INFO" "User '$user' password updated."
+        return 0
+    else
+        log "ERRO" "Failed to update password for user '$user'."
+    fi
+}
+
+# Function to promote user
+add_user_privileges() {
+    local user=$1
+    shift
+    local privileges=("$@")
+
+    if [[ ${#privileges[@]} -eq 0 ]]; then
+        log "ERRO" "No privileges specified for user '$user'."
+    fi
+
+    if ! user_exists "$user"; then
+        log "ERRO" "User '$user' does not exist."
+    fi
+
+    local privilege_str=""
+    for priv in "${privileges[@]}"; do
+        privilege_str+="$priv "
+    done
+
+    log "INFO" "Adding privileges to user '$user': ${privileges[*]}"
+
+    if psql -c "ALTER USER \"$user\" WITH ${privilege_str%;};"; then
+        log "INFO" "User '$user' privileges refreshed."
+        return 0
+    else
+        log "ERRO" "Failed to refresh privileges for user '$user'."
+    fi
+}
+
+# Function to change ownership of all database objects
+change_all_objects_owner() {
+    local db=$1
+    local new_user=$2
+
+    if ! database_exists "$db"; then
+        log "ERRO" "Database '$db' does not exist."
+    fi
+
+    if ! user_exists "$new_user"; then
+        log "ERRO" "User '$new_user' does not exist."
+    fi
+
+    log "INFO" "Changing ownership of all objects in database '$db' to '$new_user'..."
+
+    if psql -d "$db" << EOF
+DO \$\$
+DECLARE
+  r RECORD;
+  object_count INTEGER := 0;
+BEGIN
+  FOR r IN
+    SELECT 'ALTER TABLE ' || schemaname || '.' || tablename || ' OWNER TO "$new_user";' AS alter_cmd
+    FROM pg_tables
+    WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+  LOOP
+    EXECUTE r.alter_cmd;
+    object_count := object_count + 1;
+  END LOOP;
+
+  FOR r IN
+    SELECT 'ALTER SEQUENCE ' || schemaname || '.' || sequencename || ' OWNER TO "$new_user";' AS alter_cmd
+    FROM pg_sequences
+    WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+  LOOP
+    EXECUTE r.alter_cmd;
+    object_count := object_count + 1;
+  END LOOP;
+
+  FOR r IN
+    SELECT 'ALTER VIEW ' || schemaname || '.' || viewname || ' OWNER TO "$new_user";' AS alter_cmd
+    FROM pg_views
+    WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+  LOOP
+    EXECUTE r.alter_cmd;
+    object_count := object_count + 1;
+  END LOOP;
+
+  RAISE NOTICE 'Successfully changed ownership of % objects to %.', object_count, '$new_user';
+END \$\$;
+EOF
+    then
+        log "INFO" "Successfully changed ownership of all objects in database '$db' to '$new_user'."
+        return 0
+    else
+        log "ERRO" "Failed to change object ownership in database '$db'."
+        return 1
+    fi
+}
+
+# Function to change database owner
+change_database_owner() {
+    local db=$1
+    local new_user=$2
+
+    if ! database_exists "$db"; then
+        log "ERRO" "Database '$db' does not exist."
+    fi
+
+    if ! user_exists "$new_user"; then
+        log "ERRO" "User '$new_user' does not exist."
+    fi
+
+    log "INFO" "Changing owner of database '$db' to '$new_user'..."
+
+    if psql -c "ALTER DATABASE \"$db\" OWNER TO \"$new_user\";"; then
+        log "INFO" "Database '$db' owner changed to '$new_user'."
+        return 0
+    else
+        log "ERRO" "Failed to change owner of database '$db'."
+    fi
+}
+
+# Function to delete user
+delete_user() {
+    local user=$1
+
+    if user_exists "$user"; then
+        log "INFO" "Dropping user $user..."
+
+        if psql -c "DROP USER IF EXISTS \"$user\";"; then
+            log "INFO" "User $user dropped."
+            return 0
+        fi
+    else
+        log "WARN" "User '$user' does not exist."
+    fi
+}
+
+# Function to delete database
+delete_database() {
+    local db=$1
+
+    if database_exists "$db"; then
+        log "INFO" "Dropping database $db..."
+
+        psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$db';"
+
+        if psql -c "DROP DATABASE IF EXISTS \"$db\";"; then
+            log "INFO" "Database $db dropped."
+            return 0
+        fi
+    else
+        log "WARN" "Database '$db' does not exist."
+    fi
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -a|--action)
+            ACTION="$2"
+            shift 2
+            ;;
+        -d|--db-name)
+            DB_NAME="$2"
+            shift 2
+            ;;
+        -u|--user-name)
+            USER_NAME="$2"
+            shift 2
+            ;;
+        -p|--password)
+            PASSWORD="$2"
+            shift 2
+            ;;
+        -n|--new-db-name)
+            NEW_DB_NAME="$2"
+            shift 2
+            ;;
+        -N|--new-user-name)
+            NEW_USER_NAME="$2"
+            shift 2
+            ;;
+        -P|--privileges)
+            PRIVILEGES="$2"
+            shift 2
+            ;;
+        -s|--superuser)
+            GRANT_SUPERUSER=true
+            shift
+            ;;
+        -r|--random-password)
+            RANDOM_PASSWORD=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Unknown option: $1${NC}"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+# Validate arguments based on action
+case $ACTION in
+    create)
+        if [ -z "$DB_NAME" ] || [ -z "$USER_NAME" ]; then
+            log "WARN" "Database name and user name are required for create action."
+            usage
+        fi
+
+        if [ "$RANDOM_PASSWORD" = true ] || [ -z "$PASSWORD" ]; then
+            PASSWORD=$(generate_password)
+        fi
+
+        create_database "$DB_NAME" "$USER_NAME" "$PASSWORD"
+        ;;
+
+    update)
+        if { [ -n "$USER_NAME" ] && [ -n "$PASSWORD" ]; } ||
+            { [ -n "$DB_NAME" ] && [ -n "$NEW_USER_NAME" ]; }; then
+            if [ -n "$USER_NAME" ] && [ -n "$PASSWORD" ]; then
+                change_user_pass "$USER_NAME" "$PASSWORD"
+            fi
+
+            if [ -n "$DB_NAME" ] && [ -n "$NEW_USER_NAME" ]; then
+                change_database_owner "$DB_NAME" "$NEW_USER_NAME"
+                change_all_objects_owner "$DB_NAME" "$NEW_USER_NAME"
+            fi
+        else
+            log "ERRO" "For update action, provide either: -u <user> -p <password> OR -d <db> -N <new-user-name>"
+            usage
+        fi
+        ;;
+
+    promote)
+        if [ -z "$USER_NAME" ] || [ -z "$PRIVILEGES" ]; then
+            log "WARN" "User name and privileges are required for promote action."
+            usage
+        fi
+
+        IFS=',' read -ra PRIV_ARRAY <<< "$PRIVILEGES"
+        add_user_privileges "$USER_NAME" "${PRIV_ARRAY[@]}"
+        ;;
+
+    rename)
+        if { [ -n "$USER_NAME" ] && [ -n "$NEW_USER_NAME" ]; } ||
+            { [ -n "$DB_NAME" ] && [ -n "$NEW_DB_NAME" ]; }; then
+            if [ -n "$USER_NAME" ] && [ -n "$NEW_USER_NAME" ]; then
+                rename_user "$USER_NAME" "$NEW_USER_NAME"
+            fi
+
+            if [ -n "$DB_NAME" ] && [ -n "$NEW_DB_NAME" ]; then
+                rename_database "$DB_NAME" "$NEW_DB_NAME"
+            fi
+        else
+            log "ERRO" "For rename action, provide either: -u <user> -N <new-user> OR -d <db> -n <new-db>"
+            usage
+        fi
+        ;;
+
+    delete)
+        if [ -z "$USER_NAME" ] && [ -z "$DB_NAME" ]; then
+            log "ERRO" "For delete action, provide at least one: -u <user> OR -d <db>"
+            usage
+        fi
+
+        if [ -n "$USER_NAME" ]; then
+            delete_user "$USER_NAME"
+        fi
+
+        if [ -n "$DB_NAME" ]; then
+            delete_database "$DB_NAME"
+        fi
+        ;;
+
+    *)
+        log "ERRO" "Unknown action '$ACTION'. Valid actions: create, rename, delete."
+        usage
+        ;;
+esac

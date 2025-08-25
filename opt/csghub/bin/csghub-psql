@@ -1,3 +1,26 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:689da4e22b1f1b47f1e4a675bf8de5e21fedb3d95a8aaa91e2b8ff437b83a93d
-size 754
+#!/bin/bash
+
+# Define variables for maintainability
+PG_USER="postgres"
+PG_GROUP="postgres"
+PG_BIN="/opt/csghub/embedded/bin/chpst"
+PGUSER="csghub"
+PGDATABASE="csghub_server"
+
+# Disable psql history
+export PSQL_HISTORY=/dev/null
+export PATH=/opt/csghub/embedded/bin/:/opt/csghub/embedded/sv/postgresql/bin/:$PATH
+
+# Verify command exists and is executable
+if [[ ! -x "$PG_BIN" ]]; then
+    echo "Error: Cannot find executable $PG_BIN" >&2
+    exit 1
+fi
+
+# Execute the command with error handling
+if ! "$PG_BIN" -u "${PG_USER}:${PG_GROUP}" psql -d "$PGDATABASE" -U "$PGUSER" "$@"; then
+    echo "Error: Failed to execute PostgreSQL command" >&2
+    exit 1
+fi
+
+exit 0
