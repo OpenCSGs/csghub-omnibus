@@ -56,7 +56,7 @@ build-omnibus-$[[ inputs.tag ]]:
   script:
     - |
       cat <<'EOF' | bash -s
-      # 收集所有组件的构建参数
+      # Collect build parameters for all components
       BUILD_ARGS=$(jq -r '.version_manifest.components[] | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' opt/csghub/version-manifests.json | tr '\n' ' ')
 
       OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
@@ -68,12 +68,12 @@ build-omnibus-$[[ inputs.tag ]]:
       )
 
       IMAGE="${ACR_REGISTRY}/opencsghq/omnibus-csghub:${CI_COMMIT_TAG}-${OS_TAG}"
-      # 初始化标签数组
+      # Initialize the label array
       TAGS=(
         "-t" "${IMAGE}"
       )
 
-      # 如果是 ubuntu:22.04，添加额外标签
+      # If it is ubuntu:22.04, add an additional tag
       if [ "$OS_RELEASE" = "ubuntu:22.04" ]; then
         TAGS+=(
           "-t" "${ACR_REGISTRY}/opencsghq/omnibus-csghub:${CI_COMMIT_TAG}"
