@@ -782,68 +782,68 @@ csghub:
 # Csgship Configuration
 # - IDE AI Coding Assistant
 ##########################################################################
-# csgship:
-#   enable: false                   ## Enable or disable all the following Csgship service
-#   listen:
-#     frontend: "127.0.0.1:8001"    ## External URL for Csgship web interface
-#     api: "127.0.0.1:8002"         ## External API URL for Csgship service
-#   oauth:
-#     issuer: "https://gitlab.example.com"
-#     client_id: "73f1c2922f51d68fa87de8c1ef0e23e8940f3aa42f5ac7a55a1f586c597d7e9c"
-#     client_secret: "gloas-3ba02f02b3e993664ccdda2c4d76989caa11ce6f07a805b6872d266fbd465831"
+#csgship:
+#  enable: false                   ## Enable or disable all the following Csgship service
+#  listen:
+#    frontend: "127.0.0.1:8001"    ## External URL for Csgship web interface
+#    api: "127.0.0.1:8002"         ## External API URL for Csgship service
+#  oauth:
+#    issuer: "https://gitlab.example.com"
+#    client_id: "73f1c2922f51d68fa87de8c1ef0e23e8940f3aa42f5ac7a55a1f586c597d7e9c"
+#    client_secret: "gloas-3ba02f02b3e993664ccdda2c4d76989caa11ce6f07a805b6872d266fbd465831"
 
-# ## Csgship-Web ###########################################################
-# web:
-#   listen: "127.0.0.1:8183"
-#   # Database configuration
-#   postgresql:
-#     name: "csgship"            ## Database name
-#     host: "127.0.0.1"           ## Database host
-#     port: 5432                  ## Database port
-#     user: "csghub"              ## Database user
-#     password: ""                ## Database password
+### Csgship-Web ###########################################################
+#web:
+#  listen: "127.0.0.1:8183"
+#  # Database configuration
+#  postgresql:
+#    name: "csgship"            ## Database name
+#    host: "127.0.0.1"           ## Database host
+#    port: 5432                  ## Database port
+#    user: "csghub"              ## Database user
+#    password: ""                ## Database password
 
-#   ## Redis cache configuration
-#   redis:
-#     host: "127.0.0.1"           ## Redis server address
-#     port: 6379
-#     auth:
-#       user: "default"           ## Redis username
-#       password: ""              ## Redis password
+#  ## Redis cache configuration
+#  redis:
+#    host: "127.0.0.1"           ## Redis server address
+#    port: 6379
+#    auth:
+#      user: "default"           ## Redis username
+#      password: ""              ## Redis password
 
-#   ## OpenAI or compatible assistants
-#   openai:
-#     model: "csg-gpt4o-mini"
-#     ## API connection settings for Azure OpenAI service
-#     api:
-#       ## Base endpoint URL for Azure OpenAI API
-#       ## Note: This should point to your Azure OpenAI service instance
-#       base: "https://opencsg-us.openai.azure.com"
-#       ## API version to use for compatibility
-#       ## Important: This should match the API version supported by your Azure OpenAI deployment
-#       version: "2024-06-01"
-#       ## API key for authentication (keep empty in version control)
-#       ## Security Note: Always set this via environment variables or secrets in production
-#       ## Example: "123456abcdef7890" (actual key should never be committed to source control)
-#       key: ""
+#  ## OpenAI or compatible assistants
+#  openai:
+#    model: "csg-gpt4o-mini"
+#    ## API connection settings for Azure OpenAI service
+#    api:
+#      ## Base endpoint URL for Azure OpenAI API
+#      ## Note: This should point to your Azure OpenAI service instance
+#      base: "https://opencsg-us.openai.azure.com"
+#      ## API version to use for compatibility
+#      ## Important: This should match the API version supported by your Azure OpenAI deployment
+#      version: "2024-06-01"
+#      ## API key for authentication (keep empty in version control)
+#      ## Security Note: Always set this via environment variables or secrets in production
+#      ## Example: "123456abcdef7890" (actual key should never be committed to source control)
+#      key: ""
 
-#   ## NATS messaging configuration
-#   nats:
-#     url: ""                 ## NATS server URL
+#  ## NATS messaging configuration
+#  nats:
+#    url: ""                 ## NATS server URL
 
-#    ## MegaLinter-Server
-#    megalinter_server:
-#      endpoint: "http://megalinter-server:9000"
+#   ## MegaLinter-Server
+#   megalinter_server:
+#     endpoint: "http://megalinter-server:9000"
 
-# ## Csgship-Celery ########################################################
-# producer: {}                ## Producer configuration (empty for default settings)
-# worker: {}                  ## Worker configuration (empty for default settings)
+### Csgship-Celery ########################################################
+#producer: {}                ## Producer configuration (empty for default settings)
+#worker: {}                  ## Worker configuration (empty for default settings)
 
-# ## Csgship-Agentic #######################################################
-# agentic:
-#   listen: "127.0.0.1:8184"  ## Network address and port for Agentic service
+### Csgship-Agentic #######################################################
+#agentic:
+#  listen: "127.0.0.1:8184"  ## Network address and port for Agentic service
 
-# ## Csgship-Billing #######################################################
-# billing:
-#   enable: false             ## Whether billing functionality is enabled
-#   listen: "127.0.0.1:8185"  ## Network address and port for Billing service
+### Csgship-Billing #######################################################
+#billing:
+#  enable: false             ## Whether billing functionality is enabled
+#  listen: "127.0.0.1:8185"  ## Network address and port for Billing service
