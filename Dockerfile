@@ -169,6 +169,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libxslt1.1 \
                 libcurl4t64 \
                 libpq-dev \
+                libcap2-bin \
                 vim lsof; \
         else \
             # Ubuntu 22.04 or older (旧包名)
@@ -184,6 +185,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libxslt1.1 \
                 libcurl3-gnutls \
                 libpq-dev \
+                libcap2-bin \
                 vim lsof; \
         fi && \
         apt clean && \
@@ -206,6 +208,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                     libxml2 \
                     libxslt \
                     libcurl \
+                    libcap \
                     postgresql-devel \
                     vim lsof; \
             else \
@@ -221,6 +224,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                     libxml2 \
                     libxslt \
                     libcurl \
+                    libcap \
                     postgresql-devel \
                     vim lsof; \
             fi && \
