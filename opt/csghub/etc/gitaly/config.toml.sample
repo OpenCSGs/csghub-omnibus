@@ -59,9 +59,11 @@ value = {{ $config.value | quote }}
 {{ end }}
 
 # Storages configuration
+{{ range $gitaly.storage }}
 [[storage]]
-name = {{ $gitaly.storage.name | quote }}
-path = {{ $gitaly.storage.path | default (printf "%s/repositories" $dataDir) | quote }}
+name = {{ .name | quote }}
+path = {{ .path | default (printf "%s/repositories" $dataDir) | quote }}
+{{ end }}
 
 [logging]
 format = {{ $gitaly.logging.format | quote }}
@@ -86,16 +88,20 @@ secret = {{ $server.gitaly.secret | quote }}
 read_timeout = {{ $gitaly.http_settings.read_timeout }}
 self_signed_cert = {{ $gitaly.http_settings.self_signed_cert }}
 
+{{ range $gitaly.concurrency }}
 [[concurrency]]
-rpc = {{ $gitaly.concurrency.rpc | quote }}
-max_per_repo = {{ $gitaly.concurrency.max_per_repo }}
-max_queue_wait = {{ $gitaly.concurrency.max_queue_wait | quote }}
-max_queue_size = {{ $gitaly.concurrency.max_queue_size }}
+rpc = {{ .rpc | quote }}
+max_per_repo = {{ .max_per_repo }}
+max_queue_wait = {{ .max_queue_wait | quote }}
+max_queue_size = {{ .max_queue_size }}
+{{- end }}
 
+{{ range $gitaly.rate_limiting }}
 [[rate_limiting]]
-rpc = {{ $gitaly.rate_limiting.rpc | quote }}
-interval = {{ $gitaly.rate_limiting.interval | quote }}
-burst = {{ $gitaly.rate_limiting.burst }}
+rpc = {{ .rpc | quote }}
+interval = {{ .interval | quote }}
+burst = {{ .burst }}
+{{ end }}
 
 [daily_maintenance]
 disabled = {{ $gitaly.daily_maintenance.disable }}
