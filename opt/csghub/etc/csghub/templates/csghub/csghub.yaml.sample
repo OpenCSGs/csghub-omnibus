@@ -336,8 +336,8 @@ csghub:
 
 #  ## Storage configuration
 #  storage:
-#    name: "default"                              ## Storage name
-#    path: "/var/opt/csghub/gitaly/repositories"  ## Repo storage path
+#    - name: "default"                              ## Storage name
+#      path: "/var/opt/csghub/gitaly/repositories"  ## Repo storage path
 
 #  ## Logging configuration
 #  logging:
