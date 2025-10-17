@@ -5,15 +5,6 @@ services:
       CSGHUB_OMNIBUS_CONFIG: |
         csghub:
           external_url: "http://csghub.example.com"
-        runner:
-          enable: true
-          deploy:
-            knative:
-              services:
-                - type: "NodePort"
-                  domain: "app.internal"
-                  host: "192.168.18.10"
-                  port: 30123
         server:
           dataflow:
             address: "http://dataflow:8000"
@@ -32,7 +23,6 @@ services:
       - ./csghub/etc:/etc/csghub
       - ./csghub/logs:/var/log/csghub
       - ./csghub/data:/var/opt/csghub
-      - ./csghub/.kube:/etc/csghub/.kube
     restart: always
     shm_size: '256m'
 
