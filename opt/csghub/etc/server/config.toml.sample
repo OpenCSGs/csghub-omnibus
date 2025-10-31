@@ -116,46 +116,6 @@ bucket_lookup = "auto"
 signing_key = {{ $gitaly.jwt_secret | quote }}
 valid_hour = 24
 
-{{ $runner := (datasource "config").runner }}
-{{- $deploy := $runner.deploy -}}
-{{- $runnerRegistry := $runner.registry -}}
-{{- $rproxy := (datasource "config").rproxy -}}
-{{- $registry := (datasource "config").registry -}}
-{{- $registryPort := $registry.listen | regexp.Find ":([0-9]+)" | strings.TrimPrefix ":" -}}
-{{- $deployNamespace := $deploy.namespace }}
-{{- if eq $deploy.merging_namespace "Single" }}
-{{- $deployNamespace = "csghub" }}
-{{- end }}
-[space]
-builder_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
-runner_endpoint = {{ printf "http://localhost:%d" $runner.listen_port | quote }}
-runner_server_port = {{ $runner.listen_port }}
-internal_root_domain = {{ printf "%s.app.internal" $deployNamespace| quote }}
-{{- if $deploy.use_public_domain }}
-{{- $rootDomain := "example.com" }}
-{{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
-{{- $hostParts := strings.Split "." $host }}
-{{- if le (len $hostParts) 2 }}
-{{- $rootDomain = $host }}
-{{- else }}
-{{- $rootDomain = regexp.Replace "^[^.]+\\." "" $host }}
-{{- end }}
-{{- end }}
-public_root_domain = {{ printf "public.%s" $rootDomain | quote }}
-{{- else }}
-public_root_domain = ""
-{{- end }}
-docker_reg_base = {{ $runnerRegistry.prefix | default (printf "%s:%s/csghub/" $host $registryPort ) | quote }}
-image_pull_secret = {{ $runnerRegistry.pull_secret | quote }}
-rproxy_server_port = {{ $rproxy.listen_port }}
-session_secret_key = {{ crypto.SHA1 $seed | quote }}
-deploy_timeout_in_min = {{ $deploy.timeout }}
-gpu_model_label = {{ $runner.gpu_label | quote }}
-readness_delay_seconds = {{ $runner.readness_delay_seconds }}
-readness_period_seconds = {{ $runner.readness_period_seconds }}
-readness_failure_threshold = {{ $runner.readness_failure_threshold }}
-pypi_index_url = {{ $runner.pip_index_url| quote }}
-
 {{ $model := $server.model -}}
 [model]
 deploy_timeout_in_min = {{ $model.deploy_timeout }}
@@ -316,34 +276,6 @@ check_file_size_enabled = {{ $git.check_file_size_enabled }}
 max_un_lfs_file_size = {{ $git.max_un_lfs_file_size }}
 skip_lfs_file_validation = {{ $git.skip_lfs_file_validation }}
 
-{{ if $runner.enable }}
-{{- $image_builder := $runner.image_builder -}}
-{{- $imageBuilderNamespace := $image_builder.namespace }}
-{{- if eq $deploy.merging_namespace "Multi" }}
-  {{- $imageBuilderNamespace = $deployNamespace }}
-{{- else if eq $deploy.merging_namespace "Single" }}
-  {{- $imageBuilderNamespace = "csghub" }}
-{{- end }}
-[runner]
-image_builder_namespace = {{ $imageBuilderNamespace | quote }}
-image_builder_git_image = {{ $image_builder.git_image | quote }}
-image_builder_kaniko_image = {{ $image_builder.kaniko_image | quote }}
-image_builder_job_ttl = {{ $image_builder.job_ttl }}
-image_builder_status_ttl = {{ $image_builder.status_ttl }}
-{{- if $runnerRegistry.prefix | regexp.Match $host }}
-image_builder_kaniko_args = ["--skip-tls-verify","--insecure","--compressed-caching=false","--single-snapshot","--build-arg=PyPI={{ $runner.pip_index_url }}","--build-arg=HF_ENDPOINT={{ printf "%s/hf" $csghub.external_url }}"]
-{{- else }}
-image_builder_kaniko_args = ["--compressed-caching=false","--single-snapshot","--build-arg=PyPI={{ $runner.pip_index_url }}","--build-arg=HF_ENDPOINT={{ printf "%s/hf" $csghub.external_url }}"]
-{{- end }}
-# Kaniko arguments to configure logging and registry access.
-# See official flags: https://github.com/GoogleContainerTools/kaniko?tab=readme-ov-file#additional-flags
-# --log-format=json : Output logs in JSON format for strcuctured parsing.
-# --log-timestamp=true : Include timestamps in log entries.
-# --insecure : Allow connections to HTTP registries (non-HTTPS).
-# --skip-tls-verify : Disable TLS certificate validation for registries.
-# Uncomment the following line to enable pull images from a private registry without https
-# image_builder_kaniko_args = ["--insecure", "--skip-tls-verify"]
-{{- end }}
 
 {{ $notification := (datasource "config").notification -}}
 {{- if $notification.enable }}

@@ -160,57 +160,6 @@ csghub:
 #  lfs_concurrency: 5            ## Concurrent LFS transfers
 
 ##########################################################################
-## Runner Service Configuration
-## - Executes CI/CD jobs and automated tasks
-##########################################################################
-#runner:
-#  enable: false                 ## Enable runner service
-#  listen_port: 8082             ## Service listen port
-
-#  ## Deployment configuration
-#  deploy:
-#    namespace: "spaces"         ## Kubernetes namespace
-#    timeout: 60                 ## Deployment timeout in minutes
-
-#    use_public_domain: true     ## Use a dedicate domain name
-
-#    auto_configure: true                                                ## knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
-#    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq"   ## Pull images from registry
-#    merging_namespace: "Disable"                                        ## Merging mode: "Multi" (reduce namespaces) or "Single" (merge to one namespace) or "Disable" (Disable merging)
-
-#    ## Knative service settings
-#    knative:
-#      services:
-#        - type: "NodePort"        ## Service type
-#          domain: "app.internal"  ## Internal domain
-#          host: "192.168.18.10"   ## Host IP
-#          port: 30213             ## Service port
-
-#  ## Image builder configuration
-#  image_builder:
-#    namespace: "image-factory"                                                                   ## Builder namespace
-#    git_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/alpine/git:2.36.2"         ## Git image
-#    kaniko_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/bitnami/kaniko:1.23.2"  ## Kaniko image
-#    job_ttl: 120                                                                                 ## Job time-to-live in minutes
-#    status_ttl: 300
-
-#  ## Container registry settings
-#  registry:
-#    prefix: "registry.example.com:5000/csghub/"  ## Image prefix, eg: csghub.example.com:5000/csghub/
-#    pull_secret: "csghub-docker-credential"      ## Pull secret name
-
-#  ## GPU resource configuration
-#  gpu_label: "nvidia.com/nvidia_name"  ## GPU node label
-
-#  ## Health check settings
-#  readness_delay_seconds: 120     ## Initial delay before checks
-#  readness_period_seconds: 10     ## Check interval
-#  readness_failure_threshold: 10  ## Failure threshold
-
-#  ## Python package index
-#  pip_index_url: "https://pypi.tuna.tsinghua.edu.cn/simple/"  ## PyPI mirror
-
-##########################################################################
 ## Rproxy Service Configuration
 ## - Handles reverse proxy functionality
 ##########################################################################
