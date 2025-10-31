@@ -90,7 +90,7 @@ server:
 
   ## Model deployment configuration
   model:
-    deploy_timeout: 30                                               ## Deployment timeout in minutes
+    deploy_timeout: 60                                               ## Deployment timeout in minutes
     download_endpoint: "https://hub.opencsg.com"                     ## Model download URL
     docker_reg_base: "opencsg-registry.cn-beijing.cr.aliyuncs.com/"  ## Docker registry prefix
 
@@ -116,13 +116,6 @@ server:
   nats:
     url: ""                                                     ## NATS server URL
     msg_fetch_timeout_in_sec: 5                                 ## Message fetch timeout
-    meter_request_subject: "accounting.metering.>"              ## Just keep it
-    meter_duration_send_subject: "accounting.metering.duration" ## Just keep it
-    meter_token_send_subject: "accounting.metering.token"       ## Just keep it
-    meter_quota_send_subject: "accounting.metering.quota"       ## Just keep it
-    site_internal_msg_subject: "site.internal.msg"              ## Just keep it
-    high_priority_msg_subject: "notification.message.high"      ## Just keep it
-    normal_priority_msg_subject: "notification.message.normal"  ## Just keep it
 
   ## Proxy configuration
   proxy:
@@ -144,6 +137,14 @@ server:
   telemetry:
     enable: true                 ## Enable telemetry collection
 
+  ## Prometheus settings
+  prometheus:
+    address: "http://127.0.0.1:9090"
+
+  ## Loki settings
+  logcollector:
+    loki_url: "http://127.0.0.1:3100/-/loki"
+
 ##########################################################################
 ## Mirror Repository Service Configuration
 ## - Handles repository mirroring operations
@@ -162,57 +163,6 @@ mirror_lfs:
   enable: true
   part_size: 100                ## Part size for multipart transfers
   lfs_concurrency: 5            ## Concurrent LFS transfers
-
-##########################################################################
-## Runner Service Configuration
-## - Executes CI/CD jobs and automated tasks
-##########################################################################
-runner:
-  enable: false                 ## Enable runner service
-  listen_port: 8082             ## Service listen port
-
-  ## Deployment configuration
-  deploy:
-    namespace: "spaces"         ## Kubernetes namespace
-    timeout: 60                 ## Deployment timeout in minutes
-
-    use_public_domain: true     ## Use a dedicate domain name
-
-    auto_configure: true                                                ## knative serving, argo workflow and LeaderWorkSet will be automatically installed during the configuration process
-    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq"   ## Pull images from registry
-    merging_namespace: "Disable"                                        ## Merging mode: "Multi" (reduce namespaces) or "Single" (merge to one namespace) or "Disable" (Disable merging)
-
-    ## Knative service settings
-    knative:
-      services:
-        - type: "NodePort"        ## Service type
-          domain: "app.internal"  ## Internal domain
-          host: "192.168.18.10"   ## Host IP
-          port: 30213             ## Service port
-
-  ## Image builder configuration
-  image_builder:
-    namespace: "image-factory"                                                                   ## Builder namespace
-    git_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/alpine/git:2.36.2"         ## Git image
-    kaniko_image: "opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/bitnami/kaniko:1.23.2"  ## Kaniko image
-    job_ttl: 120                                                                                 ## Job time-to-live in minutes
-    status_ttl: 300
-
-  ## Container registry settings
-  registry:
-    prefix: ""                               ## Image prefix, eg: csghub.example.com:5000/csghub/
-    pull_secret: "csghub-docker-credential"  ## Pull secret name
-
-  ## GPU resource configuration
-  gpu_label: "nvidia.com/nvidia_name"  ## GPU node label
-
-  ## Health check settings
-  readness_delay_seconds: 120     ## Initial delay before checks
-  readness_period_seconds: 10     ## Check interval
-  readness_failure_threshold: 10  ## Failure threshold
-
-  ## Python package index
-  pip_index_url: "https://pypi.tuna.tsinghua.edu.cn/simple/"  ## PyPI mirror
 
 ##########################################################################
 ## Rproxy Service Configuration
@@ -321,6 +271,11 @@ notification:
     max_request_content_size: 20480                     ## limit the size of FeiShu message sent at a time (cannot exceed 30k)
     max_delay_duration: 3600                            ## configures the longest delay time for each message
     chat_ids_cache_ttl: 21600                           ## configures the cache expiration time of Feishu chat ids
+
+##########################################################################
+## Temporal-Worker Service Configuration
+##########################################################################
+temporal_worker: {}
 
 ##########################################################################
 ## Gitaly Service Configuration

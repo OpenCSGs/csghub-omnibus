@@ -86,7 +86,7 @@ csghub:
 
 #  ## Model deployment configuration
 #  model:
-#    deploy_timeout: 30                                               ## Deployment timeout in minutes
+#    deploy_timeout: 60                                               ## Deployment timeout in minutes
 #    download_endpoint: "https://hub.opencsg.com"                     ## Model download URL
 #    docker_reg_base: "opencsg-registry.cn-beijing.cr.aliyuncs.com/"  ## Docker registry prefix
 
@@ -112,13 +112,6 @@ csghub:
 #  nats:
 #    url: ""                                                     ## NATS server URL
 #    msg_fetch_timeout_in_sec: 5                                 ## Message fetch timeout
-#    meter_request_subject: "accounting.metering.>"              ## Just keep it
-#    meter_duration_send_subject: "accounting.metering.duration" ## Just keep it
-#    meter_token_send_subject: "accounting.metering.token"       ## Just keep it
-#    meter_quota_send_subject: "accounting.metering.quota"       ## Just keep it
-#    site_internal_msg_subject: "site.internal.msg"              ## Just keep it
-#    high_priority_msg_subject: "notification.message.high"      ## Just keep it
-#    normal_priority_msg_subject: "notification.message.normal"  ## Just keep it
 
 #  ## Proxy configuration
 #  proxy:
@@ -139,6 +132,14 @@ csghub:
 #  ## Telemetry settings
 #  telemetry:
 #    enable: true                 ## Enable telemetry collection
+
+#  ## Prometheus settings
+#  prometheus:
+#    address: "http://127.0.0.1:9090"
+
+#  ## Loki settings
+#  logcollector:
+#    loki_url: "http://127.0.0.1:3100/-/loki"
 
 ##########################################################################
 ## Mirror Repository Service Configuration
@@ -442,8 +443,7 @@ csghub:
 
 #  ## Environment variables
 #  environments:
-#    MINIO_CONSOLE_ADDRESS: ":9002"          ## Console options
-
+#    MINIO_CONSOLE_ADDRESS: ":9002"    ## Console options
 
 ## Logger configuration section
 #logger:
@@ -558,10 +558,10 @@ csghub:
 
 #  ## Virtual IP management
 #  callback:
-#    enable: false               ## Enable VIP callback
-#    virtual_ip: "127.0.0.1"     ## Virtual IP address
-#    prefix: 24                  ## Network prefix length
-#    interface: "ens33"          ## Network interface name
+#    enable: false                      ## Enable VIP callback
+#    virtual_ip: "127.0.0.1"            ## Virtual IP address
+#    prefix: 24                         ## Network prefix length
+#    interface: "ens33"                 ## Network interface name
 
 #  ## Watchdog Configuration
 #  #watchdog:
@@ -804,21 +804,21 @@ csghub:
 #prometheus:
 #  enable: true                               ## Enable or disable Prometheus server
 #  listen_address: "127.0.0.1:9090"           ## Address and port for Prometheus to listen on
-#
+
 #  external_url: ""                           ## External URL to access Prometheus (for links in alerts, etc.)
-#
+
 #  tsdb:                                      ## Time series database (TSDB) settings
 #    path: "/var/opt/csghub/prometheus/data"  ## Directory to store Prometheus TSDB data
 #    retention: "15d"                         ## Data retention period (e.g., 15d for 15 days)
-#
+
 #  scrape_interval: "15s"                     ## How often to scrape targets (default: 15 seconds)
 #  evaluation_interval: "15s"                 ## How often to evaluate rules (default: 15 seconds)
 #  scrape_timeout: "10s"                      ## Timeout for scraping a target (default: 10 seconds)
-#
+
 #  external_labels: {}                        ## External labels to add to all metrics (e.g., environment, region)
 #    # environment: "production"
 #    # region: "cn-north-1"
-#
+
 #  scrape_configs: []                         ## List of scrape configurations for Prometheus targets
 #    # - job_name: "node"
 #    #   static_configs:

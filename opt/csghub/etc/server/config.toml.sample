@@ -150,13 +150,6 @@ application_name = {{ $serverCasdoor.application_name | quote }}
 [nats]
 url = {{ $serverNats.url | default (printf "nats://%s:%s@localhost:4222" (conv.ToString $natsUser) (conv.ToString $natsPassword)) | quote }}
 msg_fetch_timeout_in_sec = {{ $serverNats.msg_fetch_timeout_in_sec }}
-meter_request_subject = {{ $serverNats.meter_request_subject | quote }}
-meter_duration_send_subject = {{ $serverNats.meter_duration_send_subject | quote }}
-meter_token_send_subject = {{ $serverNats.meter_token_send_subject | quote }}
-meter_quota_send_subject = {{ $serverNats.meter_quota_send_subject | quote }}
-site_internal_msg_subject = {{ $serverNats.site_internal_msg_subject | quote }}
-high_priority_msg_subject = {{ $serverNats.high_priority_msg_subject | quote }}
-normal_priority_msg_subject = {{ $serverNats.normal_priority_msg_subject | quote }}
 
 {{ $accounting := (datasource "config").accounting }}
 {{- $actParts := $accounting.listen | strings.Split ":" -}}
@@ -307,4 +300,10 @@ max_delay_duration = {{ $feishu.max_delay_duration }}
 chat_ids_cache_ttl = {{ $feishu.chat_ids_cache_ttl }}
 {{- end }}
 
+{{ $prometheus := $server.prometheus -}}
+[prometheus]
+api_address = {{ printf "%s/api/v1/query" $prometheus.address | quote }}
 
+{{ $logcollector := $server.logcollector -}}
+[logcollector]
+loki_url = {{ $logcollector.loki_url | quote }}
