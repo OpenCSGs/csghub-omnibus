@@ -9,10 +9,40 @@
     },
     "components": [
       {
+        "name": "runit",
+        "description": "A UNIX init scheme with service supervision",
+        "version": "2.1.2",
+        "repository": "http://smarden.org/runit/"
+      },
+      {
+        "name": "toolbox",
+        "description": "Containerized tooling for system operations",
+        "version": "1.2.2",
+        "repository": ""
+      },
+      {
         "name": "consul",
         "description": "Consul offers a fully-featured service mesh solution that solves the networking and security challenges of operating microservices in multi-cloud and hybrid-cloud environment.",
         "version": "1.20.5",
         "repository": "https://github.com/hashicorp/consul"
+      },
+      {
+        "name": "minio",
+        "description": "High-performance object storage system compatible with S3",
+        "version": "RELEASE.2025-03-12T18-04-18Z",
+        "repository": "https://github.com/minio/minio"
+      },
+      {
+        "name": "postgresql",
+        "description": "PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance.",
+        "version": "16.8",
+        "repository": "https://www.postgresql.org/"
+      },
+      {
+        "name": "redis",
+        "description": "Redis is an open source, in-memory data structure store, used as a database, cache and message broker.",
+        "version": "6.2.14",
+        "repository": "https://github.com/redis/redis"
       },
       {
         "name": "registry",
@@ -33,6 +63,12 @@
         "repository": "https://gitlab.com/gitlab-org/gitlab-shell"
       },
       {
+        "name": "temporal",
+        "description": "Temporal is a microservice orchestration platform which enables developers to build scalable applications without sacrificing productivity or reliability.",
+        "version": "1.25.2",
+        "repository": "https://github.com/temporalio/temporal"
+      },
+      {
         "name": "nats",
         "description": "NATS is a simple, secure and performant communications system for digital systems, services and devices.",
         "version": "2.10.16",
@@ -49,6 +85,12 @@
         "description": "Lightweight DNS forwarder and DHCP server",
         "version": "2.91",
         "repository": "http://www.thekelleys.org.uk/dnsmasq/"
+      },
+      {
+        "name": "nginx",
+        "description": "HTTP and reverse proxy server, a mail proxy server, and a generic TCP/UDP proxy server",
+        "version": "1.27.5",
+        "repository": "https://hg.nginx.org/nginx"
       },
       {
         "name": "csghub-server",

@@ -65,7 +65,7 @@
       {
         "name": "temporal",
         "description": "Temporal is a microservice orchestration platform which enables developers to build scalable applications without sacrificing productivity or reliability.",
-        "version": "1.25.1",
+        "version": "1.25.2",
         "repository": "https://github.com/temporalio/temporal"
       },
       {
@@ -77,7 +77,7 @@
       {
         "name": "casdoor",
         "description": "An open-source Identity and Access Management (IAM) / Single-Sign-On (SSO) platform with web UI supporting OAuth 2.0, OIDC, SAML and CAS.",
-        "version": "1.733.0",
+        "version": "v1.799.0",
         "repository": "https://github.com/casdoor/casdoor"
       },
       {

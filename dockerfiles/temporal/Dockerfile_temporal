@@ -7,6 +7,24 @@ FROM ${REGISTRY}/temporalio/auto-setup:${TEMPORAL_VERSION} AS temporal
 
 FROM ${REGISTRY}/temporalio/ui:${TEMPORAL_UI_VERSION} AS temporal_ui
 
+FROM ${REGISTRY}/golang:1.24.2 AS builder
+WORKDIR /
+
+ENV GOPROXY=https://goproxy.cn,direct
+
+RUN apt update && \
+    apt install --no-install-recommends -y npm && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* \
+
+RUN git clone --depth 1  https://github.com/temporalio/ui.git && \
+    cd /ui && sed -i '32d;192,200d' server/server/route/auth.go && \
+    npm install -g pnpm@8.15.7 && \
+    pnpm install && git submodule update && \
+    pnpm build:local && pnpm build:server && \
+    cd server && \
+    CGO_ENABLED=0 GOOS=linux go build -o /ui-server ./cmd/server/main.go
+
 FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
@@ -27,5 +45,6 @@ COPY --from=temporal /etc/temporal/schema/. ${CSGHUB_HOME}/etc/temporal/schema/.
 COPY --from=temporal_ui /home/ui-server/ui-server ${CSGHUB_SRV_HOME}/temporal_ui/bin/
 COPY --from=temporal_ui /home/ui-server/config/. ${CSGHUB_HOME}/etc/temporal_ui/config/
 COPY --from=temporal_ui /home/ui-server/config-template.yaml ${CSGHUB_HOME}/etc/temporal_ui/
+COPY --from=builder /ui-server ${CSGHUB_SRV_HOME}/temporal_ui/bin/
 
 RUN find /opt/csghub/etc/temporal -type f -exec sed -i 's|/etc/temporal|/opt/csghub/etc/temporal|g' {} \;

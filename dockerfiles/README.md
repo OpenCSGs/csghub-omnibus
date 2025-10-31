@@ -64,7 +64,7 @@ docker buildx build \
 ```shell
 ## temporal
 OS_RELEASE=ubuntu:22.04
-TEMPORAL_VERSION=1.25.1
+TEMPORAL_VERSION=1.25.2
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
