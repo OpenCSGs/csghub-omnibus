@@ -1,5 +1,5 @@
 ARG REGISTRY=docker.io
-ARG GITLAB_REGISTRY=git-devops.opencsg.com:5050/product/infra/deployment-automation/standard/omnibus
+ARG GITLAB_REGISTRY=git-devops.opencsg.com:5050/product/infra/deployment-automation/standard/csghub-omnibus
 ARG OS_RELEASE=ubuntu:22.04
 ARG OS_TAG=ubuntu_22.04
 
