@@ -49,7 +49,7 @@ BEGIN
         SELECT 1 FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name = 'application'
     ) THEN
-        -- Update avatar or logo local url
+        -- Update avatar or logo local url for CSGHub/CSGShip
         EXECUTE format('
             UPDATE
                 application
@@ -57,7 +57,18 @@ BEGIN
                 redirect_uris = ''["{{ $csghub.external_url }}/api/v1/callback/casdoor"]'',
                 logo = ''{{ $casdoorEndpoint }}''||substring(logo from ''(/files/avatar/.*)'')
             WHERE
-                name in (''CSGHub'',''Csgship'')
+                name in (''CSGHub'',''Csgship'',''CSGShip'')
+        ');
+
+        -- Update avatar or logo local url for Admin
+        EXECUTE format('
+            UPDATE
+                application
+            SET
+                redirect_uris = ''["{{ $csghub.external_url }}/-/temporal/auth/sso/callback"]'',
+                logo = ''{{ $casdoorEndpoint }}''||substring(logo from ''(/files/avatar/.*)'')
+            WHERE
+                name in (''Admin'')
         ');
 
         -- Update form_side_html
@@ -67,7 +78,7 @@ BEGIN
             SET
                 form_side_html = regexp_replace(form_side_html, ''http://\d+\.\d+\.\d+\.\d+:\d+'', ''{{ $casdoorEndpoint }}'', ''g'')
             WHERE
-                name in (''CSGHub'',''Csgship'')
+                name in (''CSGHub'',''Csgship'',''CSGShip'')
         ');
 
         -- Disable User Signup for Build-in Application

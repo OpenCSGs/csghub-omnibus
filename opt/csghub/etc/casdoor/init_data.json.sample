@@ -438,6 +438,9 @@
       "enableLinkWithEmail": true,
       "orgChoiceMode": "Select",
       "samlReplyUrl": "",
+      "tags": [
+        "is_admin"
+      ],
       "clientId": "8b28cd6279dc86eed625",
       "clientSecret": "44ce96217929fge01d68gc46gg898bbccgg7g8bc",
       "providers": [
@@ -947,7 +950,8 @@
       "type": "normal-user",
       "avatar": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/robot.png",
       "isAdmin": true,
-      "signupApplication": "CSGHub"
+      "signupApplication": "CSGHub",
+      "tag": "is_admin"
     }
   ],
   "providers": [
