@@ -15,4 +15,6 @@ set -e
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/loki/env -P \
   -u loki:loki \
-  /opt/csghub/embedded/bin/loki -config.file={{ $dataDir }}/loki-config.yaml
+  /opt/csghub/embedded/bin/loki \
+    -config.file={{ $dataDir }}/loki-config.yaml \
+    -server.path-prefix="/-/loki"
