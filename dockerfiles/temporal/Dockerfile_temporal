@@ -15,9 +15,9 @@ ENV GOPROXY=https://goproxy.cn,direct
 RUN apt update && \
     apt install --no-install-recommends -y npm && \
     apt clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
-RUN git clone --depth 1  https://github.com/temporalio/ui.git && \
+RUN git clone --depth 1 https://github.com/temporalio/ui.git && \
     cd /ui && sed -i '32d;192,200d' server/server/route/auth.go && \
     npm install -g pnpm@8.15.7 && \
     pnpm install && git submodule update && \
