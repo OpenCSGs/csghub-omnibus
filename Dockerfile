@@ -19,6 +19,7 @@ ARG CASDOOR_VERSION=v1.799.0
 ARG DNSMASQ_VERSION=2.91
 ARG NGINX_VERSION=1.27.5
 ARG PROM_VERSION=v3.7.3
+ARG LOKI_VERSION=3.5
 
 ## Install Runit Service Daemon
 FROM ${GITLAB_REGISTRY}/omnibus-runit:${RUNIT_VERSION}-${OS_TAG} AS runit
@@ -68,6 +69,9 @@ FROM ${REGISTRY}/csghub-portal:${CSGHUB_VERSION} AS portal
 ## Install Prometheus
 FROM ${REGISTRY}/prom/prometheus:${PROM_VERSION} AS prometheus
 
+## Install Loki
+FROM ${REGISTRY}/grafana/loki:${LOKI_VERSION} AS loki
+
 FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
@@ -88,7 +92,7 @@ SHELL ["/bin/bash", "-c"]
 RUN mkdir -p \
       ${CSGHUB_HOME}/{LICENSES,bin} \
       ${CSGHUB_EMBEDDED}/{bin,lib,sv} \
-      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus}/bin
+      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus,loki}/bin
 
 ## Install Runit Service Daemon
 COPY --from=runit ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
@@ -157,6 +161,9 @@ COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/portal/bin/
 
 ## Install Prometheus
 COPY --from=prometheus /bin/prometheus ${CSGHUB_SRV_HOME}/prometheus/bin/
+
+## Install Loki
+COPY --from=loki /usr/bin/loki ${CSGHUB_SRV_HOME}/loki/bin/
 
 ENV PATH=$PATH:/opt/csghub/embedded/bin
 RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \

@@ -23,6 +23,7 @@ ARG CSGSHIP_FRONTEND=v1.2.1
 ARG CSGSHIP_BILLING=bl-2.0.1
 ARG CSGSHIP_AGENTIC=v0.4.0
 ARG PROM_VERSION=v3.7.3
+ARG LOKI_VERSION=3.5
 
 ## Install Runit Service Daemon
 FROM ${GITLAB_REGISTRY}/omnibus-runit:${RUNIT_VERSION}-${OS_TAG} AS runit
@@ -72,6 +73,9 @@ FROM ${REGISTRY}/csghub-portal:${CSGHUB_VERSION} AS portal
 ## Install Prometheus
 FROM ${REGISTRY}/prom/prometheus:${PROM_VERSION} AS prometheus
 
+## Install Loki
+COPY --from=loki /usr/bin/loki ${CSGHUB_SRV_HOME}/loki/bin/
+
 ## Install Csgship
 FROM ${REGISTRY}/csgship-web:${CSGSHIP_VERSION} AS csgship
 
@@ -102,7 +106,7 @@ SHELL ["/bin/bash", "-c"]
 RUN mkdir -p \
       ${CSGHUB_HOME}/{LICENSES,bin} \
       ${CSGHUB_EMBEDDED}/{bin,lib,sv} \
-      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus}/bin
+      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus,loki}/bin
 
 ## Install Runit Service Daemon
 COPY --from=runit ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
@@ -168,6 +172,9 @@ COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/portal/bin/
 
 ## Install Prometheus
 COPY --from=prometheus /bin/prometheus ${CSGHUB_SRV_HOME}/prometheus/bin/
+
+## Install Loki
+COPY --from=loki /usr/bin/loki ${CSGHUB_SRV_HOME}/loki/bin/
 
 ## Install csgship-web
 COPY --from=csgship /code/. ${CSGHUB_SRV_HOME}/web/

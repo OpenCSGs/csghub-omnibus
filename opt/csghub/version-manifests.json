@@ -67,6 +67,12 @@
         "description": "Open source metrics and monitoring for your systems and services",
         "version": "v3.7.3",
         "repository": "https://github.com/prometheus/prometheus.git"
+      },
+      {
+        "name": "loki",
+        "description": "Like Prometheus, but for logs.",
+        "version": "3.5",
+        "repository": "https://github.com/grafana/loki.git"
       }
     ]
   }
