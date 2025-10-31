@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/prometheus" }}
+{{- if has (datasource "config").prometheus "log" }}
+{{- if has (datasource "config").prometheus.log "dir" }}
+{{- if (datasource "config").prometheus.log.dir }}
+{{- $logDir = (datasource "config").prometheus.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+{{- $csghub := (datasource "config").csghub }}
+{{- $prometheus := (datasource "config").prometheus }}
+{{- $dataDir := $prometheus.data | default "/var/opt/csghub/prometheus" }}
+{{- $tsdb := $prometheus.tsdb }}
+{{- $tsdbPath := ($tsdb.path | default (printf "%s/data" $dataDir)) }}
+{{- $tsdbRetention := ($tsdb.retention | default "15d") }}
+{{- $listenAddr := ($prometheus.listen | default "127.0.0.1:9090") }}
+{{- $externalUrl := ($prometheus.external_url | default (printf "%s/-/prometheus" $csghub.external_url)) }}
+
+cd {{ $dataDir }}
+exec chpst -e /opt/csghub/etc/prometheus/env -P \
+  -u prometheus:prometheus \
+  /opt/csghub/embedded/bin/prometheus \
+  --config.file={{ $dataDir }}/prometheus.yml \
+  --storage.tsdb.path={{ $tsdbPath }} \
+  --storage.tsdb.retention.time={{ $tsdbRetention }} \
+  --web.listen-address={{ $listenAddr }} \
+  {{- if ne $externalUrl "" }}
+  --web.external-url={{ $externalUrl }} \
+  {{- end }}
+  --log.level=info
+
