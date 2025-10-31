@@ -878,3 +878,13 @@ prometheus:
     #   static_configs:
     #     - targets:
     #       - "127.0.0.1:9100"
+
+##########################################################################
+# Loki Configuration
+# - Like Prometheus, but for logs.
+##########################################################################
+loki:
+  enable: true                   ## Whether to enable the Loki logging system
+  log_level: "info"              ## Loki log level, valid options: debug, info, warn, error
+  listen_port: 3100              ## Loki service listening port (default HTTP API port)
+  data: "/var/opt/csghub/loki"   ## Loki data storage path

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/loki" }}
+{{- if has (datasource "config").loki "log" }}
+{{- if has (datasource "config").loki.log "dir" }}
+{{- if (datasource "config").loki.log.dir }}
+{{- $logDir = (datasource "config").loki.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

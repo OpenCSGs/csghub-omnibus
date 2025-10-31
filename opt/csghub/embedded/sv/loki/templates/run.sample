@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+# fail on errors
+set -e
+
+{{- $dataDir := (datasource "config").loki.data | default "/var/opt/csghub/loki" }}
+cd {{ $dataDir }}
+exec chpst -e /opt/csghub/etc/loki/env -P \
+  -u loki:loki \
+  /opt/csghub/embedded/bin/loki -config.file={{ $dataDir }}/loki-config.yaml

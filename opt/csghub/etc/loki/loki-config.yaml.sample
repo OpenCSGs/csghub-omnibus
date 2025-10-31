@@ -1,0 +1,46 @@
+{{- $loki := (datasource "config").loki }}
+{{- $dataDir := (datasource "config").loki.data | default "/var/opt/csghub/loki" -}}
+
+auth_enabled: false
+
+server:
+  http_listen_port: {{ $loki.listen_port | default 3100 }}
+  log_level: {{ $loki.log_level | default "info" }}
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: {{ $dataDir }}
+  storage:
+    filesystem:
+      chunks_directory: {{ $dataDir }}/chunks
+      rules_directory: {{ $dataDir }}/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2025-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+ruler: {}
+  # alertmanager_url: http://localhost:9093
+
+# By default, Loki will send anonymous, but uniquely-identifiable usage and configuration
+# analytics to Grafana Labs. These statistics are sent to https://stats.grafana.org/
+#
+# Statistics help us better understand how Loki is used, and they show us performance
+# levels for most users. This helps us prioritize features and documentation.
+# For more information on what's sent, look at
+# https://github.com/grafana/loki/blob/main/pkg/usagestats/stats.go
+# Refer to the buildReport method to see what goes into a report.
+#
+# If you would like to disable reporting, uncomment the following lines:
+#analytics:
+#  reporting_enabled: false

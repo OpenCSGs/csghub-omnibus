@@ -801,26 +801,36 @@ csghub:
 # Prometheus Configuration
 # - Monitoring and alerting system configuration
 ##########################################################################
-prometheus:
-  enable: true                               ## Enable or disable Prometheus server
-  listen_address: "127.0.0.1:9090"           ## Address and port for Prometheus to listen on
+#prometheus:
+#  enable: true                               ## Enable or disable Prometheus server
+#  listen_address: "127.0.0.1:9090"           ## Address and port for Prometheus to listen on
+#
+#  external_url: ""                           ## External URL to access Prometheus (for links in alerts, etc.)
+#
+#  tsdb:                                      ## Time series database (TSDB) settings
+#    path: "/var/opt/csghub/prometheus/data"  ## Directory to store Prometheus TSDB data
+#    retention: "15d"                         ## Data retention period (e.g., 15d for 15 days)
+#
+#  scrape_interval: "15s"                     ## How often to scrape targets (default: 15 seconds)
+#  evaluation_interval: "15s"                 ## How often to evaluate rules (default: 15 seconds)
+#  scrape_timeout: "10s"                      ## Timeout for scraping a target (default: 10 seconds)
+#
+#  external_labels: {}                        ## External labels to add to all metrics (e.g., environment, region)
+#    # environment: "production"
+#    # region: "cn-north-1"
+#
+#  scrape_configs: []                         ## List of scrape configurations for Prometheus targets
+#    # - job_name: "node"
+#    #   static_configs:
+#    #     - targets:
+#    #       - "127.0.0.1:9100"
 
-  external_url: ""                           ## External URL to access Prometheus (for links in alerts, etc.)
-
-  tsdb:                                      ## Time series database (TSDB) settings
-    path: "/var/opt/csghub/prometheus/data"  ## Directory to store Prometheus TSDB data
-    retention: "15d"                         ## Data retention period (e.g., 15d for 15 days)
-
-  scrape_interval: "15s"                     ## How often to scrape targets (default: 15 seconds)
-  evaluation_interval: "15s"                 ## How often to evaluate rules (default: 15 seconds)
-  scrape_timeout: "10s"                      ## Timeout for scraping a target (default: 10 seconds)
-
-  external_labels: {}                        ## External labels to add to all metrics (e.g., environment, region)
-    # environment: "production"
-    # region: "cn-north-1"
-
-  scrape_configs: []                         ## List of scrape configurations for Prometheus targets
-    # - job_name: "node"
-    #   static_configs:
-    #     - targets:
-    #       - "127.0.0.1:9100"
+##########################################################################
+# Loki Configuration
+# - Like Prometheus, but for logs.
+##########################################################################
+#loki:
+#  enable: true                   ## Whether to enable the Loki logging system
+#  log_level: "info"              ## Loki log level, valid options: debug, info, warn, error
+#  listen_port: 3100              ## Loki service listening port (default HTTP API port)
+#  data: "/var/opt/csghub/loki"   ## Loki data storage path
