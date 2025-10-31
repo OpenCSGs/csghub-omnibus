@@ -171,7 +171,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         UBUNTU_VERSION=$(grep -oP 'VERSION_ID="\K[\d.]+' /etc/os-release) && \
         if dpkg --compare-versions "$UBUNTU_VERSION" ge "24.04"; then \
             # Ubuntu 24.04+ (新包名带 t64 后缀)
-            apt install -y --no-install-recommends \
+            DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
                 ca-certificates \
                 libicu74 \
                 libreadline8t64 \
@@ -184,10 +184,11 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libcurl4t64 \
                 libpq-dev \
                 libcap2-bin \
-                vim lsof; \
+                vim lsof \
+                tzdata; \
         else \
             # Ubuntu 22.04 or older (旧包名)
-            apt install -y --no-install-recommends \
+            DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
                 ca-certificates \
                 libicu70 \
                 libreadline8 \
@@ -200,7 +201,8 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libcurl3-gnutls \
                 libpq-dev \
                 libcap2-bin \
-                vim lsof; \
+                vim lsof \
+                tzdata; \
         fi && \
         apt clean && \
         rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
@@ -224,7 +226,8 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                     libcurl \
                     libcap \
                     postgresql-devel \
-                    vim lsof; \
+                    vim lsof \
+                    tzdata; \
             else \
                 # CentOS 8 (GeoIP)
                 dnf install -y \
@@ -240,7 +243,8 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                     libcurl \
                     libcap \
                     postgresql-devel \
-                    vim lsof; \
+                    vim lsof \
+                    tzdata; \
             fi && \
             dnf clean all; \
         else \
@@ -257,7 +261,8 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libxslt \
                 libcurl \
                 postgresql-devel \
-                vim lsof && \
+                vim lsof \
+                tzdata && \
             yum clean all; \
         fi; \
         rm -rf /var/cache/yum /tmp/* /var/tmp/* /var/log/*; \
