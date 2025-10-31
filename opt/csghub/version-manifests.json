@@ -3,9 +3,9 @@
     "metadata": {
       "application_name": "CSGHub",
       "description": "Version manifest for tracking components and dependencies.",
-      "generated_date": "2025-05-26",
+      "generated_date": "2025-11-02",
       "author": "OpenCSG Infra Team",
-      "version": "v1.10.0-ce"
+      "version": "v1.12.0-ce"
     },
     "components": [
       {
@@ -53,14 +53,20 @@
       {
         "name": "csghub-server",
         "description": "CSGHub backend service",
-        "version": "v1.10.0-ce",
+        "version": "v1.12.0-ce",
         "repository": "https://github.com/OpenCSGs/csghub-server"
       },
       {
         "name": "csghub-portal",
         "description": "CSGHub frontend portal",
-        "version": "v1.10.0-ce",
+        "version": "v1.12.0-ce",
         "repository": "https://github.com/OpenCSGs/csghub"
+      },
+      {
+        "name": "prometheus",
+        "description": "Open source metrics and monitoring for your systems and services",
+        "version": "v3.7.3",
+        "repository": "https://github.com/prometheus/prometheus.git"
       }
     ]
   }

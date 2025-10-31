@@ -192,6 +192,16 @@ http {
         }
         {{- end }}
 
+        # Prometheus Route
+        location ~ /-/prometheus {
+            proxy_pass http://127.0.0.1:9090;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
         {{- $runner := (datasource "config").runner -}}
         {{- $deploy := $runner.deploy }}
         {{- if and (not $deploy.use_public_domain) (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
