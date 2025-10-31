@@ -161,6 +161,15 @@ csghub:
 #  lfs_concurrency: 5            ## Concurrent LFS transfers
 
 ##########################################################################
+## Runner Service Configuration
+## - Executes CI/CD jobs and automated tasks
+##########################################################################
+#runner:
+#  ## Deployment configuration
+#  namespace: "spaces"           ## Kubernetes namespace
+#  use_public_domain: true       ## Use a dedicate domain name
+
+##########################################################################
 ## Rproxy Service Configuration
 ## - Handles reverse proxy functionality
 ##########################################################################
@@ -187,8 +196,7 @@ csghub:
 ## DNSMasq Configuration
 ## - Provides DNS caching and forwarding
 ##########################################################################
-#dnsmasq:
-#  enable: true                  ## Enable DNSMasq service
+#dnsmasq: {}
 
 ##########################################################################
 ## User Service Configuration
@@ -692,13 +700,11 @@ csghub:
 #    bind_on_ip: "127.0.0.1"   ## IP address to bind RPC services
 
 ### Web UI configuration
+## Web UI configuration
 #temporal_ui:
 #  enable: false                 ## Enable or disable Temporal UI
 #  listen_port: 8182             ## Port for Temporal UI web server
-#  public_path: "/temporal-ui"   ## Public URL path for Temporal UI
-#  auth:
-#    user: "temporal"            ## Username for UI authentication
-#    password: ""                ## Password for UI authentication
+#  public_path: "/-/temporal"   ## Public URL path for Temporal UI
 #  cors:
 #    cookie_insecure: false      ## Disable secure cookies for development
 #    allow_origins:              ## Allowed CORS origins

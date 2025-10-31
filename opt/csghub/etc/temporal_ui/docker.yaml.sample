@@ -1,4 +1,5 @@
 {{- $temporal := (datasource "config").temporal -}}
+{{- $csghub := (datasource "config").csghub }}
 {{- $temporalUI := (datasource "config").temporal_ui -}}
 temporalGrpcAddress: {{ printf "%s:%d" $temporal.rpc.bind_on_ip $temporal.rpc.grpc_port }}
 port: {{ $temporalUI.listen_port }}
@@ -24,8 +25,9 @@ cors:
   cookieInsecure: {{ $temporalUI.cors.cookie_insecure }}
   allowOrigins:
     # override framework's default that allows all origins "*"
+    - {{ $csghub.external_url }}
     {{- range $temporalUI.cors.allow_origins }}
-    - {{ . | quote }}
+    - {{ . }}
     {{- end }}
 
 tls:
@@ -37,17 +39,33 @@ tls:
   keyData:
   enableHostVerification: false
   serverName:
+{{- $server := (datasource "config").server }}
+{{- $casdoor := (datasource "config").casdoor -}}
+{{- $url := conv.URL $csghub.external_url -}}
+{{- $urlParts := $url.Host | strings.Split ":" -}}
+{{- $host := index $urlParts 0 -}}
+{{- $casdoorListen := $casdoor.listen -}}
+{{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
+{{- $casdoorPort := "8000" -}}
+{{- if eq (len $casdoorParts) 2 -}}
+  {{- $casdoorPort = index $casdoorParts 1 -}}
+{{- end -}}
+{{- $serverCasdoor := $server.casdoor -}}
+{{- $provider := $serverCasdoor.endpoint | default (printf "%s://%s:%s" $url.Scheme $host $casdoorPort) }}
 auth:
-  enabled: false
+  enabled: true
   providers:
   - label: sso
     type: oidc
-    providerUrl: <no value>
-    issuerUrl:
-    clientId: <no value>
-    clientSecret: <no value>
-    callbackUrl: <no value>
+    providerUrl: {{ $provider }}
+    issuerUrl: {{ $provider }}
+    clientId: "8b28cd6279dc86eed625"
+    clientSecret: "44ce96217929fge01d68gc46gg898bbccgg7g8bc"
+    callbackUrl: {{ printf "%s/-/temporal/auth/sso/callback" $csghub.external_url }}
     scopes:
+      - openid
+      - email
+      - profile
 codec:
   endpoint:
   passAccessToken: false

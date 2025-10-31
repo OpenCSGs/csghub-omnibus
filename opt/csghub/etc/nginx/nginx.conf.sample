@@ -71,6 +71,8 @@ http {
     proxy_max_temp_file_size 150000M;               # Avoid large temporary files
     proxy_temp_path /tmp/proxy_temp 1 2;
     client_max_body_size 0;                         # No limit for client request body size
+    client_header_buffer_size 1k;
+    large_client_header_buffers 8 32k;
 
     # Global timeout settings (explicit units)
     client_body_timeout 3600s;
@@ -179,10 +181,7 @@ http {
         {{- $temporalUI := (datasource "config").temporal_ui -}}
         {{ if $temporalUI.enable }}
         # Temporal UI route with basic auth
-        location {{ printf "%s/" $temporalUI.public_path }} {
-            auth_basic "Please login with your account:";
-            auth_basic_user_file /opt/csghub/etc/temporal_ui/.htpasswd;
-
+        location {{ $temporalUI.public_path }} {
             proxy_pass http://127.0.0.1:8182;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
@@ -213,8 +212,7 @@ http {
         }
 
         {{- $runner := (datasource "config").runner -}}
-        {{- $deploy := $runner.deploy }}
-        {{- if and (not $deploy.use_public_domain) (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+        {{- if and (not $runner.use_public_domain) (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
         # Endpoint route
         location /endpoint/ {
             proxy_pass http://127.0.0.1:8083;
@@ -249,7 +247,7 @@ http {
         }
     }
 
-    {{ if and $deploy.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) -}}
+    {{ if and $runner.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) -}}
     {{- $rootDomain := "example.com" }}
     {{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
     {{- $hostParts := strings.Split "." $host }}
@@ -459,41 +457,4 @@ http {
             proxy_pass http://127.0.0.1:9002;
         }
     }
-
-    {{- $ns := $deploy.namespace | default "spaces" }}
-    {{- if has $deploy "knative" }}
-    {{- if has $deploy.knative "services" }}
-    {{- $services := $deploy.knative.services }}
-    {{ range $services }}
-    # Dynamic HTTP routing for apps
-    server {
-        listen 80;
-        server_name *.{{ $ns }}.{{ .domain }};
-
-        location / {
-            proxy_http_version 1.1;
-            proxy_pass http://{{ .host }}:{{ .port }};
-            proxy_set_header Host $host;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Host $http_host;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Custom error page handling for 404,50x errors
-        error_page 404 /404.html;
-        error_page 500 /500.html;
-        error_page 502 /502.html;
-        error_page 503 /503.html;
-
-        location ~ ^/(404|500|502|503)(-custom)?\.html$ {
-            root {{ $dataDir }}/html;
-            internal;
-        }
-    }
-    {{- end }}
-    {{- end }}
-    {{- end }}
 }
