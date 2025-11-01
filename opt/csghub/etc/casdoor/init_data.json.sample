@@ -628,7 +628,7 @@
         "id_token"
       ],
       "redirectUris": [
-        "{{ $csghub.external_url }}/api/v1/callback/casdoor"
+        "{{ $csghub.external_url }}/-/temporal/auth/sso/callback"
       ],
       "tokenFormat": "JWT",
       "tokenFields": [],
