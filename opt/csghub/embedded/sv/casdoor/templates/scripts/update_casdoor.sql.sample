@@ -156,6 +156,15 @@ BEGIN
             UPDATE
                 "user"
             SET
+                tag = ''is_admin''
+            WHERE
+                name = ''root''
+        ';
+
+        EXECUTE '
+            UPDATE
+                "user"
+            SET
                 avatar = ''{{ $casdoorEndpoint }}''||substring(avatar from ''(/files/avatar/.*)'')
             WHERE
                 avatar ~ ''.*/files/avatar/OpenCSG/.*\.png''
