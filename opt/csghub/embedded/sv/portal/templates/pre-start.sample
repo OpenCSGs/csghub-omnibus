@@ -62,7 +62,7 @@ set -e
 {{- $casdoorParts := $casdoorListen | strings.Split ":" }}
 {{- $casdoorHost := index $casdoorParts 0 }}
 {{- $casdoorPort := index $casdoorParts 1 }}
-{{- $casdoorClientId := $casdoor.client_id | default "7a97bc5168cb75ffc514" }}
+{{- $casdoorClientId := printf "%sCSGHub" $seed | crypto.SHA256 | strings.Trunc 20 }}
 {{- $callback := printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/callback/casdoor&scope=read&state=casdoor" $url.Scheme $host $casdoorPort $casdoorClientId $csghub.external_url }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_LOGIN_URL" $envDir) $callback }}
 

@@ -52,6 +52,27 @@ tls:
 {{- end -}}
 {{- $serverCasdoor := $server.casdoor -}}
 {{- $provider := $serverCasdoor.endpoint | default (printf "%s://%s:%s" $url.Scheme $host $casdoorPort) }}
+
+{{- define "GenSeed" -}}
+{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
+{{- $seed := "" -}}
+{{- if file.Exists $seedFile -}}
+  {{- $seed = file.Read $seedFile -}}
+{{- end -}}
+{{- if not $seed -}}
+  {{- $seed = random.Alpha 48 -}}
+  {{- file.Write $seedFile $seed -}}
+{{- end -}}
+{{- $seed -}}
+{{- end -}}
+
+{{- define "GenClientId" -}}
+{{- printf "%s%s" (tmpl.Exec "GenSeed" .) . | crypto.SHA256 | strings.Trunc 20 -}}
+{{- end }}
+
+{{- define "GenClientSecret" -}}
+{{- printf "%s%s" (tmpl.Exec "GenSeed" .) . | crypto.SHA256 | regexp.Replace "^.{24}" "" -}}
+{{- end }}
 auth:
   enabled: true
   providers:
@@ -59,8 +80,8 @@ auth:
     type: oidc
     providerUrl: {{ $provider }}
     issuerUrl: {{ $provider }}
-    clientId: "8b28cd6279dc86eed625"
-    clientSecret: "44ce96217929fge01d68gc46gg898bbccgg7g8bc"
+    clientId: {{ tmpl.Exec "GenClientId" "Admin" }}
+    clientSecret: {{ tmpl.Exec "GenClientSecret" "Admin" }}
     callbackUrl: {{ printf "%s/-/temporal/auth/sso/callback" $csghub.external_url }}
     scopes:
       - openid

@@ -11,6 +11,27 @@
 {{- $casdoorHost = $host -}}
 {{- end -}}
 {{- $casdoorEndpoint := printf "%s://%s:%s" $url.Scheme $casdoorHost $casdoorPort -}}
+{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
+{{- define "GenSeed" -}}
+{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
+{{- $seed := "" -}}
+{{- if file.Exists $seedFile -}}
+  {{- $seed = file.Read $seedFile -}}
+{{- end -}}
+{{- if not $seed -}}
+  {{- $seed = random.Alpha 48 -}}
+  {{- file.Write $seedFile $seed -}}
+{{- end -}}
+{{- $seed -}}
+{{- end -}}
+
+{{- define "GenClientId" -}}
+{{- printf "%s%s" (tmpl.Exec "GenSeed" .) . | crypto.SHA256 | strings.Trunc 20 -}}
+{{- end }}
+
+{{- define "GenClientSecret" -}}
+{{- printf "%s%s" (tmpl.Exec "GenSeed" .) . | crypto.SHA256 | regexp.Replace "^.{24}" "" -}}
+{{- end }}
 --
 -- Record Timestamp
 --
@@ -60,6 +81,17 @@ BEGIN
                 name in (''CSGHub'',''Csgship'',''CSGShip'')
         ');
 
+        -- Update client info for CSGHub
+        EXECUTE format('
+            UPDATE
+                application
+            SET
+                client_id = ''{{ tmpl.Exec "GenClientId" "CSGHub" }}'',
+                client_secret = ''{{ tmpl.Exec "GenClientSecret" "CSGHub" }}''
+            WHERE
+                name = ''CSGHub''
+        ');
+
         -- Update avatar or logo local url for Admin
         EXECUTE format('
             UPDATE
@@ -68,7 +100,29 @@ BEGIN
                 redirect_uris = ''["{{ $csghub.external_url }}/-/temporal/auth/sso/callback"]'',
                 logo = ''{{ $casdoorEndpoint }}''||substring(logo from ''(/files/avatar/.*)'')
             WHERE
-                name in (''Admin'')
+                name = ''Admin''
+        ');
+
+        -- Update client info for Admin
+        EXECUTE format('
+            UPDATE
+                application
+            SET
+                client_id = ''{{ tmpl.Exec "GenClientId" "Admin" }}'',
+                client_secret = ''{{ tmpl.Exec "GenClientSecret" "Admin" }}''
+            WHERE
+                name = ''Admin''
+        ');
+
+        -- Update client info for CSGShip
+        EXECUTE format('
+            UPDATE
+                application
+            SET
+                client_id = ''{{ tmpl.Exec "GenClientId" "CSGShip" }}'',
+                client_secret = ''{{ tmpl.Exec "GenClientSecret" "CSGShip" }}''
+            WHERE
+                name = ''CSGShip''
         ');
 
         -- Update form_side_html

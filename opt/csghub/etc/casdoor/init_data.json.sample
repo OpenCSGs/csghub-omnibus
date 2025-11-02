@@ -37,6 +37,27 @@
 {{- $casdoorHost = $host -}}
 {{- end -}}
 {{- $casdoorEndpoint := printf "%s://%s:%s" $url.Scheme $casdoorHost $casdoorPort -}}
+
+{{- define "GenSeed" -}}
+{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
+{{- $seed := "" -}}
+{{- if file.Exists $seedFile -}}
+  {{- $seed = file.Read $seedFile -}}
+{{- end -}}
+{{- if not $seed -}}
+  {{- $seed = random.Alpha 48 -}}
+  {{- file.Write $seedFile $seed -}}
+{{- end -}}
+{{- $seed -}}
+{{- end -}}
+
+{{- define "GenClientId" -}}
+{{- printf "%s%s" (tmpl.Exec "GenSeed" .) . | crypto.SHA256 | strings.Trunc 20 -}}
+{{- end }}
+
+{{- define "GenClientSecret" -}}
+{{- printf "%s%s" (tmpl.Exec "GenSeed" .) . | crypto.SHA256 | regexp.Replace "^.{24}" "" -}}
+{{- end }}
 {
   "organizations": [
     {
@@ -202,8 +223,8 @@
       "enableLinkWithEmail": true,
       "orgChoiceMode": "Select",
       "samlReplyUrl": "",
-      "clientId": "7a97bc5168cb75ffc514",
-      "clientSecret": "33bd85106818efd90c57fb35ffc787aabbff6f7a",
+      "clientId": {{ tmpl.Exec "GenClientId" "CSGHub" | quote }},
+      "clientSecret": {{ tmpl.Exec "GenClientSecret" "CSGHub" | quote }},
       "providers": [
         {
           "owner": "",
@@ -441,8 +462,8 @@
       "tags": [
         "is_admin"
       ],
-      "clientId": "8b28cd6279dc86eed625",
-      "clientSecret": "44ce96217929fge01d68gc46gg898bbccgg7g8bc",
+      "clientId": {{ tmpl.Exec "GenClientId" "Admin" | quote }},
+      "clientSecret": {{ tmpl.Exec "GenClientSecret" "Admin" | quote }},
       "providers": [
         {
           "owner": "",
@@ -668,8 +689,8 @@
       "enableLinkWithEmail": true,
       "orgChoiceMode": "Select",
       "samlReplyUrl": "",
-      "clientId": "922b009c161d8efb3422",
-      "clientSecret": "f55bd1917a52a24080f831a31010157e50f17f5a",
+      "clientId": {{ tmpl.Exec "GenClientId" "CSGShip" | quote }},
+      "clientSecret": {{ tmpl.Exec "GenClientSecret" "CSGShip" | quote }},
       "providers": [
         {
           "owner": "",

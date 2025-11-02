@@ -69,8 +69,6 @@ server:
 
   ## Casdoor (authentication) integration
   casdoor:
-    client_id: "7a97bc5168cb75ffc514"                          ## OAuth client ID
-    client_secret: "33bd85106818efd90c57fb35ffc787aabbff6f7a"  ## OAuth secret
     endpoint: ""                                               ## Casdoor endpoint
     certificate: "/opt/csghub/etc/casdoor/token_jwt_key.pem"   ## SSL cert path
     organization_name: "OpenCSG"                               ## Organization name in Casdoor
