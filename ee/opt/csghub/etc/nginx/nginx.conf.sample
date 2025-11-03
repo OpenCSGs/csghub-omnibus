@@ -262,7 +262,7 @@ http {
         }
     }
 
-    {{ if and $deploy.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) -}}
+    {{ if and $runner.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) -}}
     {{- $rootDomain := "example.com" }}
     {{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
     {{- $hostParts := strings.Split "." $host }}
