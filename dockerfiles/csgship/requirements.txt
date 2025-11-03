@@ -78,5 +78,5 @@ pygtrie==2.5.0
 astor==0.8.1
 black==24.10.0
 aiofiles==24.1.0
-coagent-python==0.0.5
+coagent-python[a2a]==0.0.6
 mcp==1.8.1
