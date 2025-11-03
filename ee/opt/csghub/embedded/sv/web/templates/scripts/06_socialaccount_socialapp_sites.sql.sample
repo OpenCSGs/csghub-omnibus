@@ -11,18 +11,6 @@ pg_catalog.setval('public.socialaccount_socialapp_sites_id_seq', (
             MAX(id)
         FROM public.socialaccount_socialapp_sites), TRUE);
 
-{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
-{{- $csgship := (datasource "config").csgship }}
-{{- $csgshipApiListen := $csgship.listen.api -}}
-{{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
-{{- $csgshipApiHost := index $csgshipApiParts 0 -}}
-{{- if eq $csgshipApiHost "127.0.0.1" -}}
-{{- $csgshipApiHost = $csghub.host -}}
-{{- end -}}
-{{- $csgshipApiPort := "8002" -}}
-{{- if eq (len $csgshipApiParts) 2 -}}
-   {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
-{{- end }}
-{{- $csgshipApiEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipApiPort -}}
+{{- $csgshipApiEndpoint := tmpl.Exec "endpoint.csgship.api" . -}}
 -- Change django_site to the correct domain
 UPDATE django_site SET domain = '{{ $csgshipApiEndpoint }}', name = '{{ $csgshipApiEndpoint }}' WHERE id = 1;

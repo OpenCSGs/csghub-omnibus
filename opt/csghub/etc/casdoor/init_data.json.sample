@@ -1,29 +1,5 @@
 {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
-
 {{- $csgship := (datasource "config").csgship -}}
-{{- $csgshipFrontendListen := $csgship.listen.frontend -}}
-{{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
-{{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
-{{- if eq $csgshipFrontendHost "127.0.0.1" -}}
-{{- $csgshipFrontendHost = $csghub.host -}}
-{{- end -}}
-{{- $csgshipFrontendPort := "8001" -}}
-{{- if eq (len $csgshipFrontendParts) 2 -}}
-   {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
-{{- end }}
-{{- $csgshipEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipFrontendPort -}}
-
-{{- $csgshipApiListen := $csgship.listen.api -}}
-{{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
-{{- $csgshipApiHost := index $csgshipApiParts 0 -}}
-{{- if eq $csgshipApiHost "127.0.0.1" -}}
-{{- $csgshipApiHost = $csghub.host -}}
-{{- end -}}
-{{- $csgshipApiPort := "8002" -}}
-{{- if eq (len $csgshipApiParts) 2 -}}
-   {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
-{{- end }}
-{{- $csgshipApiEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipApiPort -}}
 {{- $casdoorEndpoint := tmpl.Exec "endpoint.casdoor" . -}}
 {
   "organizations": [
@@ -641,7 +617,7 @@
       "name": "CSGShip",
       "displayName": "CSGShip",
       "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
-      "homepageUrl": {{ $csgshipEndpoint | quote }},
+      "homepageUrl": {{ tmpl.Exec "endpoint.csgship.frontend" . | quote }},
       "organization": "OpenCSG",
       "cert": "csgship-cert",
       "enablePassword": true,
@@ -864,7 +840,7 @@
         "id_token"
       ],
       "redirectUris": [
-        "{{ $csgshipApiEndpoint }}/api/v1/account/casdoor/login/callback"
+        "{{ tmpl.Exec "endpoint.csgship.api" . }}/api/v1/account/casdoor/login/callback"
       ],
       "tokenFormat": "JWT",
       "tokenFields": [],

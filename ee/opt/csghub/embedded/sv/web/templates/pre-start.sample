@@ -20,13 +20,121 @@ set -e
 {{- file.Write (printf "%s/DJANGO_SETTINGS_MODULE" $envDir) "config.settings" }}
 {{- file.Write (printf "%s/C_FORCE_ROOT" $envDir) "true" }}
 
+{{- $csgship := (datasource "config").csgship }}
 {{- $web := (datasource "config").web }}
 {{- $dataDir := $web.data | default "/var/opt/csghub/web" }}
 {{- $db := $web.postgresql }}
 {{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
 {{- file.Write (printf "%s/DATABASE_TYPE" $envDir) "postgresql" }}
 {{- file.Write (printf "%s/DATABASE_HOST" $envDir) $db.host }}
-{{- file.Write (printf "%s/DATABASE_PORT" $envDir) $db.port }}
+{{- file.Write (printf "%s/DATABASE_PORT" $envDir) $db.port }}#!/bin/bash
+
+                                                              # Redirect stderr -> stdout
+                                                              exec 2>&1
+
+                                                              # Exit if execute with any errors
+                                                              set -e
+
+                                                              {{- $envDir := "/opt/csghub/etc/web/env" }}
+
+                                                              # Clear all environment variable files
+                                                              # rm -rf {{ $envDir }}/* || true
+
+                                                              {{- file.Write (printf "%s/PYTHONHOME" $envDir) "/opt/csghub/embedded/python" }}
+                                                              {{- file.Write (printf "%s/LD_LIBRARY_PATH" $envDir) "/opt/csghub/embedded/python/lib:$LD_LIBRARY_PATH" }}
+                                                              {{- file.Write (printf "%s/PYTHONPATH" $envDir) "/opt/csghub/embedded/python/lib/python3.11/site-packages" }}
+                                                              {{- file.Write (printf "%s/PATH" $envDir) "/opt/csghub/embedded/python/bin:$PATH" }}
+
+                                                              {{- file.Write (printf "%s/DJANGO_DEBUG" $envDir) "false" }}
+                                                              {{- file.Write (printf "%s/DJANGO_SETTINGS_MODULE" $envDir) "config.settings" }}
+                                                              {{- file.Write (printf "%s/C_FORCE_ROOT" $envDir) "true" }}
+
+                                                              {{- $csgship := (datasource "config").csgship }}
+                                                              {{- $web := (datasource "config").web }}
+                                                              {{- $dataDir := $web.data | default "/var/opt/csghub/web" }}
+                                                              {{- $db := $web.postgresql }}
+                                                              {{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
+                                                              {{- file.Write (printf "%s/DATABASE_TYPE" $envDir) "postgresql" }}
+                                                              {{- file.Write (printf "%s/DATABASE_HOST" $envDir) $db.host }}
+                                                              {{- file.Write (printf "%s/DATABASE_PORT" $envDir) $db.port }}
+                                                              {{- file.Write (printf "%s/DATABASE_USERNAME" $envDir) $db.user }}
+                                                              {{- file.Write (printf "%s/DATABASE_PASSWORD" $envDir) $password }}
+                                                              {{- file.Write (printf "%s/DATABASE_NAME" $envDir) $db.name }}
+                                                              {{- file.Write (printf "%s/DSN" $envDir) (printf "postgresql://%s:%s@%s:%d/%s" (conv.ToString $db.user) (conv.ToString $password) (conv.ToString $db.host) (conv.ToInt64 $db.port) (conv.ToString $db.name)) }}
+
+                                                              {{- $postgresql := (datasource "config").postgresql }}
+                                                              {{- $patroni := (datasource "config").patroni }}
+                                                              {{- if or $postgresql.enable $patroni.enable }}
+                                                              # Rename database csgship (If database csgship exists)
+                                                              /opt/csghub/bin/csghub-dbm -a rename -d "starship_codegpt" -n {{ $db.name }}
+                                                              /opt/csghub/bin/csghub-dbm -a rename -d "starship" -n {{ $db.name }}
+                                                              # Create csgship database (current default)
+                                                              /opt/csghub/bin/csghub-dbm -a create -d {{ $db.name }} -u {{ $db.user }} -p {{ $password }}
+                                                              # If csgship database exists reset all objects owner to current db user
+                                                              /opt/csghub/bin/csghub-dbm -a update -d {{ $db.name }} -N {{ $db.user }}
+                                                              {{- end }}
+
+                                                              {{- $redis := $web.redis }}
+                                                              {{- $redisUser := $redis.auth.user -}}
+                                                              {{- $redisPassword := $redis.auth.password | default (crypto.PBKDF2 $redisUser "opencsg" 2048 8) -}}
+                                                              {{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":@%s" $redis.host) }}
+                                                              {{/*{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":%s@%s" $redisPassword $redis.host) }} */}}
+                                                              {{- file.Write (printf "%s/REDIS_PORT" $envDir) $redis.port }}
+
+                                                              {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
+                                                              {{- file.Write (printf "%s/csgship_WEB_URL" $envDir) (tmpl.Exec "endpoint.csgship.frontend" .) }}
+                                                              {{- file.Write (printf "%s/csgship_API_URL" $envDir) (tmpl.Exec "endpoint.csgship.api" .) }}
+                                                              {{- file.Write (printf "%s/USE_OPENAI_ASSISTANTS_API" $envDir) "false" }}
+
+                                                              {{- file.Write (printf "%s/ACCOUNTING_OP_MODE" $envDir) "has_balance|consume" }}
+                                                              {{- file.Write (printf "%s/ACCOUNTING_API_BASE" $envDir) $csghub.external }}
+
+                                                              {{- $apiToken := tmpl.Exec "GenHubApiToken" . }}
+                                                              {{- file.Write (printf "%s/ACCOUNTING_API_KEY" $envDir) $apiToken }}
+                                                              {{- file.Write (printf "%s/OPENCSG_HUB_BASE_URL" $envDir) $csghub.external }}
+                                                              {{- file.Write (printf "%s/OPENCSG_HUB_ACCESS_TOKEN" $envDir) $apiToken }}
+
+                                                              {{- $openai := $web.openai }}
+                                                              {{- file.Write (printf "%s/AZURE_MODEL" $envDir) $openai.model }}
+                                                              {{- file.Write (printf "%s/AZURE_API_BASE" $envDir) $openai.api.base }}
+                                                              {{- file.Write (printf "%s/AZURE_API_VERSION" $envDir) $openai.api.version }}
+                                                              {{- file.Write (printf "%s/AZURE_API_KEY" $envDir) $openai.api.key }}
+                                                              {{- file.Write (printf "%s/LANCEDB_URI" $envDir) "/opt/csghub/embedded/sv/web/data/lancedb" }}
+
+                                                              {{ $billing := (datasource "config").billing }}
+                                                              {{ $agentic := (datasource "config").agentic }}
+                                                              {{ $web := (datasource "config").web }}
+                                                              {{- file.Write (printf "%s/csgship_BILLING_API_BASE" $envDir) (printf "http://%s" $billing.listen) }}
+                                                              {{- file.Write (printf "%s/BILLING_SVC_API_BASE" $envDir) (printf "http://%s" $billing.listen) }}
+                                                              {{- file.Write (printf "%s/AGENTIC_SVC_API_BASE" $envDir) (printf "http://%s" $agentic.listen) }}
+                                                              {{- file.Write (printf "%s/WEB_SVC_API_BASE" $envDir) (printf "http://%s" $web.listen) }}
+                                                              {{- file.Write (printf "%s/MEGALINTER_SVC_API_BASE" $envDir) $web.megalinter_server.endpoint }}
+                                                              {{- file.Write (printf "%s/SYNC_PERMS_GIT_SERVER" $envDir) ($csgship.oauth.issuer | strings.TrimPrefix "http://" | strings.TrimPrefix "https://") }}
+
+                                                              {{ $nats := (datasource "config").nats }}
+                                                              {{- $natsUser := $nats.auth.user -}}
+                                                              {{- $natsPassword := $nats.auth.password | default (crypto.PBKDF2 $natsUser "opencsg" 2048 8) -}}
+                                                              {{- $webNats := $web.nats -}}
+                                                              {{- file.Write (printf "%s/NATS_URL" $envDir) ($webNats.url | default (printf "nats://%s:%s@localhost:4222" $natsUser $natsPassword)) }}
+
+                                                              {{- file.Write (printf "%s/GIT_PYTHON_GIT_EXECUTABLE" $envDir) "/opt/csghub/embedded/bin/gitaly-git-v2.47" }}
+                                                              chpst -e /opt/csghub/etc/web/env -P \
+                                                                -u root:root \
+                                                                /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py migrate
+
+                                                              chpst -e /opt/csghub/etc/web/env -P \
+                                                                -u root:root \
+                                                                /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py createcachetable
+
+                                                              chpst -e /opt/csghub/etc/web/env -P \
+                                                                -u root:root \
+                                                                /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/sv/web/project/manage.py clearsessions
+
+                                                              # Load local sql scripts
+                                                              cd /opt/csghub/service/web
+                                                              [ -x "/opt/csghub/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_executor
+
+
 {{- file.Write (printf "%s/DATABASE_USERNAME" $envDir) $db.user }}
 {{- file.Write (printf "%s/DATABASE_PASSWORD" $envDir) $password }}
 {{- file.Write (printf "%s/DATABASE_NAME" $envDir) $db.name }}
@@ -51,35 +159,9 @@ set -e
 {{/*{{- file.Write (printf "%s/REDIS_URL" $envDir) (printf ":%s@%s" $redisPassword $redis.host) }} */}}
 {{- file.Write (printf "%s/REDIS_PORT" $envDir) $redis.port }}
 
-
 {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
-{{- $csgship := (datasource "config").csgship -}}
-{{- $csgshipFrontendListen := $csgship.listen.frontend -}}
-{{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
-{{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
-{{- if eq $csgshipFrontendHost "127.0.0.1" -}}
-{{- $csgshipFrontendHost = $csghub.host -}}
-{{- end -}}
-{{- $csgshipFrontendPort := "8001" -}}
-{{- if eq (len $csgshipFrontendParts) 2 -}}
-   {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
-{{- end }}
-{{- $csgshipEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipFrontendPort -}}
-
-{{- $csgshipApiListen := $csgship.listen.api -}}
-{{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
-{{- $csgshipApiHost := index $csgshipApiParts 0 -}}
-{{- if eq $csgshipApiHost "127.0.0.1" -}}
-{{- $csgshipApiHost = $csghub.host -}}
-{{- end -}}
-{{- $csgshipApiPort := "8002" -}}
-{{- if eq (len $csgshipApiParts) 2 -}}
-   {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
-{{- end }}
-{{- $csgshipApiEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipApiPort -}}
-
-{{- file.Write (printf "%s/csgship_WEB_URL" $envDir) $csgshipEndpoint }}
-{{- file.Write (printf "%s/csgship_API_URL" $envDir) $csgshipApiEndpoint }}
+{{- file.Write (printf "%s/csgship_WEB_URL" $envDir) (tmpl.Exec "endpoint.csgship.frontend" .) }}
+{{- file.Write (printf "%s/csgship_API_URL" $envDir) (tmpl.Exec "endpoint.csgship.api" .) }}
 {{- file.Write (printf "%s/USE_OPENAI_ASSISTANTS_API" $envDir) "false" }}
 
 {{- file.Write (printf "%s/ACCOUNTING_OP_MODE" $envDir) "has_balance|consume" }}
