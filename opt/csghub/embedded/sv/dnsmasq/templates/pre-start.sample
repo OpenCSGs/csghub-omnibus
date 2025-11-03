@@ -8,8 +8,8 @@ set -e
 
 {{- $configDir := "/opt/csghub/etc/dnsmasq" }}
 {{- $runner := (datasource "config").runner }}
-{{- $ns := $runner.deploy.namespace }}
-{{- $services := $runner.deploy.knative.services }}
+{{- $ns := $runner.namespace }}
+{{- $services := $runner.knative.services }}
 {{- range $services }}
 {{- $entry := printf "address=/%s.%s/127.0.0.1" $ns .domain }}
 {{- $configFile := printf "%s/%s.conf" $configDir .domain }}
@@ -17,17 +17,8 @@ set -e
 {{- end }}
 
 {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
-{{- $deploy := $runner.deploy }}
-{{- if and $deploy.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
-{{- $rootDomain := "example.com" }}
-{{- if and $csghub.host (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
-{{- $hostParts := strings.Split "." $csghub.host }}
-{{- if le (len $hostParts) 2 }}
-{{- $rootDomain = $csghub.host }}
-{{- else }}
-{{- $rootDomain = regexp.Replace "^[^.]+\\." "" $csghub.host }}
-{{- end }}
-{{- end }}
+{{- if and $runner.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
+{{- $rootDomain := tmpl.Exec "domain.root" . }}
 {{- $entry := printf "cname=public.%s,%s" $rootDomain $csghub.host }}
 {{- $configFile := printf "%s/%s.conf" $configDir (printf "public.%s" $rootDomain) }}
 {{- file.Write $configFile $entry }}

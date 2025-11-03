@@ -173,6 +173,11 @@ runner:
   namespace: "spaces"           ## Kubernetes namespace
   use_public_domain: true       ## Use a dedicate domain name
 
+  ## Knative serving configuration
+  knative:
+    services:
+      - domain: "example.com"
+
 ##########################################################################
 ## Rproxy Service Configuration
 ## - Handles reverse proxy functionality

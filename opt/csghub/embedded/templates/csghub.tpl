@@ -22,3 +22,18 @@
   -}}
   {{- $result | data.ToYAML -}}
 {{- end -}}
+
+{{- define "domain.root" -}}
+  {{- $rootDomain := "example.com" }}
+  {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
+
+  {{- if and $csghub.host (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
+    {{- $hostParts := strings.Split "." $csghub.host }}
+    {{- if le (len $hostParts) 2 }}
+      {{- $rootDomain = $csghub.host }}
+    {{- else }}
+      {{- $rootDomain = regexp.Replace "^[^.]+\\." "" $csghub.host }}
+    {{- end }}
+  {{- end }}
+  {{- $rootDomain -}}
+{{- end -}}

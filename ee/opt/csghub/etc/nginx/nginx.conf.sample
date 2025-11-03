@@ -246,23 +246,16 @@ http {
         }
     }
 
-    {{ if and $runner.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) -}}
-    {{- $rootDomain := "example.com" }}
-    {{- if and $csghub.host (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
-    {{- $hostParts := strings.Split "." $csghub.host }}
-    {{- if le (len $hostParts) 2 }}
-    {{- $rootDomain = $csghub.host }}
-    {{- else }}
-    {{- $rootDomain = regexp.Replace "^[^.]+\\." "" $csghub.host }}
-    {{- end }}
-    {{- end }}
+    {{ if and $runner.use_public_domain
+        (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host)
+        (not (regexp.Match `^[0-9.]+$` $csghub.host)) -}}
     server {
         {{- if eq $csghub.scheme "https" }}
         listen 443 ssl;
         {{- else }}
         listen 80;
         {{- end }}
-        server_name {{ printf "*.public.%s" $rootDomain }};
+        server_name {{ printf "*.public.%s" (tmpl.Exec "domain.root" .) }};
 
         {{- if eq $csghub.scheme "https" }}
         ssl_certificate {{ $csghubCert }};
