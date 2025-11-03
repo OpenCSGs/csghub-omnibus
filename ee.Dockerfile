@@ -74,7 +74,7 @@ FROM ${REGISTRY}/csghub-portal:${CSGHUB_VERSION} AS portal
 FROM ${REGISTRY}/prom/prometheus:${PROM_VERSION} AS prometheus
 
 ## Install Loki
-COPY --from=loki /usr/bin/loki ${CSGHUB_SRV_HOME}/loki/bin/
+FROM ${REGISTRY}/grafana/loki:${LOKI_VERSION} AS loki
 
 ## Install Csgship
 FROM ${REGISTRY}/csgship-web:${CSGSHIP_VERSION} AS csgship
