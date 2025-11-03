@@ -182,9 +182,6 @@ http {
         {{ if $temporalUI.enable }}
         # Temporal UI route with basic auth
         location {{ $temporalUI.public_path }} {
-            auth_basic "Please login with your account:";
-            auth_basic_user_file /opt/csghub/etc/temporal_ui/.htpasswd;
-
             proxy_pass http://127.0.0.1:8182;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
