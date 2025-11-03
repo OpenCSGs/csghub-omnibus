@@ -87,16 +87,8 @@ set -e
 
 {{- file.Write (printf "%s/ACCOUNTING_OP_MODE" $envDir) "has_balance|consume" }}
 {{- file.Write (printf "%s/ACCOUNTING_API_BASE" $envDir) $csghub.external_url }}
-{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
-{{- $seed := "" -}}
-{{- if file.Exists $seedFile -}}
-  {{- $seed = file.Read $seedFile -}}
-{{- end -}}
-{{- if not $seed -}}
-  {{- $seed = random.Alpha 48 -}}
-  {{- file.Write $seedFile $seed -}}
-{{- end -}}
-{{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 }}
+
+{{- $apiToken := tmpl.Exec "GenHubApiToken" . }}
 {{- file.Write (printf "%s/ACCOUNTING_API_KEY" $envDir) $apiToken }}
 {{- file.Write (printf "%s/OPENCSG_HUB_BASE_URL" $envDir) $csghub.external_url }}
 {{- file.Write (printf "%s/OPENCSG_HUB_ACCESS_TOKEN" $envDir) $apiToken }}

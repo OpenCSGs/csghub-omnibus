@@ -30,22 +30,6 @@
 {{- $server := (datasource "config").server }}
 {{- $serverCasdoor := $server.casdoor }}
 
-{{- define "GenSeed" -}}
-{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
-{{- $seed := "" -}}
-{{- if file.Exists $seedFile -}}
-  {{- $seed = file.Read $seedFile -}}
-{{- end -}}
-{{- if not $seed -}}
-  {{- $seed = random.Alpha 48 -}}
-  {{- file.Write $seedFile $seed -}}
-{{- end -}}
-{{- $seed -}}
-{{- end -}}
-
-{{- define "GenClientId" -}}
-{{- printf "%s%s" (tmpl.Exec "GenSeed" .) . | crypto.SHA256 | strings.Trunc 20 -}}
-{{- end }}
 window.envConfig = {
     VITE_APP_BASE_WEB: {{ $csgshipEndpoint | squote }},
     VITE_APP_BASE_API: {{ $csgshipApiEndpoint | squote }},

@@ -19,16 +19,7 @@ set -e
 {{- file.Write (printf "%s/CSGHUB_PORTAL_ON_PREMISE" $envDir) "true" }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_SENSITIVE_CHECK" $envDir) "false" }}
 
-{{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
-{{- $seed := "" -}}
-{{- if file.Exists $seedFile -}}
-  {{- $seed = file.Read $seedFile -}}
-{{- end -}}
-{{- if not $seed -}}
-  {{- $seed = random.Alpha 48 -}}
-  {{- file.Write $seedFile $seed -}}
-{{- end -}}
-{{- $apiToken := crypto.PBKDF2 "opencsg" $seed 1024 64 -}}
+{{- $apiToken := tmpl.Exec "GenHubApiToken" . }}
 
 {{- $csghub := (datasource "config").csghub }}
 {{- $url := conv.URL $csghub.external_url }}
@@ -62,7 +53,7 @@ set -e
 {{- $casdoorParts := $casdoorListen | strings.Split ":" }}
 {{- $casdoorHost := index $casdoorParts 0 }}
 {{- $casdoorPort := index $casdoorParts 1 }}
-{{- $casdoorClientId := printf "%sCSGHub" $seed | crypto.SHA256 | strings.Trunc 20 }}
+{{- $casdoorClientId := tmpl.Exec "GenClientId" "CSGHub" }}
 {{- $callback := printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/callback/casdoor&scope=read&state=casdoor" $url.Scheme $host $casdoorPort $casdoorClientId $csghub.external_url }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_LOGIN_URL" $envDir) $callback }}
 
