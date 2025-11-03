@@ -13,7 +13,7 @@ This project includes unmodified binary components from third-party open source 
    - Code Repository: http://thekelleys.org.uk/dnsmasq/
 
 3. **Casdoor** (Apache License 2.0)
-   - Source: Official Docker image `casbin/casdoor:v1.799.0`
+   - Source: Official Docker image `casbin/casdoor:v1.929.0`
    - Code Repository: https://github.com/casdoor/casdoor
 
 4. **Consul** (MPL-2.0 License)
@@ -52,8 +52,17 @@ This project includes unmodified binary components from third-party open source 
     - Source: Compiled from unmodified source code (official release)
     - Code Repository: https://github.com/redis/redis
 
+
 13. **Temporal** (MIT License)
     - Source: Official Docker image `temporalio/auto-setup:1.25.1`
     - Code Repository: https://github.com/temporalio/temporal
+
+14. **Loki** (Apache License 2.0)
+    - Source: Official Docker image `grafana/loki:3.0.0`
+    - Code Repository: https://github.com/grafana/loki
+
+15. **Prometheus** (Apache License 2.0)
+    - Source: Official Docker image `prom/prometheus:v3.0.0`
+    - Code Repository: https://github.com/prometheus/prometheus
 
 Full license texts are available in the `/opt/csghub/LICENSES` directory.
