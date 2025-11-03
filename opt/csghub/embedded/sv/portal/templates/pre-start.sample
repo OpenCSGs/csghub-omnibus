@@ -48,13 +48,9 @@ set -e
 
 {{- $urlParts := $url.Host | strings.Split ":" }}
 {{- $host := index $urlParts 0 | default "csghub.example.com" }}
-{{- $casdoor := (datasource "config").casdoor }}
-{{- $casdoorListen := $casdoor.listen }}
-{{- $casdoorParts := $casdoorListen | strings.Split ":" }}
-{{- $casdoorHost := index $casdoorParts 0 }}
-{{- $casdoorPort := index $casdoorParts 1 }}
+{{- $casdoor := tmpl.Exec "config.casdoor.conn" . | data.YAML }}
 {{- $casdoorClientId := tmpl.Exec "GenClientId" "CSGHub" }}
-{{- $callback := printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/callback/casdoor&scope=read&state=casdoor" $url.Scheme $host $casdoorPort $casdoorClientId $csghub.external_url }}
+{{- $callback := printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/callback/casdoor&scope=read&state=casdoor" $url.Scheme $host $casdoor.port $casdoorClientId $csghub.external_url }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_LOGIN_URL" $envDir) $callback }}
 
 {{- $s3 := $portal.s3 }}

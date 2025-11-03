@@ -316,15 +316,11 @@ http {
     }
     {{- end }}
 
-    {{ $casdoor := (datasource "config").casdoor -}}
-    {{- $casdoorListen := $casdoor.listen -}}
-    {{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
-    {{- $casdoorHost := index $casdoorParts 0 -}}
-    {{- $casdoorPort := index $casdoorParts 1 -}}
+    {{ $casdoor := tmpl.Exec "config.casdoor.conn" . | data.YAML -}}
     # Casdoor service configuration
     server {
         {{- if eq $url.Scheme "https" }}
-        listen {{ $casdoorPort }} ssl;
+        listen {{ $casdoor.port }} ssl;
         server_name {{ $host }};
 
         ssl_certificate {{ $csghubCert }};
@@ -333,7 +329,7 @@ http {
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
-        listen {{ $casdoorPort }};
+        listen {{ $casdoor.port }};
         server_name {{ $host }};
         {{- end }}
 

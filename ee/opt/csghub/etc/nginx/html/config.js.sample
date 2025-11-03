@@ -27,20 +27,9 @@
    {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
 {{- end }}
 {{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
-{{- $server := (datasource "config").server }}
-{{- $serverCasdoor := $server.casdoor }}
-
 window.envConfig = {
     VITE_APP_BASE_WEB: {{ $csgshipEndpoint | squote }},
     VITE_APP_BASE_API: {{ $csgshipApiEndpoint | squote }},
-    {{- $csghub := (datasource "config").csghub }}
-    {{- $url := conv.URL $csghub.external_url }}
-    {{- $urlParts := $url.Host | strings.Split ":" }}
-    {{- $host := index $urlParts 0 | default "csghub.example.com" }}
-    {{- $casdoor := (datasource "config").casdoor }}
-    {{- $casdoorListen := $casdoor.listen }}
-    {{- $casdoorParts := $casdoorListen | strings.Split ":" }}
-    {{- $casdoorHost := index $casdoorParts 0 }}
-    {{- $casdoorPort := index $casdoorParts 1 }}
-    VITE_APP_LOGIN_URL: {{ printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/account/casdoor/login/callback&scope=profile&state=casdoor" $url.Scheme $host $casdoorPort (tmpl.Exec "GenClientId" "CSGShip") $csghub.external_url | squote }}
+    {{- $casdoor := tmpl.Exec "config.casdoor.conn" . }}
+    VITE_APP_LOGIN_URL: {{ printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/account/casdoor/login/callback&scope=profile&state=casdoor" $url.Scheme $host $casdoor.port (tmpl.Exec "GenClientId" "CSGShip") $csghub.external_url | squote }}
 };

@@ -1,6 +1,7 @@
 {{- $temporal := (datasource "config").temporal -}}
-{{- $csghub := (datasource "config").csghub }}
 {{- $temporalUI := (datasource "config").temporal_ui -}}
+{{- $csghub := (datasource "config").csghub }}
+{{- $server := (datasource "config").server }}
 temporalGrpcAddress: {{ printf "%s:%d" $temporal.rpc.bind_on_ip $temporal.rpc.grpc_port }}
 port: {{ $temporalUI.listen_port }}
 publicPath: {{ $temporalUI.public_path }}
@@ -39,19 +40,7 @@ tls:
   keyData:
   enableHostVerification: false
   serverName:
-{{- $server := (datasource "config").server }}
-{{- $casdoor := (datasource "config").casdoor -}}
-{{- $url := conv.URL $csghub.external_url -}}
-{{- $urlParts := $url.Host | strings.Split ":" -}}
-{{- $host := index $urlParts 0 -}}
-{{- $casdoorListen := $casdoor.listen -}}
-{{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
-{{- $casdoorPort := "8000" -}}
-{{- if eq (len $casdoorParts) 2 -}}
-  {{- $casdoorPort = index $casdoorParts 1 -}}
-{{- end -}}
-{{- $serverCasdoor := $server.casdoor -}}
-{{- $provider := $serverCasdoor.endpoint | default (printf "%s://%s:%s" $url.Scheme $host $casdoorPort) }}
+{{- $provider := $server.casdoor.endpoint | tmpl.Exec "endpoint.casdoor" . }}
 auth:
   enabled: true
   providers:

@@ -1,16 +1,6 @@
 {{- $csghub := (datasource "config").csghub }}
-{{- $url := conv.URL $csghub.external_url -}}
-{{- $urlParts := $url.Host | strings.Split ":" -}}
-{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
-{{- $casdoor := (datasource "config").casdoor }}
-{{- $casdoorListen := $casdoor.listen -}}
-{{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
-{{- $casdoorHost := index $casdoorParts 0 -}}
-{{- $casdoorPort := index $casdoorParts 1 -}}
-{{- if eq $casdoorHost "127.0.0.1" -}}
-{{- $casdoorHost = $host -}}
-{{- end -}}
-{{- $casdoorEndpoint := printf "%s://%s:%s" $url.Scheme $casdoorHost $casdoorPort -}}
+{{- $casdoorEndpoint := tmpl.Exec "endpoint.casdoor" . -}}
+{{- $casdoorDB := tmpl.Exec "config.casdoor.db" . | data.YAML -}}
 --
 -- Record Timestamp
 --
@@ -40,7 +30,7 @@ SELECT pg_catalog.set_config('search_path', 'public', false);
 -- Name: application; Type: TABLE; Schema: public; Owner: csghub
 --
 -- Connect to casdoor management database
-\connect {{ $casdoor.postgresql.name }}
+\connect {{ $casdoorDB.dbname }}
 
 -- Dynamically update application table (only if table exists)
 DO $$

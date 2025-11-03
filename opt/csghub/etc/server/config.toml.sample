@@ -118,17 +118,11 @@ nim_ngc_secret_name = "nvidia-nim-secrets"
 sync_interval = {{ $mirrorRepo.sync_interval }}
 
 {{ $casdoor := (datasource "config").casdoor -}}
-{{- $casdoorListen := $casdoor.listen -}}
-{{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
-{{- $casdoorPort := "8000" -}}
-{{- if eq (len $casdoorParts) 2 -}}
-  {{- $casdoorPort = index $casdoorParts 1 -}}
-{{- end -}}
 {{- $serverCasdoor := $server.casdoor -}}
 [casdoor]
 client_id = {{ tmpl.Exec "GenClientId" "CSGHub" | quote }}
 client_secret = {{ tmpl.Exec "GenClientSecret" "CSGHub" | quote }}
-endpoint = {{ $serverCasdoor.endpoint | default (printf "%s://%s:%s" $url.Scheme $host $casdoorPort) | quote }}
+endpoint = {{ $serverCasdoor.endpoint | default (tmpl.Exec "endpoint.casdoor" .) | quote }}
 certificate = {{ $serverCasdoor.certificate | quote }}
 organization_name = {{ $serverCasdoor.organization_name | quote }}
 application_name = {{ $serverCasdoor.application_name | quote }}

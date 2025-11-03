@@ -736,7 +736,7 @@ casdoor:
 
   ## Database configuration
   postgresql:
-    name: "csghub_casdoor"        ## Database name
+    dbname: "csghub_casdoor"      ## Database name
     host: "127.0.0.1"             ## Database host
     port: 5432                    ## Database port
     user: "csghub"                ## Database user

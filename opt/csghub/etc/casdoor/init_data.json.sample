@@ -27,16 +27,7 @@
    {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
 {{- end }}
 {{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
-
-{{- $casdoor := (datasource "config").casdoor -}}
-{{- $casdoorListen := $casdoor.listen -}}
-{{- $casdoorParts := $casdoorListen | strings.Split ":" -}}
-{{- $casdoorHost := index $casdoorParts 0 -}}
-{{- $casdoorPort := index $casdoorParts 1 -}}
-{{- if eq $casdoorHost "127.0.0.1" -}}
-{{- $casdoorHost = $host -}}
-{{- end -}}
-{{- $casdoorEndpoint := printf "%s://%s:%s" $url.Scheme $casdoorHost $casdoorPort -}}
+{{- $casdoorEndpoint := tmpl.Exec "endpoint.casdoor" . -}}
 {
   "organizations": [
     {
