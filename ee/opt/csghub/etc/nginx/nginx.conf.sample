@@ -96,47 +96,34 @@ http {
     limit_conn_zone $binary_remote_addr zone=addr:10m;
     {{- end }}
 
-    {{- $csghub := (datasource "config").csghub -}}
-    {{- $url := conv.URL $csghub.external_url -}}
-    {{- $urlParts := $url.Host | strings.Split ":" -}}
-    {{- $host := index $urlParts 0 | default "csghub.example.com" -}}
-    {{- $port := "" -}}
-    {{- if gt (len $urlParts) 1 -}}
-      {{- $port = index $urlParts 1 -}}
-    {{- else -}}
-      {{- if eq $url.Scheme "https" -}}
-        {{- $port = "443" -}}
-      {{- else -}}
-        {{- $port = "80" -}}
-      {{- end -}}
-    {{- end -}}
+    {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
 
     {{- $server := (datasource "config").server -}}
     {{- $nginx := (datasource "config").nginx -}}
     {{- $dataDir := $nginx.data }}
 
-    {{- $csghubCert := $nginx.ssl_certificate | default (printf "/etc/csghub/ssl/%s.crt" $host) | quote }}
-    {{- $csghubCertKey := $nginx.ssl_certificate_key | default (printf "/etc/csghub/ssl/%s.key" $host) | quote }}
+    {{- $csghubCert := $nginx.ssl_certificate | default (printf "/etc/csghub/ssl/%s.crt" $csghub.host) | quote }}
+    {{- $csghubCertKey := $nginx.ssl_certificate_key | default (printf "/etc/csghub/ssl/%s.key" $csghub.host) | quote }}
 
-    {{- if eq $url.Scheme "https" -}}
+    {{- if eq $csghub.scheme "https" -}}
     # Main server configurations
     server {
         listen 80;
-        server_name {{ $host }};
+        server_name {{ $csghub.host }};
 
         return 301 https://$host$request_uri;
     }
     {{- end }}
 
     server {
-        {{- if eq $url.Scheme "https" }}
+        {{- if eq $csghub.scheme "https" }}
         listen 443 ssl;
         {{- else }}
         listen 80;
         {{- end }}
-        server_name {{ $host }};
+        server_name {{ $csghub.host }};
 
-        {{- if eq $url.Scheme "https" }}
+        {{- if eq $csghub.scheme "https" }}
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
 
@@ -225,7 +212,7 @@ http {
         }
 
         {{- $runner := (datasource "config").runner -}}
-        {{- if and (not $runner.use_public_domain) (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+        {{- if and (not $runner.use_public_domain) (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
         # Endpoint route
         location /endpoint/ {
             proxy_pass http://127.0.0.1:8083;
@@ -259,25 +246,25 @@ http {
         }
     }
 
-    {{ if and $runner.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) -}}
+    {{ if and $runner.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) -}}
     {{- $rootDomain := "example.com" }}
-    {{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
-    {{- $hostParts := strings.Split "." $host }}
+    {{- if and $csghub.host (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
+    {{- $hostParts := strings.Split "." $csghub.host }}
     {{- if le (len $hostParts) 2 }}
-    {{- $rootDomain = $host }}
+    {{- $rootDomain = $csghub.host }}
     {{- else }}
-    {{- $rootDomain = regexp.Replace "^[^.]+\\." "" $host }}
+    {{- $rootDomain = regexp.Replace "^[^.]+\\." "" $csghub.host }}
     {{- end }}
     {{- end }}
     server {
-        {{- if eq $url.Scheme "https" }}
+        {{- if eq $csghub.scheme "https" }}
         listen 443 ssl;
         {{- else }}
         listen 80;
         {{- end }}
         server_name {{ printf "*.public.%s" $rootDomain }};
 
-        {{- if eq $url.Scheme "https" }}
+        {{- if eq $csghub.scheme "https" }}
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
 
@@ -317,9 +304,9 @@ http {
     {{ $casdoor := tmpl.Exec "config.casdoor.conn" . | data.YAML -}}
     # Casdoor service configuration
     server {
-        {{- if eq $url.Scheme "https" }}
+        {{- if eq $csghub.scheme "https" }}
         listen {{ $casdoor.port }} ssl;
-        server_name {{ $host }};
+        server_name {{ $csghub.host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
@@ -328,7 +315,7 @@ http {
         ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
         listen {{ $casdoor.port }};
-        server_name {{ $host }};
+        server_name {{ $csghub.host }};
         {{- end }}
 
         {{- if $nginx.rate_limit.enable }}
@@ -358,9 +345,9 @@ http {
 
     # More MinIO server configuration
     server {
-        {{- if eq $url.Scheme "https" }}
+        {{- if eq $csghub.scheme "https" }}
         listen 9001 ssl;
-        server_name {{ $host }};
+        server_name {{ $csghub.host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
@@ -369,7 +356,7 @@ http {
         ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
         listen 9001;
-        server_name {{ $host }};
+        server_name {{ $csghub.host }};
         {{- end }}
 
         ignore_invalid_headers off;
@@ -409,15 +396,15 @@ http {
     {{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
     {{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
     {{- if eq $csgshipFrontendHost "127.0.0.1" -}}
-    {{- $csgshipFrontendHost = $host -}}
+    {{- $csgshipFrontendHost = $csghub.host -}}
     {{- end -}}
     {{- $csgshipFrontendPort := "8001" -}}
     {{- if eq (len $csgshipFrontendParts) 2 -}}
        {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
     {{- end }}
-    {{- $csgshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipFrontendPort -}}
+    {{- $csgshipEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipFrontendPort -}}
     server {
-        {{- if eq $url.Scheme "https" }}
+        {{- if eq $csghub.scheme "https" }}
         listen {{ $csgshipFrontendPort }} ssl;
         server_name {{ $csgshipFrontendHost }};
 
@@ -443,15 +430,15 @@ http {
     {{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
     {{- $csgshipApiHost := index $csgshipApiParts 0 -}}
     {{- if eq $csgshipApiHost "127.0.0.1" -}}
-    {{- $csgshipApiHost = $host -}}
+    {{- $csgshipApiHost = $csghub.host -}}
     {{- end -}}
     {{- $csgshipApiPort := "8002" -}}
     {{- if eq (len $csgshipApiParts) 2 -}}
        {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
     {{- end }}
-    {{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
+    {{- $csgshipApiEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipApiPort -}}
     server {
-        {{- if eq $url.Scheme "https" }}
+        {{- if eq $csghub.scheme "https" }}
         listen {{ $csgshipApiPort }} ssl;
         server_name {{ $csgshipApiHost }};
 

@@ -1,4 +1,4 @@
-{{- $csghub := (datasource "config").csghub }}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
 {{- $casdoorEndpoint := tmpl.Exec "endpoint.casdoor" . -}}
 {{- $casdoorDB := tmpl.Exec "config.casdoor.db" . | data.YAML -}}
 --
@@ -44,7 +44,7 @@ BEGIN
             UPDATE
                 application
             SET
-                redirect_uris = ''["{{ $csghub.external_url }}/api/v1/callback/casdoor"]'',
+                redirect_uris = ''["{{ $csghub.external }}/api/v1/callback/casdoor"]'',
                 logo = ''{{ $casdoorEndpoint }}''||substring(logo from ''(/files/avatar/.*)'')
             WHERE
                 name in (''CSGHub'',''Csgship'',''CSGShip'')
@@ -66,7 +66,7 @@ BEGIN
             UPDATE
                 application
             SET
-                redirect_uris = ''["{{ $csghub.external_url }}/-/temporal/auth/sso/callback"]'',
+                redirect_uris = ''["{{ $csghub.external }}/-/temporal/auth/sso/callback"]'',
                 logo = ''{{ $casdoorEndpoint }}''||substring(logo from ''(/files/avatar/.*)'')
             WHERE
                 name = ''Admin''

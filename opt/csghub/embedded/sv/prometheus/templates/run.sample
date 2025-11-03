@@ -11,14 +11,14 @@ fi
 # fail on errors
 set -e
 
-{{- $csghub := (datasource "config").csghub }}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
 {{- $prometheus := (datasource "config").prometheus }}
 {{- $dataDir := $prometheus.data | default "/var/opt/csghub/prometheus" }}
 {{- $tsdb := $prometheus.tsdb }}
 {{- $tsdbPath := ($tsdb.path | default (printf "%s/data" $dataDir)) }}
 {{- $tsdbRetention := ($tsdb.retention | default "15d") }}
 {{- $listenAddr := ($prometheus.listen | default "127.0.0.1:9090") }}
-{{- $externalUrl := ($prometheus.external_url | default (printf "%s/-/prometheus" $csghub.external_url)) }}
+{{- $externalUrl := ($prometheus.external_url | default (printf "%s/-/prometheus" $csghub.external)) }}
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/prometheus/env -P \

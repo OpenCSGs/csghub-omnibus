@@ -1,7 +1,7 @@
 # Example Gitaly configuration file with all configuration blocks dynamically defined.
 
 {{- $gitaly := (datasource "config").gitaly }}
-{{- $csghub := (datasource "config").csghub }}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
 {{- $server := (datasource "config").server }}
 {{- $dataDir := $gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
 {{- $listenAddr := $gitaly.listen_addr | default "" -}}
@@ -79,7 +79,7 @@ grpc_latency_buckets = [{{- range $i, $v := $gitaly.prometheus.grpc_latency_buck
 custom_hooks_dir = {{ $gitaly.hooks.custom_hooks_dir | default (printf "%s/custom_hooks" $dataDir) | quote }}
 
 [gitlab]
-url = {{ $csghub.external_url | quote }}
+url = {{ $csghub.external | quote }}
 relative_url_root = {{ $csghub.relative_url_root | default "/" | quote }}
 secret_file = {{ $server.gitaly.secret_file | quote }}
 secret = {{ $server.gitaly.secret | quote }}

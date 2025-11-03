@@ -16,22 +16,19 @@ set -e
 {{- file.Write $configFile $entry }}
 {{- end }}
 
-{{- $csghub := (datasource "config").csghub -}}
-{{- $url := conv.URL $csghub.external_url -}}
-{{- $urlParts := $url.Host | strings.Split ":" -}}
-{{- $host := index $urlParts 0 -}}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
 {{- $deploy := $runner.deploy }}
-{{- if and $deploy.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
+{{- if and $deploy.use_public_domain (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
 {{- $rootDomain := "example.com" }}
-{{- if and $host (regexp.Match `^[a-zA-Z0-9.-]+$` $host) }}
-{{- $hostParts := strings.Split "." $host }}
+{{- if and $csghub.host (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
+{{- $hostParts := strings.Split "." $csghub.host }}
 {{- if le (len $hostParts) 2 }}
-{{- $rootDomain = $host }}
+{{- $rootDomain = $csghub.host }}
 {{- else }}
-{{- $rootDomain = regexp.Replace "^[^.]+\\." "" $host }}
+{{- $rootDomain = regexp.Replace "^[^.]+\\." "" $csghub.host }}
 {{- end }}
 {{- end }}
-{{- $entry := printf "cname=public.%s,%s" $rootDomain $host }}
+{{- $entry := printf "cname=public.%s,%s" $rootDomain $csghub.host }}
 {{- $configFile := printf "%s/%s.conf" $configDir (printf "public.%s" $rootDomain) }}
 {{- file.Write $configFile $entry }}
 {{- end }}

@@ -21,12 +21,11 @@ set -e
 
 {{- $apiToken := tmpl.Exec "GenHubApiToken" . }}
 
-{{- $csghub := (datasource "config").csghub }}
-{{- $url := conv.URL $csghub.external_url }}
-{{- file.Write (printf "%s/CSGHUB_PORTAL_STARHUB_BASE_URL" $envDir) $url }}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_STARHUB_BASE_URL" $envDir) $csghub.external }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_STARHUB_API_KEY" $envDir) $apiToken }}
 
-{{- if eq $url.Scheme "https" }}
+{{- if eq $csghub.scheme "https" }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_ENABLE_HTTPS" $envDir) "true" }}
 {{- else }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_ENABLE_HTTPS" $envDir) "false" }}
@@ -46,11 +45,9 @@ set -e
 /opt/csghub/bin/csghub-dbm -a update -d {{ $db.name }} -N {{ $db.user }}
 {{- end }}
 
-{{- $urlParts := $url.Host | strings.Split ":" }}
-{{- $host := index $urlParts 0 | default "csghub.example.com" }}
 {{- $casdoor := tmpl.Exec "config.casdoor.conn" . | data.YAML }}
 {{- $casdoorClientId := tmpl.Exec "GenClientId" "CSGHub" }}
-{{- $callback := printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/callback/casdoor&scope=read&state=casdoor" $url.Scheme $host $casdoor.port $casdoorClientId $csghub.external_url }}
+{{- $callback := printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/callback/casdoor&scope=read&state=casdoor" $csghub.scheme $csghub.host $casdoor.port $casdoorClientId $csghub.external }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_LOGIN_URL" $envDir) $callback }}
 
 {{- $s3 := $portal.s3 }}
@@ -58,13 +55,13 @@ set -e
 {{- $accessKeyId := $s3.access_key }}
 {{- $accessSecretKey := $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ENABLE_SSL" $envDir) $s3.secure }}
-{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_REGION" $envDir) ($s3.region | default (printf "%s:9000" $host)) }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_REGION" $envDir) ($s3.region | default (printf "%s:9000" $csghub.host)) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ACCESS_KEY_ID" $envDir) $accessKeyId }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ACCESS_KEY_SECRET" $envDir) $accessSecretKey }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_BUCKET" $envDir) $s3.bucket }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ENDPOINT" $envDir) $s3.endpoint }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_ENABLE_SSL" $envDir) ($additionalS3.secure | default $s3.secure) }}
-{{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_REGION" $envDir) ($s3.region | default (printf "%s:9000" $host)) }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_REGION" $envDir) ($s3.region | default (printf "%s:9000" $csghub.host)) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_ACCESS_KEY_ID" $envDir) ($additionalS3.accessKeyId | default $accessKeyId) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_ACCESS_KEY_SECRET" $envDir) ($additionalS3.accessSecretKey | default $accessSecretKey) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_BUCKET" $envDir) ($additionalS3.bucket | default $s3.bucket) }}

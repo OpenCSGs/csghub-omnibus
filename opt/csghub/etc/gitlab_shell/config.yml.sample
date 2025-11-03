@@ -2,7 +2,7 @@
 # If you change this file in a Merge Request, please also create
 # a Merge Request on https://gitlab.com/gitlab-org/omnibus-gitlab/merge_requests
 #
-{{- $csghub := (datasource "config").csghub -}}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
 {{- $gitlabShell := (datasource "config").gitlab_shell -}}
 # GitLab user. git by default
 user: git
@@ -14,7 +14,7 @@ user: git
 # only listen on a Unix domain socket. For Unix domain sockets use
 # "http+unix://<urlquoted-path-to-socket>", e.g.
 # "http+unix://%2Fpath%2Fto%2Fsocket"
-gitlab_url: {{ $csghub.external_url }}
+gitlab_url: {{ $csghub.external }}
 
 # When a http+unix:// is used in gitlab_url, this is the relative URL root to GitLab.
 # Not used if gitlab_url is http:// or https://.

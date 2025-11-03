@@ -52,45 +52,42 @@ set -e
 {{- file.Write (printf "%s/REDIS_PORT" $envDir) $redis.port }}
 
 
-{{- $csghub := (datasource "config").csghub }}
-{{- $url := conv.URL $csghub.external_url -}}
-{{- $urlParts := $url.Host | strings.Split ":" -}}
-{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
 {{- $csgship := (datasource "config").csgship -}}
 {{- $csgshipFrontendListen := $csgship.listen.frontend -}}
 {{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
 {{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
 {{- if eq $csgshipFrontendHost "127.0.0.1" -}}
-{{- $csgshipFrontendHost = $host -}}
+{{- $csgshipFrontendHost = $csghub.host -}}
 {{- end -}}
 {{- $csgshipFrontendPort := "8001" -}}
 {{- if eq (len $csgshipFrontendParts) 2 -}}
    {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
 {{- end }}
-{{- $csgshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipFrontendPort -}}
+{{- $csgshipEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipFrontendPort -}}
 
 {{- $csgshipApiListen := $csgship.listen.api -}}
 {{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
 {{- $csgshipApiHost := index $csgshipApiParts 0 -}}
 {{- if eq $csgshipApiHost "127.0.0.1" -}}
-{{- $csgshipApiHost = $host -}}
+{{- $csgshipApiHost = $csghub.host -}}
 {{- end -}}
 {{- $csgshipApiPort := "8002" -}}
 {{- if eq (len $csgshipApiParts) 2 -}}
    {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
 {{- end }}
-{{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
+{{- $csgshipApiEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipApiPort -}}
 
 {{- file.Write (printf "%s/csgship_WEB_URL" $envDir) $csgshipEndpoint }}
 {{- file.Write (printf "%s/csgship_API_URL" $envDir) $csgshipApiEndpoint }}
 {{- file.Write (printf "%s/USE_OPENAI_ASSISTANTS_API" $envDir) "false" }}
 
 {{- file.Write (printf "%s/ACCOUNTING_OP_MODE" $envDir) "has_balance|consume" }}
-{{- file.Write (printf "%s/ACCOUNTING_API_BASE" $envDir) $csghub.external_url }}
+{{- file.Write (printf "%s/ACCOUNTING_API_BASE" $envDir) $csghub.external }}
 
 {{- $apiToken := tmpl.Exec "GenHubApiToken" . }}
 {{- file.Write (printf "%s/ACCOUNTING_API_KEY" $envDir) $apiToken }}
-{{- file.Write (printf "%s/OPENCSG_HUB_BASE_URL" $envDir) $csghub.external_url }}
+{{- file.Write (printf "%s/OPENCSG_HUB_BASE_URL" $envDir) $csghub.external }}
 {{- file.Write (printf "%s/OPENCSG_HUB_ACCESS_TOKEN" $envDir) $apiToken }}
 
 {{- $openai := $web.openai }}

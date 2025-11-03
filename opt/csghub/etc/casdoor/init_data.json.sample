@@ -1,32 +1,29 @@
-{{- $csghub := (datasource "config").csghub -}}
-{{- $url := conv.URL $csghub.external_url -}}
-{{- $urlParts := $url.Host | strings.Split ":" -}}
-{{- $host := index $urlParts 0 | default "csghub.example.com" -}}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
 
 {{- $csgship := (datasource "config").csgship -}}
 {{- $csgshipFrontendListen := $csgship.listen.frontend -}}
 {{- $csgshipFrontendParts := $csgshipFrontendListen | strings.Split ":" -}}
 {{- $csgshipFrontendHost := index $csgshipFrontendParts 0 -}}
 {{- if eq $csgshipFrontendHost "127.0.0.1" -}}
-{{- $csgshipFrontendHost = $host -}}
+{{- $csgshipFrontendHost = $csghub.host -}}
 {{- end -}}
 {{- $csgshipFrontendPort := "8001" -}}
 {{- if eq (len $csgshipFrontendParts) 2 -}}
    {{- $csgshipFrontendPort = index $csgshipFrontendParts 1 -}}
 {{- end }}
-{{- $csgshipEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipFrontendPort -}}
+{{- $csgshipEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipFrontendPort -}}
 
 {{- $csgshipApiListen := $csgship.listen.api -}}
 {{- $csgshipApiParts := $csgshipApiListen | strings.Split ":" -}}
 {{- $csgshipApiHost := index $csgshipApiParts 0 -}}
 {{- if eq $csgshipApiHost "127.0.0.1" -}}
-{{- $csgshipApiHost = $host -}}
+{{- $csgshipApiHost = $csghub.host -}}
 {{- end -}}
 {{- $csgshipApiPort := "8002" -}}
 {{- if eq (len $csgshipApiParts) 2 -}}
    {{- $csgshipApiPort = index $csgshipApiParts 1 -}}
 {{- end }}
-{{- $csgshipApiEndpoint := printf "%s://%s:%s" $url.Scheme $host $csgshipApiPort -}}
+{{- $csgshipApiEndpoint := printf "%s://%s:%s" $csghub.scheme $csghub.host $csgshipApiPort -}}
 {{- $casdoorEndpoint := tmpl.Exec "endpoint.casdoor" . -}}
 {
   "organizations": [
@@ -34,7 +31,7 @@
       "owner": "admin",
       "name": "OpenCSG",
       "displayName": "OpenCSG",
-      "websiteUrl": "{{ $csghub.external_url }}",
+      "websiteUrl": "{{ $csghub.external }}",
       "favicon": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/favicon.png",
       "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
       "passwordType": "bcrypt",
@@ -178,7 +175,7 @@
       "name": "CSGHub",
       "displayName": "CSGHub",
       "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
-      "homepageUrl": "{{ $csghub.external_url }}",
+      "homepageUrl": "{{ $csghub.external }}",
       "organization": "OpenCSG",
       "cert": "csghub-cert",
       "enablePassword": true,
@@ -389,7 +386,7 @@
         "id_token"
       ],
       "redirectUris": [
-        "{{ $csghub.external_url }}/api/v1/callback/casdoor"
+        "{{ $csghub.external }}/api/v1/callback/casdoor"
       ],
       "tokenFormat": "JWT",
       "tokenFields": [],
@@ -414,7 +411,7 @@
       "name": "Admin",
       "displayName": "Admin",
       "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
-      "homepageUrl": "{{ $csghub.external_url }}",
+      "homepageUrl": "{{ $csghub.external }}",
       "organization": "OpenCSG",
       "cert": "csghub-cert",
       "enablePassword": true,
@@ -619,7 +616,7 @@
         "id_token"
       ],
       "redirectUris": [
-        "{{ $csghub.external_url }}/-/temporal/auth/sso/callback"
+        "{{ $csghub.external }}/-/temporal/auth/sso/callback"
       ],
       "tokenFormat": "JWT",
       "tokenFields": [],

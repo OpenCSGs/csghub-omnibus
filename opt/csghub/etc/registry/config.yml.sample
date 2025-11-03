@@ -3,10 +3,7 @@
 {{- $minio := (datasource "config").minio -}}
 {{- $user := $minio.auth.user -}}
 {{- $password := $minio.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) -}}
-{{- $csghub := (datasource "config").csghub -}}
-{{- $url := conv.URL $csghub.external_url -}}
-{{- $urlParts := $url.Host | strings.Split ":" -}}
-{{- $host := index $urlParts 0 -}}
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
 version: 0.1
 log:
   {{- $logLevel := "info" -}}
@@ -33,7 +30,7 @@ storage:
     accesskey: {{ $auth.access_key | default $user }}
     secretkey: {{ $auth.secret_key | default $password }}
     region: {{ $auth.region | default "cn-north-1" }}
-    regionendpoint: {{ $auth.region_endpoint | default (printf "http://%s:9000" $host) }}
+    regionendpoint: {{ $auth.region_endpoint | default (printf "http://%s:9000" $csghub.host) }}
     forcepathstyle: {{ $auth.force_path_style | default false }}
     bucket: {{ $auth.bucket | default "csghub-registry" }}
     encrypt: {{ $auth.encrypt | default false }}
