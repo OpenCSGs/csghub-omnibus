@@ -89,12 +89,6 @@ RUN cd /csghub-ctl && \
     mkdir -p ${CSGHUB_HOME}/bin && \
     CGO_ENABLED=0 go build -buildvcs=false -o ${CSGHUB_HOME}/bin/csghub-ctl
 
-## Install KYML
-COPY /toolbox/kyml/. /kyml/
-RUN cd /kyml && \
-    mkdir -p ${CSGHUB_HOME}/bin && \
-    CGO_ENABLED=0 go build -buildvcs=false -o ${CSGHUB_HOME}/bin/kyml
-
 FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
