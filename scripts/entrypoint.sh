@@ -20,7 +20,9 @@ retry() {
 # Reconfigure all service enabled
 cd / && retry /usr/bin/csghub-ctl reconfigure
 
-echo -e "\nInitialization information is in the /etc/csghub.\n"
+echo -e "\nService will be ready in minute.\n"
+echo -e "Initialization information is in the /etc/csghub."
+echo -e "Please login using /etc/csghub/init_root_password\n"
 
 # Start runit daemon
 /opt/csghub/embedded/bin/runsvdir-start
