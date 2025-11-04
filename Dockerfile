@@ -265,6 +265,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 tzdata && \
             yum clean all; \
         fi; \
+        ln -s /usr/lib64/libcurl.so.4 /usr/lib64/libcurl-gnutls.so.4 || true; \
         rm -rf /var/cache/yum /tmp/* /var/tmp/* /var/log/*; \
     fi
 
