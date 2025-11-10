@@ -8,7 +8,6 @@ services:
         server:
           dataflow:
             address: "http://dataflow:8000"
-          saas: 
         csgship:
           enable: true
     ports:
@@ -20,8 +19,13 @@ services:
       - '9000:9000'
       - '9001:9001'
     volumes:
-      - ./csghub/etc:/etc/csghub
-      - ./csghub/logs:/var/log/csghub
-      - ./csghub/data:/var/opt/csghub
+      - csghub_etc:/etc/csghub
+      - csghub_logs:/var/log/csghub
+      - csghub_data:/var/opt/csghub
     restart: always
-    shm_size: '256m'
+    shm_size: '512m'
+
+volumes:
+  csghub_etc:
+  csghub_logs:
+  csghub_data:

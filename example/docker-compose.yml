@@ -1,22 +1,26 @@
 services:
   csghub:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.8.0-ce
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.12.0-ee
     environment:
       CSGHUB_OMNIBUS_CONFIG: |
         csghub:
           external_url: "http://csghub.example.com"
+        server:
+          dataflow:
+            address: "http://dataflow.csghub.example.com:8000"
+        csgship:
+          enable: false
     ports:
       - '80:80'
       - '2222:2222'
       - '8000:8000'
       - '9000:9000'
-      - '9001:9001'
     volumes:
       - csghub_etc:/etc/csghub
       - csghub_logs:/var/log/csghub
       - csghub_data:/var/opt/csghub
     restart: always
-    shm_size: '256m'
+    shm_size: '512m'
 
 volumes:
   csghub_etc:
