@@ -1,9 +1,11 @@
 {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
 {{- $server := (datasource "config").server -}}
+{{- $runner := (datasource "config").runner -}}
 {{- $praefect := (datasource "config").praefect -}}
 {{- $gitlabShell := (datasource "config").gitlab_shell -}}
 
 saas = {{ $server.saas }}
+oversea = false
 instance_id = ""
 enable_swagger = {{ $server.enable_swagger }}
 enable_https = {{ $server.enable_https }}
@@ -91,6 +93,13 @@ bucket_lookup = "auto"
 [jwt]
 signing_key = {{ $gitaly.jwt_secret | quote }}
 valid_hour = 24
+
+
+[space]
+internal_root_domain = "spaces.app.internal:8083"
+public_root_domain = {{ printf "public.%s" (tmpl.Exec "domain.root" .) | quote }}
+session_secret_key = {{ tmpl.Exec "GenSeed" . | crypto.SHA1 | quote }}
+pypi_index_url = {{ $runner.pip_index_url | quote }}
 
 {{ $model := $server.model -}}
 [model]
