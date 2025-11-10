@@ -172,6 +172,9 @@ csghub:
 #    services:
 #      - domain: "example.com"
 
+#  ## Define PyPi Source
+#  pip_index_url: "https://pypi.tuna.tsinghua.edu.cn/simple/"
+
 ##########################################################################
 ## Rproxy Service Configuration
 ## - Handles reverse proxy functionality
@@ -412,7 +415,7 @@ csghub:
 #  replication:
 #    batch_size: 10              ## Replication batch size
 
-#  ## Reconcile configuraiton
+#  ## Reconcile configuration
 #  reconciliation:
 #    scheduling_interval: "1m"                                                     ## Reconciliation scheduling interval
 #    histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]  ## Histogram buckets
