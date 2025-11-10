@@ -19,9 +19,9 @@ services:
       - '9000:9000'
       - '9001:9001'
     volumes:
-      - ./csghub/etc:/etc/csghub
-      - ./csghub/logs:/var/log/csghub
-      - ./csghub/data:/var/opt/csghub
+      - csghub_etc:/etc/csghub
+      - csghub_logs:/var/log/csghub
+      - csghub_data:/var/opt/csghub
     restart: always
     shm_size: '256m'
 
@@ -50,8 +50,14 @@ services:
   secscan:
     image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/csgship-secscan:latest
     volumes:
-      - ./csghub/data/worker:/code/data
-      - ./csghub/data/worker:/var/opt/gitrepos
+      - csghub_worker_data:/code/data
+      - csghub_worker_data:/var/opt/gitrepos
     depends_on:
       - csghub
     restart: always
+
+volumes:
+  csghub_worker_data:
+  csghub_etc:
+  csghub_logs:
+  csghub_data:
