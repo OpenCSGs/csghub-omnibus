@@ -5,7 +5,7 @@ ARG OS_TAG=ubuntu_22.04
 
 ARG CSGHUB_VERSION=v1.8.0-ce
 ARG RUNIT_VERSION=2.1.2
-ARG TOOLBOX_VERSION=1.2.7
+ARG TOOLBOX_VERSION=1.2.8
 ARG CONSUL_VERSION=1.20.5
 ARG MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
 ARG POSTGRESQL_VERSION=16.8
@@ -184,7 +184,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libcurl4t64 \
                 libpq-dev \
                 libcap2-bin \
-                vim lsof \
+                vim lsof jq \
                 tzdata; \
         else \
             # Ubuntu 22.04 or older (旧包名)
@@ -201,7 +201,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libcurl3-gnutls \
                 libpq-dev \
                 libcap2-bin \
-                vim lsof \
+                vim lsof jq \
                 tzdata; \
         fi && \
         apt clean && \
@@ -226,7 +226,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                     libcurl \
                     libcap \
                     postgresql-devel \
-                    vim lsof \
+                    vim lsof jq \
                     tzdata; \
             else \
                 # CentOS 8 (GeoIP)
@@ -243,7 +243,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                     libcurl \
                     libcap \
                     postgresql-devel \
-                    vim lsof \
+                    vim lsof jq \
                     tzdata; \
             fi && \
             dnf clean all; \
@@ -261,7 +261,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libxslt \
                 libcurl \
                 postgresql-devel \
-                vim lsof \
+                vim lsof jq \
                 tzdata && \
             yum clean all; \
         fi; \
