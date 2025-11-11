@@ -11,29 +11,33 @@ ulimit -n 15000
 
 # Run the pre-start script to ensure that the service meets the startup conditions
 {{- $gitaly := (datasource "config").gitaly }}
+{{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
 {{- $token := $gitaly.auth.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) }}
 {{- file.Write "/opt/csghub/etc/gitlab_shell/.gitlab_shell_secret" $token }}
 
 # Exit if execute with any errors
 set -e
 
-KEYS_DIRECTORY="${KEYS_DIRECTORY:-/etc/ssh}"
+KEYS_DIRECTORY="${KEYS_DIRECTORY:-"{{ $dataDir }}/ssh"}"
 SSH_DAEMON="${SSH_DAEMON:-"gitlab-sshd"}"
 
-if ls $KEYS_DIRECTORY/ssh_host_* 1> /dev/null 2>&1; then
+if [ ! -d "$KEYS_DIRECTORY" ]; then
+  mkdir -p "$KEYS_DIRECTORY" 2>/dev/null
+fi
+
+if ls /etc/ssh/ssh_host_* 1> /dev/null 2>&1; then
   echo "Using existing Host Keys"
   # copy from KEYS_DIRECTORY to /etc/ssh as needed
   if [ "$KEYS_DIRECTORY" != "/etc/ssh" ]; then
-      cp $KEYS_DIRECTORY/ssh_host_* "/etc/ssh/"
+      cp /etc/ssh/ssh_host_* $KEYS_DIRECTORY/
   fi
 else
   echo "Generating Host Keys"
   # generate host keys, placed into `/etc/ssh`
-  ssh-keygen -A
+  ssh-keygen -t rsa -b 4096 -f $KEYS_DIRECTORY/ssh_host_rsa_key -N ""
+  ssh-keygen -t ecdsa -b 521 -f $KEYS_DIRECTORY/ssh_host_ecdsa_key -N ""
+  ssh-keygen -t ed25519 -f $KEYS_DIRECTORY/ssh_host_ed25519_key -N ""
 fi
-
-# Allow user git access ssh host key pairs
-chmod 0664 /etc/ssh/ssh_host_*
 
 {{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
 if [ "${SSH_DAEMON}" == "gitlab-sshd" ]; then
