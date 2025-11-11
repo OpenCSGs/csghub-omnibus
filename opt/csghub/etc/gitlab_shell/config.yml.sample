@@ -4,6 +4,7 @@
 #
 {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
 {{- $gitlabShell := (datasource "config").gitlab_shell -}}
+{{- $dataDir := $gitlabShell.data | default "/var/opt/csghub/gitlab_shell" }}
 # GitLab user. git by default
 user: git
 
@@ -105,13 +106,13 @@ sshd:
   public_key_algorithms: [ssh-rsa, ssh-dss, ecdsa-sha2-nistp256, sk-ecdsa-sha2-nistp256@openssh.com, ecdsa-sha2-nistp384, ecdsa-sha2-nistp521, ssh-ed25519, sk-ssh-ed25519@openssh.com, rsa-sha2-256, rsa-sha2-512]
   # SSH host key files.
   host_key_files:
-    - /etc/ssh/ssh_host_rsa_key
-    - /etc/ssh/ssh_host_ecdsa_key
-    - /etc/ssh/ssh_host_ed25519_key
+    - {{ $dataDir }}/ssh/ssh_host_rsa_key
+    - {{ $dataDir }}/ssh/ssh_host_ecdsa_key
+    - {{ $dataDir }}/ssh/ssh_host_ed25519_key
   host_key_certs:
-    - /etc/ssh/ssh_host_rsa_key.pub
-    - /etc/ssh/ssh_host_ecdsa_key.pub
-    - /etc/ssh/ssh_host_ed25519_key.pub
+    - {{ $dataDir }}/ssh/ssh_host_rsa_key.pub
+    - {{ $dataDir }}/ssh/ssh_host_ecdsa_key.pub
+    - {{ $dataDir }}/ssh/ssh_host_ed25519_key.pub
   # GSSAPI-related settings
   gssapi:
     # Enable the gssapi-with-mic authentication method. Defaults to false.

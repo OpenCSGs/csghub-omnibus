@@ -6,6 +6,7 @@ Architecture: any
 Maintainer: OpenCSG, Inc. <support@opencsg.com>
 Depends: ca-certificates,
          netcat-openbsd,
+         openssh-client,
          lsof,
          libgd3,
          libxml2,
