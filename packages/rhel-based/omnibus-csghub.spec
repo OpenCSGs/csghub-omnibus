@@ -8,7 +8,7 @@ Vendor:         opencsg
 URL:            https://www.opencsg.com
 Packager:       opencsg <support@opencsg.com>
 
-Requires:       ca-certificates, libicu, readline, nmap-ncat, apr-util, GeoIP, gd, libxml2, libxslt, libcurl, lsof, glibc, libstdc++
+Requires:       ca-certificates, libicu, readline, nmap-ncat, apr-util, GeoIP, gd, libxml2, libxslt, libcurl, lsof, glibc, libstdc++, openssh-clients
 Conflicts:      %{name} < %{version}
 Obsoletes:      %{name} <= %{version}
 BuildArch:      ARCH
