@@ -67,7 +67,9 @@ cd /opt/csghub/service/server
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}
 # Create bucket
-[ -x "/opt/csghub/service/minio/create_bucket" ] && /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }}
+[ -x "/opt/csghub/service/minio/create_bucket" ] && \
+  /opt/csghub/service/minio/create_bucket {{ $server.s3.bucket }} && \
+  /opt/csghub/service/minio/create_bucket "csghub-runner"
 {{- end }}
 
 find {{ $configDir }} -mindepth 1 -maxdepth 1 ! -name '*.sample' ! -name 'seed' ! -name 'env' ! -name 'scripts' -exec cp -r {} {{ $dataDir }} \;

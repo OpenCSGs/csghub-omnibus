@@ -15,9 +15,9 @@ MINIO_ACCESS_KEY={{ $user }}                   # Access key
 MINIO_SECRET_KEY={{ $password }}               # Secret key
 
 # Validate argument count
-if [ "$#" -ne 1 ]; then
-    echo "Error: Script requires exactly one argument - bucket name"
-    echo "Usage: $0 <bucket_name> <anonymous>"
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+    echo "Error: Script requires 1 or 2 arguments - bucket name [anonymous]"
+    echo "Usage: $0 <bucket_name> [public|private]"
     exit 1
 fi
 
