@@ -450,10 +450,10 @@ csghub:
 #  data: "/var/opt/csghub/minio/data"  ## Data directory
 #  log: "/var/log/csghub/minio"        ## Log directory
 
-  ## Authentication
-  auth:
-    user: "minio"               ## Admin username
-    password: ""                ## Admin password
+#  ## Authentication
+#  auth:
+#    user: "minio"               ## Admin username
+#    password: ""                ## Admin password
 
 #  ## Environment variables
 #  environments:
@@ -708,8 +708,8 @@ csghub:
 ### Web UI configuration
 ## Web UI configuration
 #temporal_ui:
-#  enable: false                 ## Enable or disable Temporal UI
-#  listen_port: 8182             ## Port for Temporal UI web server
+#  enable: true                 ## Enable or disable Temporal UI
+#  listen_port: 8182            ## Port for Temporal UI web server
 #  public_path: "/-/temporal"   ## Public URL path for Temporal UI
 #  cors:
 #    cookie_insecure: false      ## Disable secure cookies for development
