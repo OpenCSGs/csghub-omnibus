@@ -94,10 +94,13 @@ bucket_lookup = "auto"
 signing_key = {{ $gitaly.jwt_secret | quote }}
 valid_hour = 24
 
-
 [space]
 internal_root_domain = "spaces.app.internal:8083"
+{{- if $runner.use_public_domain }}
 public_root_domain = {{ printf "public.%s" (tmpl.Exec "domain.root" .) | quote }}
+{{- else }}
+public_root_domain = ""
+{{- end }}
 session_secret_key = {{ tmpl.Exec "GenSeed" . | crypto.SHA1 | quote }}
 pypi_index_url = {{ $runner.pip_index_url | quote }}
 
