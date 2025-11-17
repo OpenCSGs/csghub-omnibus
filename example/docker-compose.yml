@@ -7,7 +7,7 @@ services:
           external_url: "http://csghub.example.com"
         server:
           dataflow:
-            address: "http://dataflow.csghub.example.com:8000"
+            address: "http://dataflow.example.com:30080"
         csgship:
           enable: false
     ports:
