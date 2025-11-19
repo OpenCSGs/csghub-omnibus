@@ -719,9 +719,9 @@ temporal:
 
 ## Web UI configuration
 temporal_ui:
-  enable: true                  ## Enable or disable Temporal UI
+  enable: false                 ## Enable or disable Temporal UI
   listen_port: 8182             ## Port for Temporal UI web server
-  public_path: "/-/temporal"   ## Public URL path for Temporal UI
+  public_path: "/-/temporal"    ## Public URL path for Temporal UI
   cors:
     cookie_insecure: false      ## Disable secure cookies for development
     allow_origins:              ## Allowed CORS origins
