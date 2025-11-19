@@ -32,31 +32,34 @@ fi
 
 COMMAND="/opt/csghub/embedded/bin/casdoor"
 
-# Initialize database
-(cd {{ $dataDir }} && $COMMAND || true)&
+LOGFILE={{ $dataDir }}/init.log
+(cd {{ $dataDir }} && $COMMAND > "$LOGFILE" 2>&1 ) &
+bg_pid=$!
+echo "Started casdoor (PID $bg_pid) for initialization..."
 
-# Wait to initialize
-while true; do
-  res=$(chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_exists "application")
-  if [ "$res" -gt 0 ]; then
-    break
-  fi
+echo "Waiting for casdoor to reach Radius initialization stage..."
+# Wait for specific log keyword: "Starting Radius server"
+until grep -q "Starting Radius server" "$LOGFILE"; do
+  sleep 1
 done
 
-# Clean up any existing processes
+echo "Detected 'Starting Radius server' in casdoor logs; initialization is complete."
+
+# Force-stop the casdoor process now that initialization is done
 echo "Checking for existing casdoor processes..."
 if pgrep -f "$COMMAND" >/dev/null; then
-    echo "Found existing casdoor process, attempting graceful shutdown..."
-    pkill -f "$COMMAND" || true
+  echo "Found existing casdoor process, attempting graceful shutdown..."
+  pkill -f "$COMMAND" || true
 
-    # Force kill if still running after graceful attempt
-    if pgrep -f "$COMMAND" >/dev/null; then
-        echo "Forcing termination of remaining processes..."
-        pkill -9 -f "$COMMAND" || true
-    fi
+  # Force kill if still running after graceful attempt
+  if pgrep -f "$COMMAND" >/dev/null; then
+    echo "Forcing termination of remaining processes..."
+    pkill -9 -f "$COMMAND" || true
+  fi
+else
+  echo "No existing casdoor process found."
 fi
 
 # Load local sql scripts
 cd /opt/csghub/service/casdoor
 [ -x "/opt/csghub/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_executor
-
