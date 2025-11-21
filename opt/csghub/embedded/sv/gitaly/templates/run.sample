@@ -6,13 +6,13 @@ exec 2>&1
 # Attempt to change ulimit before the set -e flag, ignore failures
 ulimit -n 15000
 
+# Exit if execute with any errors
+set -e
+
 # Run the pre-start script to ensure that the service meets the startup conditions
 if [ -x ./pre-start ]; then
   ./pre-start
 fi
-
-# Exit if execute with any errors
-set -e
 
 {{- $dataDir := (datasource "config").gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
 chown -R git:git {{ $dataDir }} || true

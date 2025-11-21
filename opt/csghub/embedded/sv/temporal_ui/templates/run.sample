@@ -3,13 +3,13 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# fail on errors
+set -e
+
 # Run the pre-start script to ensure that the service meets the startup conditions
 if [ -x ./pre-start ]; then
   ./pre-start
 fi
-
-# fail on errors
-set -e
 
 {{- $dataDir := (datasource "config").temporal_ui.data | default "/var/opt/csghub/temporal_ui" }}
 {{- $temporalDataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
