@@ -15,7 +15,6 @@ if [ -x ./pre-start ]; then
 fi
 
 {{- $dataDir := (datasource "config").gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
-chown -R git:git {{ $dataDir }} || true
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/gitaly/env -P \

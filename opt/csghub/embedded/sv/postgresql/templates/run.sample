@@ -12,7 +12,6 @@ if [ -x ./pre-start ]; then
 fi
 
 {{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql" }}
-chown -R postgres:postgres {{ $dataDir }} || true
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/postgresql/env -P \

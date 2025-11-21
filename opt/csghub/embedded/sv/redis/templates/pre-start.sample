@@ -7,5 +7,4 @@ exec 2>&1
 set -e
 
 {{- $dataDir := (datasource "config").redis.data | default "/var/opt/csghub/redis" }}
-chown -R redis:redis {{ $dataDir }} || true
 

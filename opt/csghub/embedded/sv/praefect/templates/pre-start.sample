@@ -8,7 +8,6 @@ set -e
 
 {{- $envDir := "/opt/csghub/etc/praefect/env" }}
 {{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
-chown -R git:git {{ $dataDir }} || true
 
 {{- $pidFile := printf "%s/praefect.pid" $dataDir }}
 if [ ! -s {{ $pidFile }} ]; then
