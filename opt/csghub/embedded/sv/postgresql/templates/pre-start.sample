@@ -13,7 +13,6 @@ set -e
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $dataDir := $postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
-chown -R postgres:postgres {{ $dataDir }} || true
 
 {{- file.Write (printf "%s/PGHOME" $envDir) "/opt/csghub/embedded/sv/postgresql" }}
 {{- file.Write (printf "%s/PGDATA" $envDir) $dataDir }}

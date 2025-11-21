@@ -7,7 +7,6 @@ exec 2>&1
 set -e
 
 {{- $dataDir := (datasource "config").nats.data | default "/var/opt/csghub/nats" }}
-chown -R nats:nats {{ $dataDir }} || true
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/nats/env -P \
