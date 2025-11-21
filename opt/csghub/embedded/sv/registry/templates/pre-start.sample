@@ -7,7 +7,6 @@ exec 2>&1
 set -e
 
 {{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
-chown -R registry:registry {{ $dataDir }}
 
 {{- $registry := (datasource "config").registry }}
 {{- $auth := $registry.auth }}

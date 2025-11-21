@@ -3,13 +3,13 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# Exit if execute with any errors
+set -e
+
 # Run the pre-start script to ensure that the service meets the startup conditions
 if [ -x ./pre-start ]; then
   ./pre-start
 fi
-
-# Exit if execute with any errors
-set -e
 
 exec chpst -e /opt/csghub/etc/minio/env -P \
   -u root:root \

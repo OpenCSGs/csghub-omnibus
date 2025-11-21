@@ -3,16 +3,15 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
+# fail on errors
+set -e
+
 # Run the pre-start script to ensure that the service meets the startup conditions
 if [ -x ./pre-start ]; then
   ./pre-start
 fi
 
-# fail on errors
-set -e
-
 {{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql" }}
-chown -R postgres:postgres {{ $dataDir }} || true
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/postgresql/env -P \

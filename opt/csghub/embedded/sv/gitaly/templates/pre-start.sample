@@ -10,7 +10,6 @@ set -e
 {{- $gitaly := (datasource "config").gitaly }}
 {{- $dataDir := $gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
 mkdir -p {{ $dataDir }}/run {{ $dataDir }}/repositories || true
-chown -R git:git {{ $dataDir }}/run {{ $dataDir }}/repositories
 
 # Create pid file and variable file
 {{- $pidFile := printf "%s/gitaly.pid" $dataDir }}
