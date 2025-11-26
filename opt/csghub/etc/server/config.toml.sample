@@ -104,11 +104,11 @@ public_root_domain = ""
 session_secret_key = {{ tmpl.Exec "GenSeed" . | crypto.SHA1 | quote }}
 pypi_index_url = {{ $runner.pip_index_url | quote }}
 
-{{ $model := $server.model -}}
+{{ $model := $runner.model -}}
 [model]
 deploy_timeout_in_min = {{ $model.deploy_timeout }}
-download_endpoint = {{ $model.download_endpoint | quote }}
-docker_reg_base = {{ $model.docker_reg_base | quote }}
+download_endpoint = {{ $csghub.external | quote }}
+docker_reg_base = {{ $model.registry | quote }}
 nim_docker_secret_name = "ngc-secret"
 nim_ngc_secret_name = "nvidia-nim-secrets"
 
