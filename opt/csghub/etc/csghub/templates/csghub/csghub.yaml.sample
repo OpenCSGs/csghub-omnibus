@@ -82,12 +82,6 @@ csghub:
 #    encrypt: false                       ## Server-side encryption
 #    secure: false                        ## Use HTTPS
 
-#  ## Model deployment configuration
-#  model:
-#    deploy_timeout: 60                                               ## Deployment timeout in minutes
-#    download_endpoint: "https://hub.opencsg.com"                     ## Model download URL
-#    docker_reg_base: "opencsg-registry.cn-beijing.cr.aliyuncs.com/"  ## Docker registry prefix
-
 #  ## Dataset processing settings
 #  dataset:
 #    prompt_max_jsonl_file_size: 1048576  ## Max JSONL file size for prompts
@@ -166,6 +160,11 @@ csghub:
 #  ## Deployment configuration
 #  namespace: "spaces"           ## Kubernetes namespace
 #  use_public_domain: true       ## Use a dedicate domain name
+
+#  ## Model deployment configuration
+#  model:
+#    deploy_timeout: 60                                        ## Deployment timeout in minutes
+#    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/"  ## Docker registry prefix
 
 #  ## Knative serving configuration
 #  knative:
