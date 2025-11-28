@@ -39,6 +39,18 @@ storage:
     skipverify: {{ $auth.skip_verify | default true }}
   {{- end }}
   {{- end }}
+  {{- if has $registry.storage "oss" }}
+  {{- $auth := $registry.storage.oss }}
+  oss:
+    accesskeyid: {{ $auth.access_key_id | default $user }}
+    accesskeysecret: {{ $auth.access_key_secret | default $password }}
+    region: {{ $auth.region | default "oss-cn-beijing" }}
+    regionendpoint: {{ $auth.region_endpoint | default (printf "http://csghub-registry.%s:9000" $csghub.host) }}
+    bucket: {{ $auth.bucket | default "csghub-registry" }}
+    encrypt: {{ $auth.encrypt | default false }}
+    secure: {{ $auth.secure | default false }}
+  {{- end }}
+  {{- end }}
   redirect:
     disable: true
 http:

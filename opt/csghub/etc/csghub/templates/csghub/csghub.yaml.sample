@@ -644,6 +644,14 @@ csghub:
 #      encrypt: false                              ## Server-side encryption (true/false)
 #      v4auth: true                                ## Use AWS Signature Version 4 (true/false)
 #      skip_verify: true                           ## Skip TLS certificate verification (true/false)
+#     oss:
+#       access_key_id: "xxx"
+#       access_key_secret: "xxx"
+#       region: "cn-beijing"
+#       region_endpoint: "https://<bucket>.oss-cn-beijing.aliyuncs.com"
+#       bucket: "csghub-registry"
+#       encrypt: false
+#       secure: true
 
 ##########################################################################
 ## NATS Configuration
