@@ -38,7 +38,6 @@ storage:
     v4auth: {{ $auth.v4auth | default true }}
     skipverify: {{ $auth.skip_verify | default true }}
   {{- end }}
-  {{- end }}
   {{- if has $registry.storage "oss" }}
   {{- $auth := $registry.storage.oss }}
   oss:
