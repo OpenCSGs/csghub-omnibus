@@ -291,7 +291,8 @@ notification:
 ##########################################################################
 ## Temporal-Worker Service Configuration
 ##########################################################################
-temporal_worker: {}
+temporal_worker:
+  enable: true
 
 ##########################################################################
 ## Gitaly Service Configuration
@@ -488,9 +489,9 @@ consul:
   bootstrap_expect: 3                                  ## Expected server nodes
   log_dir: "/var/log/csghub/consul"                    ## Log directory
   bind_addr: "0.0.0.0"                                 ## Network interface address to bind to
-  client_addr: "0.0.0.0"                               ## Indicate Which client can connect to
-  advertise_addr: "127.0.0.1"                          ## Address to advertise to other Consul nodes
-  retry_join: ["127.0.0.1", "127.0.0.2", "127.0.0.3"]  ## List of Consul server addresses to join during startup
+  client_addr: "127.0.0.1"                             ## Indicate Which client can connect to
+  advertise_addr: "10.0.0.5"                           ## Address to advertise to other Consul nodes
+  retry_join: ["10.0.0.5", "10.0.0.6", "10.0.0.7"]     ## List of Consul server addresses to join during startup
 
   ## Web UI configuration
   ui_config:
