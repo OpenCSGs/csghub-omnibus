@@ -31,3 +31,15 @@
 {{- define "GenClientSecret" -}}
   {{- printf "%s%s" (tmpl.Exec "GenSeed" .) . | crypto.SHA256 | regexp.Replace "^.{24}" "" -}}
 {{- end -}}
+
+# Generate a base64-looking password
+{{- define "GenInitPass" -}}
+  {{- /* Generate a deterministic 24-character password from seed and input */ -}}
+  {{- $seed := tmpl.Exec "GenSeed" . -}}
+  {{- $raw := printf "%s%s" $seed . | base64.Encode | strings.Trunc 24 -}}
+  {{- $chars := strings.Split $raw "" -}}
+  {{- $reversed := "" -}}
+  {{- range $i, $c := $chars -}}
+    {{- $reversed = printf "%s%s" $c $reversed -}}
+  {{- end -}}
+{{- end -}}
