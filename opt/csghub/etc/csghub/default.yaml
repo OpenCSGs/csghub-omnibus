@@ -414,13 +414,13 @@ praefect:
     - name: "default"                      ## Virtual storage name
       nodes:
         - storage: "gitaly-01"             ## Gitaly storage name
-          address: "tcp://10.6.0.21:8075"  ## Gitaly address
+          address: "tcp://10.0.0.5:8075"  ## Gitaly address
           token: ""                        ## Gitaly token
         - storage: "gitaly-02"
-          address: "tcp://10.6.0.22:8075"
+          address: "tcp://10.0.0.6:8075"
           token: ""
         - storage: "gitaly-03"
-          address: "tcp://10.6.0.23:8075"
+          address: "tcp://10.0.0.7:8075"
           token: ""
 
   ## Replication settings
