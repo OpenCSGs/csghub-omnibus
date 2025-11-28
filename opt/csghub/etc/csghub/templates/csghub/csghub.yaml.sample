@@ -527,8 +527,8 @@ csghub:
 #  enable: false                  ## Enable Patroni HA service
 #  scope: "postgresql-ha"         ## Cluster name/identifier
 #  namespace: "/service"          ## DCS namespace path
-#  name: "patroni-node-01"        ## Unique node identifier
-#  listen: "127.0.0.1"            ## Listen address
+#  name: "patroni-01"             ## Unique node identifier
+#  listen: "10.0.0.5"             ## Listen address
 
 #  ## Logging configuration
 #  log:
