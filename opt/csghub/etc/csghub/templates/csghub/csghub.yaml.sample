@@ -76,7 +76,7 @@ csghub:
 #    secret_key: ""                       ## S3 secret key
 #    region: "cn-north-1"                 ## S3 region
 #    endpoint: ""                         ## S3 endpoint URL
-#    internal_endpoint: "127.0.0.1:9000"  ## S3 internal endpoint URL
+#    internal_endpoint: ""                ## S3 internal endpoint URL
 #    path_style: "true"                   ## Bucket lookup style
 #    bucket: "csghub-server"              ## Default bucket name
 #    encrypt: false                       ## Server-side encryption
