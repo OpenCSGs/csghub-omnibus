@@ -68,7 +68,7 @@ type = "gitaly"
 address = {{ $gitaly.address | quote }}
 storge = {{ $gitaly.storage | quote }}
 token = {{ $gitalyToken | quote }}
-jwt_secret ={{ $gitaly.jwt_secret | quote }}
+jwt_secret ={{ $gitaly.secret | default (tmpl.Exec "GenSeed" . | crypto.SHA256) | quote }}
 
 [frontend]
 url = {{ $csghub.external | quote }}
@@ -91,7 +91,7 @@ bucket_lookup = "auto"
 {{- end }}
 
 [jwt]
-signing_key = {{ $gitaly.jwt_secret | quote }}
+signing_key = {{ $gitaly.secret | default (tmpl.Exec "GenSeed" . | crypto.SHA256) | quote }}
 valid_hour = 24
 
 [space]

@@ -14,9 +14,6 @@ retry() {
   done
 }
 
-# Generate seed file for create api token
-[ -s /opt/csghub/etc/csghub/.seed ] || date +%s | md5sum | head -c 32 > /opt/csghub/etc/csghub/.seed
-
 # Reconfigure all service enabled
 cd / && retry /usr/bin/csghub-ctl reconfigure
 
