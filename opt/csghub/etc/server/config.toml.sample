@@ -252,9 +252,9 @@ max_un_lfs_file_size = {{ $git.max_un_lfs_file_size }}
 skip_lfs_file_validation = {{ $git.skip_lfs_file_validation }}
 
 
-{{ $notification := (datasource "config").notification -}}
-{{- if $notification.enable }}
-{{- $notifyListen := $notification.listen -}}
+{{ $notifier := (datasource "config").notifier -}}
+{{- if $notifier.enable }}
+{{- $notifyListen := $notifier.listen -}}
 {{- $notifyParts := $notifyListen | strings.Split ":" -}}
 {{- $notifyHost := index $notifyParts 0 | default "127.0.0.1" -}}
 {{- $notifyPort := "8095" -}}
@@ -264,15 +264,15 @@ skip_lfs_file_validation = {{ $git.skip_lfs_file_validation }}
 [notification]
 host = {{ printf "http://%s" $notifyHost | quote }}
 port = {{ $notifyPort }}
-mailer_host = {{ $notification.smtp.host | quote }}
-mailer_port = {{ $notification.smtp.port }}
-mailer_username = {{ $notification.smtp.username | quote }}
-mailer_password = {{ $notification.smtp.password | quote }}
-repo_sync_timezone = {{ $notification.repo_sync_timezone | quote }}
-broadcast_user_page_size = {{ $notification.broadcast_user_page_size }}
-broadcast_email_page_size = {{ $notification.broadcast_email_page_size }}
+mailer_host = {{ $notifier.smtp.host | quote }}
+mailer_port = {{ $notifier.smtp.port }}
+mailer_username = {{ $notifier.smtp.username | quote }}
+mailer_password = {{ $notifier.smtp.password | quote }}
+repo_sync_timezone = {{ $notifier.repo_sync_timezone | quote }}
+broadcast_user_page_size = {{ $notifier.broadcast_user_page_size }}
+broadcast_email_page_size = {{ $notifier.broadcast_email_page_size }}
 
-{{ $feishu := $notification.feishu -}}
+{{ $feishu := $notifier.feishu -}}
 [feishu]
 app_id = {{ $feishu.app_id | quote }}
 app_secret = {{ $feishu.app_secret | quote }}
