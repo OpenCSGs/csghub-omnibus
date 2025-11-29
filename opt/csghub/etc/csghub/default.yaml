@@ -35,6 +35,7 @@ server:
   docs_host: "http://127.0.0.1:6636"  ## Documentation service host
   log:
     dir: "/var/log/csghub/server"     ## Server log directory
+    level: "info"
 
   ## PostgreSQL database configuration
   postgresql:
