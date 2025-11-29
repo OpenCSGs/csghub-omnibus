@@ -81,8 +81,11 @@ custom_hooks_dir = {{ $gitaly.hooks.custom_hooks_dir | default (printf "%s/custo
 [gitlab]
 url = {{ $csghub.external | quote }}
 relative_url_root = {{ $csghub.relative_url_root | default "/" | quote }}
-secret_file = {{ $server.gitaly.secret_file | quote }}
-secret = {{ $server.gitaly.secret | quote }}
+{{- if $gitaly.secret_file }}
+secret_file = {{ $gitaly.secret_file | quote }}
+{{- else }}
+secret = {{ $gitaly.secret | default (tmpl.Exec "GenSeed" . | crypto.SHA256) | quote }}
+{{- end }}
 
 [gitlab.http-settings]
 read_timeout = {{ $gitaly.http_settings.read_timeout }}

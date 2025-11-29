@@ -35,6 +35,7 @@ server:
   docs_host: "http://127.0.0.1:6636"  ## Documentation service host
   log:
     dir: "/var/log/csghub/server"     ## Server log directory
+    level: "info"
 
   ## PostgreSQL database configuration
   postgresql:
@@ -63,9 +64,7 @@ server:
     address: "tcp://127.0.0.1:8075"                       ## Gitaly service address
     storage: "default"                                    ## Default storage name
     token: ""                                             ## Authentication token
-    jwt_secret: "signing-key"                             ## JWT signing key
-    secret_file: "/var/opt/csghub/gitaly/.csghub_secret"  ## Secret file path
-    secret: "signing-key"
+    secret: ""                                            ## Secret key for auth gitaly
 
   ## Casdoor (authentication) integration
   casdoor:
@@ -263,10 +262,10 @@ portal:
     bucket: "csghub-portal"
 
 ##########################################################################
-## Notification Configuration
+## Notifier Configuration
 ## - Responsible for news notifications inside and outside the site.
 ##########################################################################
-notification:
+notifier:
   enable: true
   listen: "127.0.0.1:8095"             ## IP and port for the notification service to listen on
 
@@ -314,6 +313,9 @@ gitaly:
   storage:
     - name: "default"                              ## Storage name
       path: "/var/opt/csghub/gitaly/repositories"  ## Repo storage path
+
+  ## Secret configuration
+  secret: ""
 
   ## Logging configuration
   logging:

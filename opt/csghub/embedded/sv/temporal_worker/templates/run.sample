@@ -6,7 +6,8 @@ exec 2>&1
 # fail on errors
 set -e
 
-{{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
+{{- $server := (datasource "config").server }}
+{{- $dataDir := $server.data | default "/var/opt/csghub/server" }}
 {{- $configFile := printf "%s/config.toml" $dataDir }}
 
 # Define constants
@@ -14,7 +15,7 @@ readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
 readonly ENV_DIR="/opt/csghub/etc/server/env"
 
 # Build command arguments
-args=("temporal-worker" "launch")
+args=("temporal-worker" "launch" "-l" {{ $server.log.level | quote }})
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 echo "Starting server..."
