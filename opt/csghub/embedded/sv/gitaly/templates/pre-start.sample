@@ -20,15 +20,3 @@ fi
 {{- $envDir := "/opt/csghub/etc/gitaly/env" }}
 {{- $pidFileEnv := printf "%s/GITALY_PID_FILE" $envDir }}
 {{- file.Write $pidFileEnv $pidFile }}
-
-# Add secret key file
-{{- $server := (datasource "config").server }}
-{{- $secret := $server.gitaly.secret | default "signing-key" }}
-{{- $secretFile := $server.gitaly.secret_file | default (printf "%s/.csghub_secret" $dataDir) }}
-
-{{- if and $secret $secretFile }}
-mkdir -p {{ path.Dir $secretFile }} || true
-{{- file.Write $secretFile $secret }}
-{{- end }}
-
-
