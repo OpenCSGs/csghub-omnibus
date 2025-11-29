@@ -41,6 +41,7 @@ csghub:
   ## Logging Settings
   # log:
   #   dir: "/var/log/csghub/server"     ## Server log directory
+  #   level: "info"
 
   ## PostgreSQL Settings
   # postgresql:
