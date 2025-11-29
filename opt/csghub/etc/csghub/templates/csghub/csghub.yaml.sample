@@ -8,856 +8,886 @@ csghub:
   ## External URL for accessing CSGHub (must be reachable by users)
   external_url: "http://csghub.example.com"
 
-## Nginx configuration
-#nginx:
-#  enable: true
-#  data: "/var/opt/csghub/nginx"
-#  ssl_certificate: "/etc/csghub/ssl/csghub.example.com.crt"
-#  ssl_certificate_key: "/etc/csghub/ssl/csghub.example.com.key"
-#  rate_limit:
-#    enable: false        ## Enable or disable nginx rate limit
-#    request: "20r/s"     ## Limit the request rate of each IP to 20 requests per second (20r/s)
-#    burst: 40            ## Allow 40 requests in burst
-#    conn: 50             ## Limit each client IP to a maximum of 50 simultaneous connections
+##########################################################################
+## Nginx Proxy Configuration
+##########################################################################
+# nginx:
+  # enable: true
+  # data: "/var/opt/csghub/nginx"
+  # ssl_certificate: "/etc/csghub/ssl/csghub.example.com.crt"
+  # ssl_certificate_key: "/etc/csghub/ssl/csghub.example.com.key"
+
+  ## Rate Limit Settings
+  # rate_limit:
+  #   enable: false        ## Enable or disable nginx rate limit
+  #   request: "20r/s"     ## Limit the request rate of each IP to 20 requests per second (20r/s)
+  #   burst: 40            ## Allow 40 requests in burst
+  #   conn: 50             ## Limit each client IP to a maximum of 50 simultaneous connections
 
 ##########################################################################
 ## CSGHub Server Configuration
 ## - Main application server settings and service integrations
 ##########################################################################
-#server:
-#  enable: true
-#  listen_port: 8080
-#  saas: false                         ## Whether running in SaaS mode
-#  instance_id: ""                     ## Unique instance identifier
-#  enable_swagger: false               ## Enable Swagger API documentation
-#  enable_https: false                 ## Enable HTTPS termination
-#  api_token: ""                       ## Authentication token for API access
-#  docs_host: "http://127.0.0.1:6636"  ## Documentation service host
-#  log:
-#    dir: "/var/log/csghub/server"     ## Server log directory
+# server:
+  # enable: true
+  # listen_port: 8080
+  # saas: false                         ## Whether running in SaaS mode
+  # instance_id: ""                     ## Unique instance identifier
+  # enable_swagger: false               ## Enable Swagger API documentation
+  # enable_https: false                 ## Enable HTTPS termination
+  # api_token: ""                       ## Authentication token for API access
+  # docs_host: "http://127.0.0.1:6636"  ## Documentation service host
 
-#  ## PostgreSQL database configuration
-#  postgresql:
-#    name: "csghub_server"       ## Database name
-#    host: "127.0.0.1"           ## Database host
-#    port: 5432                  ## Database port
-#    user: "csghub"              ## Database username
-#    password: ""                ## Database password
-#    timezone: "Asia/Shanghai"   ## Database timezone
+  ## Logging Settings
+  # log:
+  #   dir: "/var/log/csghub/server"     ## Server log directory
 
-#  ## Redis cache configuration
-#  redis:
-#    endpoint: "127.0.0.1:6379"  ## Redis server address
-#    auth:
-#      user: "default"           ## Redis username
-#      password: ""              ## Redis password
-#    max_retries: 3              ## Maximum connection retries
-#    min_idle_connections: 0     ## Minimum idle connections
+  ## PostgreSQL Settings
+  # postgresql:
+  #   name: "csghub_server"             ## Database name
+  #   host: "127.0.0.1"                 ## Database host
+  #   port: 5432                        ## Database port
+  #   user: "csghub"                    ## Database username
+  #   password: ""                      ## Database password
+  #   timezone: "Asia/Shanghai"         ## Database timezone
 
-#  ## Gitaly (Git storage) service configuration
-#  gitaly:
-#    address: "tcp://127.0.0.1:8075"                       ## Gitaly service address
-#    storage: "default"                                    ## Default storage name
-#    token: ""                                             ## Authentication token
-#    secret: ""                                            ## Secret key for auth gitaly
+  ## Redis Settings
+  # redis:
+     # endpoint: "127.0.0.1:6379"        ## Redis server address
+     # max_retries: 3                    ## Maximum connection retries
+     # min_idle_connections: 0           ## Minimum idle connections
 
-#  ## Casdoor (authentication) integration
-#  casdoor:
-#    endpoint: "http://csghub.example.com:8000"                 ## Casdoor endpoint
-#    certificate: "/opt/csghub/etc/casdoor/token_jwt_key.pem"   ## SSL cert path
-#    organization_name: "OpenCSG"                               ## Organization name in Casdoor
-#    application_name: "CSGHub"                                 ## App name in Casdoor
+     ## Authentication Settings
+     # auth:
+     #   user: "default"                 ## Redis username
+     #   password: ""                    ## Redis password
 
-#  ## S3-compatible storage configuration
-#  s3:
-#    access_key: "minio"                  ## S3 access key
-#    secret_key: ""                       ## S3 secret key
-#    region: "cn-north-1"                 ## S3 region
-#    endpoint: ""                         ## S3 endpoint URL
-#    internal_endpoint: ""                ## S3 internal endpoint URL
-#    path_style: "true"                   ## Bucket lookup style
-#    bucket: "csghub-server"              ## Default bucket name
-#    encrypt: false                       ## Server-side encryption
-#    secure: false                        ## Use HTTPS
+  ## Gitaly (Git storage) Service Settings
+  # gitaly:
+  #   address: "tcp://127.0.0.1:8075"   ## Gitaly service address
+  #   storage: "default"                ## Default storage name
+  #   token: ""                         ## Authentication token
+  #   secret: ""                        ## Secret key for auth gitaly
 
-#  ## Dataset processing settings
-#  dataset:
-#    prompt_max_jsonl_file_size: 1048576  ## Max JSONL file size for prompts
+  ## Casdoor (authentication) Integration
+  # casdoor:
+  #   endpoint: "http://csghub.example.com:8000"                 ## Casdoor endpoint
+  #   certificate: "/opt/csghub/etc/casdoor/token_jwt_key.pem"   ## SSL cert path
+  #   organization_name: "OpenCSG"                               ## Organization name in Casdoor
+  #   application_name: "CSGHub"                                 ## App name in Casdoor
 
-#  ## Dataflow service configuration
-#  dataflow:
-#    address: "http://dataflow:8000"  ## Dataflow service endpoint
+  ## S3-compatible Storage Settings
+  # s3:
+  #   access_key: "minio"               ## S3 access key
+  #   secret_key: ""                    ## S3 secret key
+  #   region: "cn-north-1"              ## S3 region
+  #   endpoint: ""                      ## S3 endpoint URL
+  #   internal_endpoint: ""             ## S3 internal endpoint URL
+  #   path_style: "true"                ## Bucket lookup style
+  #   bucket: "csghub-server"           ## Default bucket name
+  #   encrypt: false                    ## Server-side encryption
+  #   secure: false                     ## Use HTTPS
 
-#  ## Workflow service configuration
-#  workflow:
-#    endpoint: "127.0.0.1:7233"  ## Temporal workflow service endpoint
+  ## Datasets Processing Settings
+  # dataset:
+  #   prompt_max_jsonl_file_size: 1048576  ## Max JSONL file size for prompts
 
-#  ## Multi-sync configuration
-#  multi_sync:
-#    enabled: true                                  ## Enable multi-sync feature
-#    sync_as_client_cron_expression: "0 * * * *"    ## Sync cron schedule
-#    calc_recom_score_cron_expression: "1 * * * *"  ## Score calculation schedule
+  ## Dataflow Service Settings
+  # dataflow:
+  #   address: "http://dataflow:8000"  ## Dataflow service endpoint
 
-#  ## NATS messaging configuration
-#  nats:
-#    url: ""                                                     ## NATS server URL
-#    msg_fetch_timeout_in_sec: 5                                 ## Message fetch timeout
+  ## Workflow Service Settings
+  # workflow:
+  #   endpoint: "127.0.0.1:7233"  ## Temporal workflow service endpoint
 
-#  ## Proxy configuration
-#  proxy:
-#    hosts: ["opencsg.com", "sync.opencsg.com"]  ## Allowed proxy domains
+  ## Multi-Sync Settings
+  # multi_sync:
+  #   enabled: true                                  ## Enable multi-sync feature
+  #   sync_as_client_cron_expression: "0 * * * *"    ## Sync cron schedule
+  #   calc_recom_score_cron_expression: "1 * * * *"  ## Score calculation schedule
 
-#  ## Instrumentation settings
-#  instrumentation:
-#    otlp_logging: false          ## Enable OpenTelemetry logging
-#    otlp_endpoint: ""            ## OTLP collector endpoint
+  ## NATS Messaging Settings
+  # nats:
+  #   url: ""                                        ## NATS server URL
+  #   msg_fetch_timeout_in_sec: 5                    ## Message fetch timeout
 
-#  ## Git settings
-#  git:
-#    operation_timeout: 120           ## Timeout in seconds for Git operations
-#    check_file_size_enabled: true    ## Enable file size checking
-#    max_un_lfs_file_size: 20971520   ## Maximum file size (in bytes) for non-LFS files (20MB)
-#    skip_lfs_file_validation: false  ## Whether to skip LFS file validation
+  ## Proxy Settings
+  # proxy:
+  #   hosts: ["opencsg.com", "sync.opencsg.com"]     ## Allowed proxy domains
 
-#  ## Telemetry settings
-#  telemetry:
-#    enable: true                 ## Enable telemetry collection
+  ## Instrumentation Settings
+  # instrumentation:
+  #   otlp_logging: false          ## Enable OpenTelemetry logging
+  #   otlp_endpoint: ""            ## OTLP collector endpoint
 
-#  ## Prometheus settings
-#  prometheus:
-#    address: "http://127.0.0.1:9090"
+  ## Git Settings
+  # git:
+  #   operation_timeout: 120           ## Timeout in seconds for Git operations
+  #   check_file_size_enabled: true    ## Enable file size checking
+  #   max_un_lfs_file_size: 20971520   ## Maximum file size (in bytes) for non-LFS files (20MB)
+  #   skip_lfs_file_validation: false  ## Whether to skip LFS file validation
 
-#  ## Loki settings
-#  logcollector:
-#    loki_url: "http://127.0.0.1:3100/-/loki"
+  ## Telemetry Settings
+  # telemetry:
+  #   enable: true
+
+  ## Prometheus Settings
+  # prometheus:
+  #   address: "http://127.0.0.1:9090"
+
+  ## Loki Settings
+  # logcollector:
+  #   loki_url: "http://127.0.0.1:3100/-/loki"
 
 ##########################################################################
 ## Mirror Repository Service Configuration
 ## - Handles repository mirroring operations
 ##########################################################################
-#mirror_repo:
-#  enable: true
-#  listen_port: 8085             ## Service listen port
-#  worker_number: 5              ## Number of worker threads
-#  sync_interval: 1              ## Sync interval in hours
+# mirror_repo:
+  # enable: true
+  # listen_port: 8085             ## Service listen port
+  # worker_number: 5              ## Number of worker threads
+  # sync_interval: 1              ## Sync interval in hours
 
 ##########################################################################
 ## Mirror LFS Service Configuration
 ## - Handles Git LFS (Large File Storage) mirroring
 ##########################################################################
-#mirror_lfs:
-#  enable: true
-#  part_size: 100                ## Part size for multipart transfers
-#  lfs_concurrency: 5            ## Concurrent LFS transfers
+# mirror_lfs:
+  # enable: true
+  # part_size: 100                ## Part size for multipart transfers
+  # lfs_concurrency: 5            ## Concurrent LFS transfers
 
 ##########################################################################
 ## Runner Service Configuration
 ## - Executes CI/CD jobs and automated tasks
 ##########################################################################
-#runner:
-#  ## Deployment configuration
-#  namespace: "spaces"           ## Kubernetes namespace
-#  use_public_domain: true       ## Use a dedicate domain name
+# runner:
+  ## Deployment Settings
+  # namespace: "spaces"           ## Kubernetes namespace
+  # use_public_domain: true       ## Use a dedicate domain name
 
-#  ## Model deployment configuration
-#  model:
-#    deploy_timeout: 60                                        ## Deployment timeout in minutes
-#    registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/"  ## Docker registry prefix
+  ## Model Deployment Settings
+  # model:
+  #   deploy_timeout: 60  ## Deployment timeout in minutes
+  #   registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/"  ## Docker registry prefix
 
-#  ## Knative serving configuration
-#  knative:
-#    services:
-#      - domain: "example.com"
+  ## Knative Serving Settings
+  # knative:
+  #   services:
+  #     - domain: "example.com"
 
-#  ## Define PyPi Source
-#  pip_index_url: "https://pypi.tuna.tsinghua.edu.cn/simple/"
+  ## Define PyPi Source
+  # pip_index_url: "https://pypi.tuna.tsinghua.edu.cn/simple/"
 
 ##########################################################################
 ## Rproxy Service Configuration
 ## - Handles reverse proxy functionality
 ##########################################################################
-#rproxy:
-#  enable: true
-#  listen_port: 8083             ## Proxy service port
+# rproxy:
+  # enable: true
+  # listen_port: 8083  ## Proxy service port
 
 ##########################################################################
 ## Accounting Service Configuration
 ## - Handles usage tracking and billing
 ##########################################################################
-#accounting:
-#  enable: true
-#  listen: "127.0.0.1:8086"      ## Accounting service address
+# accounting:
+  # enable: true
+  # listen: "127.0.0.1:8086"  ## Accounting service address
 
 ##########################################################################
 ## Dataviewer Service Configuration
 ## - Provides data visualization capabilities
 ##########################################################################
-#dataviewer:
-#  enable: true                  ## Enable dataviewer service
+# dataviewer:
+  # enable: true
 
 ##########################################################################
 ## DNSMasq Configuration
 ## - Provides DNS caching and forwarding
 ##########################################################################
-#dnsmasq: {}
+# dnsmasq: {}
 
 ##########################################################################
 ## User Service Configuration
 ## - Manages user accounts and authentication
 ##########################################################################
-#user:
-#  enable: true
-#  listen: "127.0.0.1:8088"      ## User service address
+# user:
+  # enable: true
+  # listen: "127.0.0.1:8088"  ## User service address
 
 ##########################################################################
 ## Moderation Service Configuration
 ## - Manages sensitive contents checking
 ##########################################################################
-#moderation:
-#  enable: false
-#  address: "http://127.0.0.1:8089"   ## Moderation service endpoint
-#  encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
-#  sensitive_check:
-#    access_key_id: ""                ## Access key ID for the moderation service
-#    access_key_secret: ""            ## Access key secret for the moderation service
-#    region: ""                       ## Service region identifier
-#    endpoint: ""                     ## Custom endpoint URL for the moderation service
-#    enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
+# moderation:
+  # enable: false
+  # address: "http://127.0.0.1:8089"   ## Moderation service endpoint
+  # encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
+
+  ## Sensitive Check Settings
+  # sensitive_check:
+  #   access_key_id: ""                ## Access key ID for the moderation service
+  #   access_key_secret: ""            ## Access key secret for the moderation service
+  #   region: ""                       ## Service region identifier
+  #   endpoint: ""                     ## Custom endpoint URL for the moderation service
+  #   enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
 
 ##########################################################################
 ## Portal Service Configuration
 ## - Provides web interface and frontend functionality
 ##########################################################################
-#portal:
-#  enable: true
-#  data: "/var/opt/csghub/portal"
-#  ## Database configuration
-#  postgresql:
-#    name: "csghub_portal"       ## Database name
-#    host: "127.0.0.1"           ## Database host
-#    port: 5432                  ## Database port
-#    user: "csghub"              ## Database user
-#    password: ""                ## Database password
+# portal:
+  # enable: true
+  # data: "/var/opt/csghub/portal"
 
-#  ## S3 storage configuration
-#  s3:
-#    access_key: "minio"             ## S3 access key
-#    secret_key: ""                  ## S3 secret key
-#    region: "cn-north-1"            ## S3 region
-#    endpoint: ""                    ## S3 endpoint
-#    force_path_style: false         ## S3 Path-style access
-#    bucket: "csghub-portal-public"  ## S3 Bucket name
-#    encrypt: false                  ## S3 Server-side encryption
-#    secure: false                   ## If S3 Use HTTPS
+  ## PostgreSQL Settings
+  # postgresql:
+  #   name: "csghub_portal"           ## Database name
+  #   host: "127.0.0.1"               ## Database host
+  #   port: 5432                      ## Database port
+  #   user: "csghub"                  ## Database user
+  #   password: ""                    ## Database password
 
-#  additionalS3:
-#    bucket: "csghub-portal"
+  ## S3 Storage Settings
+  # s3:
+  #   access_key: "minio"             ## S3 access key
+  #   secret_key: ""                  ## S3 secret key
+  #   region: "cn-north-1"            ## S3 region
+  #   endpoint: ""                    ## S3 endpoint
+  #   force_path_style: false         ## S3 Path-style access
+  #   bucket: "csghub-portal-public"  ## S3 Bucket name
+  #   encrypt: false                  ## S3 Server-side encryption
+  #   secure: false                   ## If S3 Use HTTPS
+  # additionalS3:
+  #   bucket: "csghub-portal"
 
 ##########################################################################
 ## Notification Configuration
 ## - Responsible for news notifications inside and outside the site.
 ##########################################################################
-#notification:
-#  enable: true
-#  listen: "127.0.0.1:8095"             ## IP and port for the notification service to listen on
+# notification:
+  # enable: true
+  # listen: "127.0.0.1:8095"             ## IP and port for the notification service to listen on
 
-#  repo_sync_timezone: "Asia/Shanghai"  ## Default timezone
-#  broadcast_user_page_size: 100
-#  broadcast_email_page_size: 100
+  # repo_sync_timezone: "Asia/Shanghai"  ## Default timezone
+  # broadcast_user_page_size: 100
+  # broadcast_email_page_size: 100
 
-#  smtp:
-#    host: "smtp.example.com"     ## SMTP server hostname for email notifications
-#    port: 465                    ## SMTP server port (typically 465 for SSL, 587 for STARTTLS)
-#    username: ""                 ## SMTP authentication username (leave empty if not required)
-#    password: ""                 ## SMTP authentication password (leave empty if not required)
+  ## SMTP Settings
+  # smtp:
+  #   host: "smtp.example.com"     ## SMTP server hostname for email notifications
+  #   port: 465                    ## SMTP server port (typically 465 for SSL, 587 for STARTTLS)
+  #   username: ""                 ## SMTP authentication username (leave empty if not required)
+  #   password: ""                 ## SMTP authentication password (leave empty if not required)
 
-#  feishu:
-#    app_id: ""                                          ## FeiShu bot Application Id
-#    app_secret: ""                                      ## FeiShu bot Application Secret
-#    batch_send_message_cron_expression: "*/10 * * * *"  ## used to control the interval time of batch aggregation Feishu message job
-#    max_request_content_size: 20480                     ## limit the size of FeiShu message sent at a time (cannot exceed 30k)
-#    max_delay_duration: 3600                            ## configures the longest delay time for each message
-#    chat_ids_cache_ttl: 21600                           ## configures the cache expiration time of Feishu chat ids
+  ## FeiShu Notification Settings
+  # feishu:
+  #   app_id: ""                                          ## FeiShu bot Application Id
+  #   app_secret: ""                                      ## FeiShu bot Application Secret
+  #   batch_send_message_cron_expression: "*/10 * * * *"  ## used to control the interval time of batch aggregation Feishu message job
+  #   max_request_content_size: 20480                     ## limit the size of FeiShu message sent at a time (cannot exceed 30k)
+  #   max_delay_duration: 3600                            ## configures the longest delay time for each message
+  #   chat_ids_cache_ttl: 21600                           ## configures the cache expiration time of Feishu chat ids
 
 ##########################################################################
 ## Temporal-Worker Service Configuration
 ##########################################################################
-#temporal_worker:
-#  enable: true
+# temporal_worker:
+  # enable: true
 
 ##########################################################################
 ## Gitaly Service Configuration
 ## - Git repository storage service for all Git operations
 ##########################################################################
-#gitaly:
-#  enable: true                              ## Enable Gitaly service
-#  bin_dir: "/opt/csghub/embedded/bin"       ## Binary directory
-#  data_dir: "/var/opt/csghub/gitaly"        ## Data directory
-#  listen_addr: "127.0.0.1:8075"             ## Listen address
-#  prometheus_listen_addr: "127.0.0.1:9236"  ## Metrics endpoint
+# gitaly:
+  # enable: true
+  # bin_dir: "/opt/csghub/embedded/bin"       ## Binary directory
+  # data_dir: "/var/opt/csghub/gitaly"        ## Data directory
+  # listen_addr: "127.0.0.1:8075"             ## Listen address
+  # prometheus_listen_addr: "127.0.0.1:9236"  ## Metrics endpoint
 
-#  ## Authentication settings
-#  auth:
-#    token: ""                   ## Authentication token
-#    transitioning: false
+  ## Authentication Settings
+  # auth:
+  #   token: ""
+  #   transitioning: false
 
-#  ## Storage configuration
-#  storage:
-#    - name: "default"                              ## Storage name
-#      path: "/var/opt/csghub/gitaly/repositories"  ## Repo storage path
+  ## Secret Settings
+  # secret: ""
 
-#  ## Secret configuration
-#  secret_file: ""
-#  secret: ""
+  ## Storage Settings
+  # storage:
+  #   - name: "default"
+  #     path: "/var/opt/csghub/gitaly/repositories"
 
-#  ## Logging configuration
-#  logging:
-#    dir: "/var/log/csghub/gitaly"  ## Log directory
-#    format: "json"                 ## Log format (json/text)
-#    level: "info"                  ## Log level
+  ## Logging Settings
+  # logging:
+  #   dir: "/var/log/csghub/gitaly"  ## Log directory
+  #   format: "json"                 ## Log format (json/text)
+  #   level: "info"                  ## Log level
 
-#  ## Prometheus metrics configuration
-#  prometheus:
-#    grpc_latency_buckets: [0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0]  ## Latency buckets
+  ## Prometheus Settings
+  # prometheus:
+  #   grpc_latency_buckets: [0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0]  ## Latency buckets
 
-#  ## Git hooks configuration
-#  hooks:
-#    custom_hooks_dir: "/var/opt/csghub/gitaly/custom_hooks"  ## Custom hooks dir
+  ## Git Hooks Settings
+  # hooks:
+  #   custom_hooks_dir: "/var/opt/csghub/gitaly/custom_hooks"  ## Custom hooks dir
 
-#  ## HTTP settings
-#  http_settings:
-#    read_timeout: 300           ## HTTP read timeout
-#    self_signed_cert: false
+  ## HTTP Settings
+  # http_settings:
+  #   read_timeout: 300  ## HTTP read timeout
+  #   self_signed_cert: false
 
-#  ## Concurrency control
-#  concurrency:
-#    rpc: "/gitaly.RepositoryService/OptimizeRepository"
-#    max_per_repo: 1             ## Max operations per repo
-#    max_queue_wait: "1m"
-#    max_queue_size: 10
+  ## Concurrency Control Settings
+  # concurrency:
+  #   rpc: "/gitaly.RepositoryService/OptimizeRepository"
+  #   max_per_repo: 1  ## Max operations per repo
+  #   max_queue_wait: "1m"
+  #   max_queue_size: 10
 
-#  ## Rate limiting
-#  rate_limiting:
-#    rpc: "/gitaly.SmartHTTPService/PostUploadPackWithSidechannel"
-#    interval: "1m"
-#    burst: 5                    ## Max burst requests
+  ## Rate Limiting Settings
+  # rate_limiting:
+  #   rpc: "/gitaly.SmartHTTPService/PostUploadPackWithSidechannel"
+  #   interval: "1m"
+  #   burst: 5  ## Max burst requests
 
-#  ## Maintenance schedule
-#  daily_maintenance:
-#    disable: false
-#    start_hour: 23              ## Maintenance start hour
-#    start_minute: 30            ## Maintenance start minute
-#    duration: "45m"             ## Maintenance duration
-#    storages: ["default"]
+  ## Maintenance Schedule Settings
+  # daily_maintenance:
+  #   disable: false
+  #   start_hour: 23              ## Maintenance start hour
+  #   start_minute: 30            ## Maintenance start minute
+  #   duration: "45m"             ## Maintenance duration
+  #   storages: ["default"]
 
-#  ## Timeout settings
-#  timeout:
-#    upload_pack_negotiation: "10m"    ## Git upload-pack timeout
-#    upload_archive_negotiation: "1m"  ## Upload archive negotiation timeout
+  ## Timeout Settings
+  # timeout:
+  #   upload_pack_negotiation: "10m"    ## Git upload-pack timeout
+  #   upload_archive_negotiation: "1m"  ## Upload archive negotiation timeout
 
-#  ## Git configuration
-#  git:
-#    use_bundled_binaries: true                ## Use bundled Git binaries
-#    ignore_gitconfig: true                    ## Ignore user gitconfig
-#    bin_path: "/opt/gitlab/embedded/bin/git"  ## Git binary path
-#    catfile_cache_size: 100
-#    signing_key: ""
-#    config:                                   ## gitconfig
-#      - key: "fetch.fsckObjects"
-#        value: true
+  ## Git Settings
+  # git:
+  #   use_bundled_binaries: true  ## Use bundled Git binaries
+  #   ignore_gitconfig: true  ## Ignore user gitconfig
+  #   bin_path: "/opt/gitlab/embedded/bin/git"  ## Git binary path
+  #   catfile_cache_size: 100
+  #   signing_key: ""
+  #   config:
+  #     - key: "fetch.fsckObjects"
+  #       value: true
 
 ##########################################################################
 ## GitLab Shell Configuration
 ## - Handles Git SSH operations and repository access
 ##########################################################################
-#gitlab_shell:
-#  enable: true
-#  data: "/var/opt/csghub/gitlab_shell"
-#  ssh_port: 2222
-#  log:
-#    dir: "/var/log/csghub/gitlab_shell"  ## Log directory
-#    level: "INFO"                        ## Log level
-#    format: "json"                       ## Log format
+# gitlab_shell:
+  # enable: true
+  # data: "/var/opt/csghub/gitlab_shell"
+  # ssh_port: 2222
+
+  ## Logging Settings
+  # log:
+  #   dir: "/var/log/csghub/gitlab_shell"
+  #   level: "INFO"
+  #   format: "json"
 
 ##########################################################################
 ## Praefect Configuration
 ## - Manages Gitaly cluster and provides high availability
 ##########################################################################
-#praefect:
-#  enable: false                  ## Enable Praefect service
-#  listen_addr: "127.0.0.1:2305"  ## Listen address
+# praefect:
+  # enable: false
+  # listen_addr: "127.0.0.1:2305"
 
-#  ## Auth token for Praefect
-#  auth:
-#    token: ""
+  ## Authentication Settings
+  # auth:
+  #   token: ""
 
-#  ## Log configuration
-#  logging:
-#    dir: "/var/log/csghub/praefect"  ## Log destination
-#    format: "json"                   ## Log format
-#    level: "info"                    ## Log level
+  ## Logging Settings
+  # logging:
+  #   dir: "/var/log/csghub/praefect"
+  #   format: "json"
+  #   level: "info"
 
-#  ## Database configuration
-#  database:
-#    host: "127.0.0.1"              ## Database host
-#    port: 5432                     ## Database port
-#    user: "praefect"               ## Database user
-#    password: ""                   ## Database password
-#    dbname: "praefect_production"  ## Database name
+  ## PostgreSQL Settings
+  # database:
+  #   host: "127.0.0.1"
+  #   port: 5432
+  #   user: "praefect"
+  #   password: ""
+  #   dbname: "praefect_production"
 
-#  virtual_storage:
-#    - name: "default"                      ## Virtual storage name
-#      nodes:
-#        - storage: "gitaly-01"             ## Gitaly storage name
-#          address: "tcp://10.0.0.5:8075"  ## Gitaly address
-#          token: ""                        ## Gitaly token
-#        - storage: "gitaly-02"
-#          address: "tcp://10.0.0.6:8075"
-#          token: ""
-#        - storage: "gitaly-03"
-#          address: "tcp://10.0.0.7:8075"
-#          token: ""
+  ## Virtual Storage Settings
+  # virtual_storage:
+  #   - name: "default"  ## Virtual storage name
+  #     nodes:
+  #       - storage: "gitaly-01"  ## Gitaly storage name
+  #         address: "tcp://10.0.0.5:8075"  ## Gitaly address
+  #         token: ""  ## Gitaly token
+  #       - storage: "gitaly-02"
+  #         address: "tcp://10.0.0.6:8075"
+  #         token: ""
+  #       - storage: "gitaly-03"
+  #         address: "tcp://10.0.0.7:8075"
+  #         token: ""
 
-#  ## Replication settings
-#  replication:
-#    batch_size: 10              ## Replication batch size
+  ## Replication Settings
+  # replication:
+  #   batch_size: 10  ## Replication batch size
 
-#  ## Reconcile configuration
-#  reconciliation:
-#    scheduling_interval: "1m"                                                     ## Reconciliation scheduling interval
-#    histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]  ## Histogram buckets
+  ## Reconcile Settings
+  # reconciliation:
+  #   scheduling_interval: "1m"  ## Reconciliation scheduling interval
+  #   histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]  ## Histogram buckets
 
-#  ## Failover configuration
-#  failover:
-#    enabled: true               ## Enable automatic failover
+  ## Failover Settings
+  # failover:
+  #   enabled: true  ## Enable automatic failover
 
-#  graceful_stop_timeout: "30s"
+  # graceful_stop_timeout: "30s"
 
-#  ## Prometheus configuration
-#  prometheus_listen_addr: "127.0.0.1:9652"
-#  prometheus:
-#    grpc_latency_buckets: [ 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0 ]
+  ## Prometheus Settings
+  # prometheus_listen_addr: "127.0.0.1:9652"
+  # prometheus:
+  #   grpc_latency_buckets: [ 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0 ]
 
-#  ## Background verification configuration
-#  background_verification:
-#    delete_invalid_records: false
-#    verification_interval: "72h"
+  ## Background Verification Settings
+  # background_verification:
+  #   delete_invalid_records: false
+  #   verification_interval: "72h"
 
-#  # Sentry configuration
-#  sentry: {}
-#    # sentry_environment: ""
-#    # sentry_dsn: ""
+  ## Sentry Settings
+  # sentry: {}
+  #   # sentry_environment: ""
+  #   # sentry_dsn: ""
 
 ##########################################################################
 ## MinIO Configuration
 ## - S3-compatible object storage service
 ##########################################################################
-#minio:
-#  enable: true                        ## Enable MinIO service
-#  data: "/var/opt/csghub/minio/data"  ## Data directory
-#  log: "/var/log/csghub/minio"        ## Log directory
+# minio:
+  # enable: true
+  # data: "/var/opt/csghub/minio/data"
+  # log: "/var/log/csghub/minio"
 
-#  ## Authentication
-#  auth:
-#    user: "minio"               ## Admin username
-#    password: ""                ## Admin password
+  ## Authentication Settings
+  # auth:
+  #   user: "minio"
+  #   password: ""
 
-#  ## Environment variables
-#  environments:
-#    MINIO_CONSOLE_ADDRESS: ":9002"    ## Console options
+  ## Environment Settings
+  # environments:
+  #   MINIO_CONSOLE_ADDRESS: ":9002" ## Console options
 
-## Logger configuration section
-#logger:
-#  enable: false           ## Enable or disable logging system
-#  listen_port: 9003       ## Minio logger webhook listen port
-#  auth_token: "MTIzYWJj"  ## Minio logger webhook auth token
+## Minio Logger Configuration
+# logger:
+  # enable: false
+  # listen_port: 9003  ## Minio logger webhook listen port
+  # auth_token: "MTIzYWJj"  ## Minio logger webhook auth token
 
 ##########################################################################
 ## Consul Configuration
 ## - Service discovery and configuration management
 ##########################################################################
-#consul:
-#  enable: false                                        ## Enable Consul service
-#  datacenter: "csghub-consul-dc"                       ## Datacenter name
-#  data_dir: "/var/opt/csghub/consul"                   ## Data directory
-#  server: true                                         ## Run in server mode
-#  bootstrap_expect: 3                                  ## Expected server nodes
-#  log_dir: "/var/log/csghub/consul"                    ## Log directory
-#  bind_addr: "0.0.0.0"                                 ## Network interface address to bind to
-#  client_addr: "127.0.0.1"                             ## Indicate Which client can connect to
-#  advertise_addr: "10.0.0.5"                           ## Address to advertise to other Consul nodes
-#  retry_join: ["10.0.0.5", "10.0.0.6", "10.0.0.7"]     ## List of Consul server addresses to join during startup
+# consul:
+  # enable: false
+  # datacenter: "csghub-consul-dc"                    ## Datacenter name
+  # data_dir: "/var/opt/csghub/consul"                ## Data directory
+  # server: true                                      ## Run in server mode
+  # bootstrap_expect: 3                               ## Expected server nodes
+  # log_dir: "/var/log/csghub/consul"                 ## Log directory
+  # bind_addr: "0.0.0.0"                              ## Network interface address to bind to
+  # client_addr: "127.0.0.1"                          ## Indicate Which client can connect to
+  # advertise_addr: "10.0.0.5"                        ## Address to advertise to other Consul nodes
+  # retry_join: ["10.0.0.5", "10.0.0.6", "10.0.0.7"]  ## List of Consul server addresses to join during startup
 
-#  ## Web UI configuration
-#  ui_config:
-#    enabled: false    ## Enable or disable Consul web UI
+  ## Consul Web UI Settings
+  # ui_config:
+  #   enabled: false
 
 ##########################################################################
 ## PostgreSQL Configuration
 ## - Primary relational database for CSGHub
 ##########################################################################
-#postgresql:
-#  enable: true                                             ## Enable PostgreSQL
-#  data_dir: "/var/opt/csghub/postgresql/data"              ## Data directory
-#  listen_addresses: "*"                                    ## Listen addresses
-#  port: 5432                                               ## Listen port
-#  max_connections: 200                                     ## Max connections
-#  shared_buffers: "256MB"                                  ## Shared memory buffers
-#  timezone: "Asia/Shanghai"                                ## Database timezone
-#  shared_preload_libraries: "pg_stat_statements,zhparser"  ## Preloaded extensions (comma-separated)
-#  log_statement: "none"                                    ## Log all SQL statements (off|ddl|mod|all)
-#  log_checkpoints: "off"                                   ## Log checkpoint operations
-#  log_connections: "off"                                   ## Log connections
-#  log_min_duration_statement: "2s"                         ## Log statements elapsed above 2s
-#  wal_level: "minimal"                                     ## Write-Ahead Log level (minimal|replica|logical)
-#  hot_standby: "off"                                       ## Allow read-only connections during recovery
-#  wal_log_hints: "off"                                     ## Write full page images to WAL for checksums
-#  max_wal_senders: 4                                       ## Maximum number of WAL sender processes
-#  max_replication_slots: 3                                 ## Maximum number of replication slots
-#  checkpoint_timeout: "10min"                              ## Automatic checkpoint interval
+# postgresql:
+  # enable: true
+  # data_dir: "/var/opt/csghub/postgresql/data"              ## Data directory
+  # listen_addresses: "*"                                    ## Listen addresses
+  # port: 5432                                               ## Listen port
+  # max_connections: 200                                     ## Max connections
+  # shared_buffers: "256MB"                                  ## Shared memory buffers
+  # timezone: "Asia/Shanghai"                                ## Database timezone
+  # shared_preload_libraries: "pg_stat_statements,zhparser"  ## Preloaded extensions (comma-separated)
+  # log_statement: "none"                                    ## Log all SQL statements (off|ddl|mod|all)
+  # log_checkpoints: "off"                                   ## Log checkpoint operations
+  # log_connections: "off"                                   ## Log connections
+  # log_min_duration_statement: "2s"                         ## Log statements elapsed above 2s
+  # wal_level: "minimal"                                     ## Write-Ahead Log level (minimal|replica|logical)
+  # hot_standby: "off"                                       ## Allow read-only connections during recovery
+  # wal_log_hints: "off"                                     ## Write full page images to WAL for checksums
+  # max_wal_senders: 4                                       ## Maximum number of WAL sender processes
+  # max_replication_slots: 3                                 ## Maximum number of replication slots
+  # checkpoint_timeout: "10min"                              ## Automatic checkpoint interval
 
-#  ## Host-based authentication rules
-#  pg_hba:
-#    - host all all all scram-sha-256
+  ## Host-based Authentication Rules
+  # pg_hba:
+  #   - host all all all scram-sha-256
 
 ##########################################################################
 ## Patroni Configuration
 ## - High Availability framework for PostgreSQL that automates
 ##   failover and topology management
 ##########################################################################
-#patroni:
-#  enable: false                  ## Enable Patroni HA service
-#  scope: "postgresql-ha"         ## Cluster name/identifier
-#  namespace: "/service"          ## DCS namespace path
-#  name: "patroni-01"             ## Unique node identifier
-#  listen: "10.0.0.5"             ## Listen address
+# patroni:
+  # enable: false
+  # scope: "postgresql-ha"         ## Cluster name/identifier
+  # namespace: "/service"          ## DCS namespace path
+  # name: "patroni-01"             ## Unique node identifier
+  # listen: "10.0.0.5"             ## Listen address
 
-#  ## Logging configuration
-#  log:
-#    level: "INFO"                ## Log level (DEBUG, INFO, WARN, ERROR)
-#    type: "plain"                ## Log format (plain/json)
+  ## Logging Settings
+  ## Level options: DEBUG, INFO, WARN, ERROR
+  ## Type options: plain, json
+  # log:
+  #   level: "INFO"
+  #   type: "plain"
 
-#  ## Consul service discovery
-#  consul: "127.0.0.1:8500"       ## Consul host:port
+  ## Consul Settings
+  # consul: "127.0.0.1:8500"
 
-#  ## Cluster initialization settings
-#  bootstrap:
-#    loop_wait: 10                ## Leader check interval (seconds)
-#    retry_timeout: 10            ## Operation retry timeout (seconds)
-#    ttl: 30                      ## Leader lock TTL (seconds)
-#    master_start_timeout: 60     ## Master startup timeout (seconds)
-#    synchronous_mode: false      ## Enable synchronous replication
-#    maximum_lag_on_failover: ""  ## Max replication lag for failover (bytes)
+  ## Cluster Initialization Settings
+  # bootstrap:
+  #   loop_wait: 10                ## Leader check interval (seconds)
+  #   retry_timeout: 10            ## Operation retry timeout (seconds)
+  #   ttl: 30                      ## Leader lock TTL (seconds)
+  #   master_start_timeout: 60     ## Master startup timeout (seconds)
+  #   synchronous_mode: false      ## Enable synchronous replication
+  #   maximum_lag_on_failover: ""  ## Max replication lag for failover (bytes)
 
-#  ## PostgreSQL configuration
-#  postgresql:
-#    data_dir: "/var/opt/csghub/postgresql/data"      ## Data directory
+  ## PostgreSQL Settings
+  # postgresql:
+  #   data_dir: "/var/opt/csghub/postgresql/data"
 
-#    ## Authentication settings
-#    authentication:
-#      postgres: ""                                   ## PostgreSQL superuser password
-#      replicator: ""                                 ## Replication user password
-#      rewinder: ""                                   ## Rewind user password
+    ## Authentication Settings
+    # authentication:
+    #   postgres: ""  ## PostgreSQL superuser password
+    #   replicator: ""  ## Replication user password
+    #   rewinder: ""  ## Rewind user password
 
-#    ## PostgreSQL parameters
-#    parameters:
-#      shared_buffers: "256MB"                        ## Shared memory buffers size
+    ## PostgreSQL Parameters
+    # parameters:
+    #   shared_buffers: "256MB"  ## Shared memory buffers size
 
-#    pgpass: "/var/opt/csghub/patroni/.pgpass"        ## Password file path
+    # pgpass: "/var/opt/csghub/patroni/.pgpass"  ## Password file path
 
-#  ## Data safety settings
-#  remove_data_directory_on_rewind_failure: true      ## Cleanup after rewind failures
-#  remove_data_directory_on_diverged_timelines: true  ## Cleanup on timeline divergence
+  ## Data Safety Settings
+  # remove_data_directory_on_rewind_failure: true  ## Cleanup after rewind failures
+  # remove_data_directory_on_diverged_timelines: true  ## Cleanup on timeline divergence
 
-#  ## Standby leader configuration
-#  standby_leader:
-#    enable: false                      ## Enable standby leader
-#    host: "127.0.0.1"                  ## Standby host address
-#    port: "5432"                       ## Standby port
-#    primary_slot_name: "standby_slot"  ## Replication slot name
-#    recovery_min_apply_delay: "0"      ## Minimum replication delay
+  ## Standby Leader Settings
+  # standby_leader:
+  #   enable: false                      ## Enable standby leader
+  #   host: "127.0.0.1"                  ## Standby host address
+  #   port: "5432"                       ## Standby port
+  #   primary_slot_name: "standby_slot"  ## Replication slot name
+  #   recovery_min_apply_delay: "0"      ## Minimum replication delay
 
-#  ## Virtual IP management
-#  callback:
-#    enable: false                      ## Enable VIP callback
-#    virtual_ip: "127.0.0.1"            ## Virtual IP address
-#    prefix: 24                         ## Network prefix length
-#    interface: "ens33"                 ## Network interface name
+  ## Virtual IP Management
+  # callback:
+  #   enable: false                      ## Enable VIP callback
+  #   virtual_ip: "127.0.0.1"            ## Virtual IP address
+  #   prefix: 24                         ## Network prefix length
+  #   interface: "ens33"                 ## Network interface name
 
-#  ## Watchdog Configuration
-#  #watchdog:
-#  #  mode: "automatic"           ## Watchdog mode (off/automatic/required)
-#  #  device: "/dev/watchdog"     ## Watchdog device path
-#  #  safety_margin: 20           ## Safety margin in seconds
+  ## Watchdog Configuration
+  # watchdog:
+  #   mode: "automatic"           ## Watchdog mode (off/automatic/required)
+  #   device: "/dev/watchdog"     ## Watchdog device path
+  #   safety_margin: 20           ## Safety margin in seconds
 
-#  ## Cluster Tags Configuration
-#  #tags:
-#  #  clonefrom: true             ## Allow cloning from this node
-#  #  failover_priority: 1        ## Failover priority (higher=preferred)
-#  #  noloadbalance: false        ## Exclude from load balancing
-#  #  nostream: false             ## Disable streaming replication
-#  #  nosync: true                ## Disable synchronous replication
-#  #  replicatefrom: ""           ## Specific source node for replication
+  ## Cluster Tags Configuration
+  # tags:
+  #   clonefrom: true             ## Allow cloning from this node
+  #   failover_priority: 1        ## Failover priority (higher=preferred)
+  #   noloadbalance: false        ## Exclude from load balancing
+  #   nostream: false             ## Disable streaming replication
+  #   nosync: true                ## Disable synchronous replication
+  #   replicatefrom: ""           ## Specific source node for replication
 
 ##########################################################################
 ## Redis Configuration
 ## - In-memory data store for caching
 ##########################################################################
-#redis:
-#  enable: true
-#  user: "default"
-#  password: ""                    ## Redis password, default user "default"
-#  listen: "*"                     ## Listen address
-#  port: 6379                      ## Listen port
-#  data: "/var/opt/csghub/redis"   ## Data directory
-#  timeout: 0
-#  keepalive: 300
-#  log:
-#    dir: "/var/log/csghub/redis"  ## Log directory
-#    level: "notice"               ## Log level
+# redis:
+  # enable: true
+  # user: "default"
+  # password: ""
+  # listen: "*"
+  # port: 6379
+  # data: "/var/opt/csghub/redis"
+  # timeout: 0
+  # keepalive: 300
+  # log:
+  #   dir: "/var/log/csghub/redis"
+  #   level: "notice"
 
 ##########################################################################
 ## Docker Registry Configuration
 ## - Container image registry service
 ##########################################################################
-#registry:
-#  enable: true
-#  listen: "127.0.0.1:5000"           ## Listen address
-#  data: "/var/opt/csghub/registry"   ## Data directory
+# registry:
+  # enable: true
+  # listen: "127.0.0.1:5000"
+  # data: "/var/opt/csghub/registry"
 
-#  ## Authentication
-#  auth:
-#    username: "registry"             ## Registry username
-#    password: ""                     ## Registry password
+  ## Authentication Settings
+  # auth:
+  #   username: "registry"
+  #   password: ""
 
-#  ## Logging
-#  log:
-#    dir: "/var/log/csghub/registry"  ## Log directory
-#    level: "info"                    ## Log level, Options error, warn, info, debug, default info
-#    formatter: "json"                ## Log format, Options json, text, logstash
+  ## Logging Settings
+  ## Level options: error, warn, info, debug, default info
+  ## Formatter options: json, text, logstash
+  # log:
+  #   dir: "/var/log/csghub/registry"
+  #   level: "info"
+  #   formatter: "json"
 
-#  ## Storage configuration
-#  storage:
-#    #filesystem:
-#    #  rootdirectory: "/var/opt/csghub/registry"  ## Root directory for storing registry files
-#    #  maxthreads: 100                            ## Maximum concurrent file operations
-#    s3:
-#      access_key: "minio"                         ## S3 access key
-#      secret_key: ""                              ## S3 secret key
-#      region: "cn-north-1"                        ## S3 region
-#      region_endpoint: "http://127.0.0.1:9000"    ## S3 endpoint, eg: http://csghub.example.com:9000
-#      bucket: "csghub-registry"                   ## Bucket name
-#      force_path_style: false                     ## Force path-style URLs for S3 (true/false)
-#      secure: false                               ## Use HTTPS
-#      encrypt: false                              ## Server-side encryption (true/false)
-#      v4auth: true                                ## Use AWS Signature Version 4 (true/false)
-#      skip_verify: true                           ## Skip TLS certificate verification (true/false)
-#     oss:
-#       access_key_id: "xxx"
-#       access_key_secret: "xxx"
-#       region: "cn-beijing"
-#       region_endpoint: "https://<bucket>.oss-cn-beijing.aliyuncs.com"
-#       bucket: "csghub-registry"
-#       encrypt: false
-#       secure: true
+  ## Storage Settings
+  # storage:
+  #   filesystem:
+  #     rootdirectory: "/var/opt/csghub/registry"  ## Root directory for storing registry files
+  #     maxthreads: 100                            ## Maximum concurrent file operations
+  #   s3:
+  #     access_key: "minio"                         ## S3 access key
+  #     secret_key: ""                              ## S3 secret key
+  #     region: "cn-north-1"                        ## S3 region
+  #     region_endpoint: "http://127.0.0.1:9000"    ## S3 endpoint, eg: http://csghub.example.com:9000
+  #     bucket: "csghub-registry"                   ## Bucket name
+  #     force_path_style: false                     ## Force path-style URLs for S3 (true/false)
+  #     secure: false                               ## Use HTTPS
+  #     encrypt: false                              ## Server-side encryption (true/false)
+  #     v4auth: true                                ## Use AWS Signature Version 4 (true/false)
+  #     skip_verify: true                           ## Skip TLS certificate verification (true/false)
+  #    oss:
+  #      access_key_id: "xxx"
+  #      access_key_secret: "xxx"
+  #      region: "cn-beijing"
+  #      region_endpoint: "https://<bucket>.oss-cn-beijing.aliyuncs.com"
+  #      bucket: "csghub-registry"
+  #      encrypt: false
+  #      secure: true
 
 ##########################################################################
 ## NATS Configuration
 ## - High-performance messaging system
 ##########################################################################
-#nats:
-#  enable: true
-#  data: "/var/opt/csghub/nats"  ## Data directory
-#  auth:
-#    user: "natsadmin"           ## NATS username
-#    password: ""                ## NATS password
+# nats:
+  # enable: true
+  # data: "/var/opt/csghub/nats"
+
+  ## Authentication Settings
+  # auth:
+  #   user: "natsadmin"
+  #   password: ""
 
 ##########################################################################
 ## Temporal Configuration
 ## - Workflow orchestration engine
 ##########################################################################
-#temporal:
-#  enable: true                  ## Enable or disable Temporal server
-#  listen: "127.0.0.1:7233"      ## Listen address
+# temporal:
+  # enable: true
+  # listen: "127.0.0.1:7233"
 
-#  ## Authentication configuration for Temporal (leave empty if not used)
-#  auth:
-#    user: "temporal"    ## Username for Temporal authentication
-#    password: ""        ## Password for Temporal authentication
+  ## Authentication Settings
+  # auth:
+  #   user: "temporal"
+  #   password: ""
 
-#  ## Database configuration
-#  postgresql:
-#    name: "csghub_temporal"     ## Database name
-#    host: "127.0.0.1"           ## Database host
-#    port: 5432                  ## Database port
-#    user: "csghub"              ## Database user
-#    password: ""                ## Database password
+  ## PostgreSQL Settings
+  # postgresql:
+  #   name: "csghub_temporal"
+  #   host: "127.0.0.1"
+  #   port: 5432
+  #   user: "csghub"
+  #   password: ""
 
-#  ## Retention period for workflow history (e.g., "7d" for 7 days)
-#  retention: "7d"               ## Workflow history retention
+  ## Retention Period for Workflow History (e.g., "7d" for 7 days)
+  # retention: "7d"
 
-#  ## Log configuration
-#  log:
-#    # Valid values - debug, info, warn, error or fatal, default to info.
-#    level: "info"
+  ## Logging Settings
+  ## Level options: debug, info, warn, error or fatal
+  # log:
+  #   level: "info"
 
-#  # Persistence configuration for workflow state storage
-#  persistence:
-#    num_history_shards: 4             ## Number of history shards for partitioning data
-#    default_store: "default"          ## Default datastore name
-#    visibility_store: "visibility"    ## Visibility datastore name
-#    datastores:
-#      default:
-#        sql:
-#          max_conns: 20               ## Maximum number of database connections
-#          max_idle_conns: 20          ## Maximum number of idle connections
-#          max_conn_lifetime: "1h"     ## Maximum connection lifetime
+  ## Persistence Settings
+  # persistence:
+  #   num_history_shards: 4             ## Number of history shards for partitioning data
+  #   default_store: "default"          ## Default datastore name
+  #   visibility_store: "visibility"    ## Visibility datastore name
+  #   datastores:
+  #     default:
+  #       sql:
+  #         max_conns: 20               ## Maximum number of database connections
+  #         max_idle_conns: 20          ## Maximum number of idle connections
+  #         max_conn_lifetime: "1h"     ## Maximum connection lifetime
 
-#  ## RPC configuration for network communication
-#  rpc:
-#    grpc_port: 7233           ## gRPC API port
-#    http_port: 7243           ## HTTP API port
-#    membership_port: 6933     ## Cluster membership port
-#    bind_on_ip: "127.0.0.1"   ## IP address to bind RPC services
+  ## RPC Settings for Network Communication
+  # rpc:
+  #   grpc_port: 7233           ## gRPC API port
+  #   http_port: 7243           ## HTTP API port
+  #   membership_port: 6933     ## Cluster membership port
+  #   bind_on_ip: "127.0.0.1"   ## IP address to bind RPC services
 
-### Web UI configuration
-## Web UI configuration
-#temporal_ui:
-#  enable: false                ## Enable or disable Temporal UI
-#  listen_port: 8182            ## Port for Temporal UI web server
-#  public_path: "/-/temporal"   ## Public URL path for Temporal UI
-#  cors:
-#    cookie_insecure: false      ## Disable secure cookies for development
-#    allow_origins:              ## Allowed CORS origins
-#      - http://localhost:8182
-#  hideLogs: false               ## Show or hide logs in the UI
+## Web UI Settings
+# temporal_ui:
+  # enable: false
+  # listen_port: 8182             ## Port for Temporal UI web server
+  # public_path: "/-/temporal"    ## Public URL path for Temporal UI
+
+  ## CORS Settings
+  # cors:
+  #   cookie_insecure: false      ## Disable secure cookies for development
+  #   allow_origins:              ## Allowed CORS origins
+  #     - http://localhost:8182
+
+  # hideLogs: false               ## Show or hide logs in the UI
 
 ##########################################################################
 ## Casdoor Configuration
 ## - Identity and Access Management (IAM) system
 ##########################################################################
-#casdoor:
-#  enable: true
-#  listen: "127.0.0.1:8000"         ## Listen address
-#  data: "/var/opt/csghub/casdoor"  ## Data directory
+# casdoor:
+  # enable: true
+  # listen: "127.0.0.1:8000"
+  # data: "/var/opt/csghub/casdoor"
 
-#  ## Admin authentication
-#  auth:
-#    username: "admin"             ## Admin username
-#    password: ""                  ## Admin password
+  ## Authentication Settings
+  # auth:
+  #   username: "admin"
+  #   password: ""
 
-#  ## Database configuration
-#  postgresql:
-#    dbname: "csghub_casdoor"      ## Database name
-#    host: "127.0.0.1"             ## Database host
-#    port: 5432                    ## Database port
-#    user: "csghub"                ## Database user
-#    password: ""                  ## Database password
+  ## PostgreSQL Settings
+  # postgresql:
+  #   dbname: "csghub_casdoor"
+  #   host: "127.0.0.1"
+  #   port: 5432
+  #   user: "csghub"
+  #   password: ""
 
 ##########################################################################
 # Csgship Configuration
 # - IDE AI Coding Assistant
 ##########################################################################
-#csgship:
-#  enable: false                   ## Enable or disable all the following Csgship service
-#  listen:
-#    frontend: "127.0.0.1:8001"    ## External URL for Csgship web interface
-#    api: "127.0.0.1:8002"         ## External API URL for Csgship service
-#  oauth:
-#    issuer: "https://gitlab.example.com"
-#    client_id: "73f1c2922f51d68fa87de8c1ef0e23e8940f3aa42f5ac7a55a1f586c597d7e9c"
-#    client_secret: "gloas-3ba02f02b3e993664ccdda2c4d76989caa11ce6f07a805b6872d266fbd465831"
+# csgship:
+  # enable: false
+  # listen:
+  #   frontend: "127.0.0.1:8001"    ## External URL for Csgship web interface
+  #   api: "127.0.0.1:8002"         ## External API URL for Csgship service
+
+  ## OAuth Settings
+  # oauth:
+  #   issuer: "https://gitlab.example.com"
+  #   client_id: "73f1c2922f51d68fa87de8c1ef0e23e8940f3aa42f5ac7a55a1f586c597d7e9c"
+  #   client_secret: "gloas-3ba02f02b3e993664ccdda2c4d76989caa11ce6f07a805b6872d266fbd465831"
 
 ### Csgship-Web ###########################################################
-#web:
-#  listen: "127.0.0.1:8183"
-#  # Database configuration
-#  postgresql:
-#    name: "csgship"            ## Database name
-#    host: "127.0.0.1"           ## Database host
-#    port: 5432                  ## Database port
-#    user: "csghub"              ## Database user
-#    password: ""                ## Database password
+# web:
+  # listen: "127.0.0.1:8183"
 
-#  ## Redis cache configuration
-#  redis:
-#    host: "127.0.0.1"           ## Redis server address
-#    port: 6379
-#    auth:
-#      user: "default"           ## Redis username
-#      password: ""              ## Redis password
+  ## PostgreSQL Settings
+  # postgresql:
+  #   name: "csgship"
+  #   host: "127.0.0.1"
+  #   port: 5432
+  #   user: "csghub"
+  #   password: ""
 
-#  ## OpenAI or compatible assistants
-#  openai:
-#    model: "csg-gpt4o-mini"
-#    ## API connection settings for Azure OpenAI service
-#    api:
-#      ## Base endpoint URL for Azure OpenAI API
-#      ## Note: This should point to your Azure OpenAI service instance
-#      base: "https://opencsg-us.openai.azure.com"
-#      ## API version to use for compatibility
-#      ## Important: This should match the API version supported by your Azure OpenAI deployment
-#      version: "2024-06-01"
-#      ## API key for authentication (keep empty in version control)
-#      ## Security Note: Always set this via environment variables or secrets in production
-#      ## Example: "123456abcdef7890" (actual key should never be committed to source control)
-#      key: ""
+  ## Redis Settings
+  # redis:
+  #   host: "127.0.0.1"
+  #   port: 6379
+  #   auth:
+  #     user: "default"
+  #     password: ""
 
-#  ## NATS messaging configuration
-#  nats:
-#    url: ""                 ## NATS server URL
+  ## OpenAI or Compatible Assistants
+  # openai:
+  #   model: "csg-gpt4o-mini"
+  #   ## API connection settings for Azure OpenAI service
+  #   api:
+  #     ## Base endpoint URL for Azure OpenAI API
+  #     ## Note: This should point to your Azure OpenAI service instance
+  #     base: "https://opencsg-us.openai.azure.com"
+  #     ## API version to use for compatibility
+  #     ## Important: This should match the API version supported by your Azure OpenAI deployment
+  #     version: "2024-06-01"
+  #     ## API key for authentication (keep empty in version control)
+  #     ## Security Note: Always set this via environment variables or secrets in production
+  #     ## Example: "123456abcdef7890" (actual key should never be committed to source control)
+  #     key: ""
 
-#   ## MegaLinter-Server
-#   megalinter_server:
-#     endpoint: "http://megalinter-server:9000"
+  ## NATS Messaging Settings
+  # nats:
+  #   url: ""  ## NATS server URL
+
+  ### MegaLinter-Server Settings
+  # megalinter_server:
+  #   endpoint: "http://megalinter-server:9000"
 
 ### Csgship-Celery ########################################################
-#producer: {}                ## Producer configuration (empty for default settings)
-#worker: {}                  ## Worker configuration (empty for default settings)
+## Producer Settings (empty for default settings)
+# producer: {}
+
+## Worker Settings (empty for default settings)
+# worker: {}
 
 ### Csgship-Agentic #######################################################
-#agentic:
-#  listen: "127.0.0.1:8184"  ## Network address and port for Agentic service
+# agentic:
+  # listen: "127.0.0.1:8184"
 
 ### Csgship-Billing #######################################################
-#billing:
-#  enable: false             ## Whether billing functionality is enabled
-#  listen: "127.0.0.1:8185"  ## Network address and port for Billing service
+# billing:
+  # enable: false
+  # listen: "127.0.0.1:8185"
 
 ##########################################################################
 # Prometheus Configuration
 # - Monitoring and alerting system configuration
 ##########################################################################
-#prometheus:
-#  enable: true                               ## Enable or disable Prometheus server
-#  listen_address: "127.0.0.1:9090"           ## Address and port for Prometheus to listen on
+# prometheus:
+  # enable: true
+  # listen_address: "127.0.0.1:9090"
 
-#  external_url: ""                           ## External URL to access Prometheus (for links in alerts, etc.)
+  # external_url: ""                           ## External URL to access Prometheus (for links in alerts, etc.)
 
-#  tsdb:                                      ## Time series database (TSDB) settings
-#    path: "/var/opt/csghub/prometheus/data"  ## Directory to store Prometheus TSDB data
-#    retention: "15d"                         ## Data retention period (e.g., 15d for 15 days)
+  # tsdb:                                      ## Time series database (TSDB) settings
+  #   path: "/var/opt/csghub/prometheus/data"  ## Directory to store Prometheus TSDB data
+  #   retention: "15d"                         ## Data retention period (e.g., 15d for 15 days)
 
-#  scrape_interval: "15s"                     ## How often to scrape targets (default: 15 seconds)
-#  evaluation_interval: "15s"                 ## How often to evaluate rules (default: 15 seconds)
-#  scrape_timeout: "10s"                      ## Timeout for scraping a target (default: 10 seconds)
+  # scrape_interval: "15s"                     ## How often to scrape targets (default: 15 seconds)
+  # evaluation_interval: "15s"                 ## How often to evaluate rules (default: 15 seconds)
+  # scrape_timeout: "10s"                      ## Timeout for scraping a target (default: 10 seconds)
 
-#  external_labels: {}                        ## External labels to add to all metrics (e.g., environment, region)
-#    # environment: "production"
-#    # region: "cn-north-1"
+  # external_labels: {}                        ## External labels to add to all metrics (e.g., environment, region)
+  #   environment: "production"
+  #   region: "cn-north-1"
 
-#  scrape_configs: []                         ## List of scrape configurations for Prometheus targets
-#    # - job_name: "node"
-#    #   static_configs:
-#    #     - targets:
-#    #       - "127.0.0.1:9100"
+  # scrape_configs: [] ## List of scrape configurations for Prometheus targets
+  #   - job_name: "node"
+  #     static_configs:
+  #       - targets:
+  #         - "127.0.0.1:9100"
 
 ##########################################################################
 # Loki Configuration
 # - Like Prometheus, but for logs.
 ##########################################################################
-#loki:
-#  enable: true                   ## Whether to enable the Loki logging system
-#  log_level: "info"              ## Loki log level, valid options: debug, info, warn, error
-#  listen_port: 3100              ## Loki service listening port (default HTTP API port)
-#  data: "/var/opt/csghub/loki"   ## Loki data storage path
+# loki:
+  # enable: true
+  # listen_port: 3100
+  # data: "/var/opt/csghub/loki"
+
+  ## Options: debug, info, warn, error
+  # log_level: "info"

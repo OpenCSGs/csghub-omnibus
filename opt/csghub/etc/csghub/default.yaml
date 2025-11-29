@@ -314,7 +314,6 @@ gitaly:
       path: "/var/opt/csghub/gitaly/repositories"  ## Repo storage path
 
   ## Secret configuration
-  # secret_file: ""
   secret: ""
 
   ## Logging configuration
