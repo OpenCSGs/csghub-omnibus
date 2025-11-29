@@ -262,10 +262,10 @@ portal:
     bucket: "csghub-portal"
 
 ##########################################################################
-## Notification Configuration
+## Notifier Configuration
 ## - Responsible for news notifications inside and outside the site.
 ##########################################################################
-notification:
+notifier:
   enable: true
   listen: "127.0.0.1:8095"             ## IP and port for the notification service to listen on
 

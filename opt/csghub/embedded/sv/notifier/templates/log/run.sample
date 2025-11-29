@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/notifier" }}
+{{- if has (datasource "config").notifier "log" }}
+{{- if has (datasource "config").notifier.log "dir" }}
+{{- if (datasource "config").notifier.log.dir }}
+{{- $logDir = (datasource "config").notifier.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}
