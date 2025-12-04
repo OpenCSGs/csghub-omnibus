@@ -1,7 +1,7 @@
 # Generate or retrieve a persistent random seed used for cryptographic operations.
-# The seed is stored in /opt/csghub/etc/csghub/.seed to ensure consistency across runs.
+# The seed is stored in /etc/csghub/csghub.secret to ensure consistency across runs.
 {{- define "GenSeed" -}}
-  {{- $seedFile := "/opt/csghub/etc/csghub/.seed" -}}
+  {{- $seedFile := "/etc/csghub/csghub.secret" -}}
   {{- $seed := "" -}}
   {{- if file.Exists $seedFile -}}
     {{- $seed = file.Read $seedFile -}}
