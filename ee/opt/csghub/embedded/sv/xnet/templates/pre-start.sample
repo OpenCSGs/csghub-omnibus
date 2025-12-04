@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# exit when error
+set -e
+
+{{- $configDir := "/opt/csghub/etc/xnet" }}
+{{- $envDir := printf "%s/env" $configDir }}
+
+# Clear all environment variable files
+# rm -rf {{ $envDir }}/* || true
+
+{{- $xnet := (datasource "config").xnet }}
+{{- $dataDir := $xnet.data | default "/var/opt/csghub/xnet" }}
+{{- $db := $xnet.postgresql }}
+{{- $password := $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) }}
+
+{{- $postgresql := (datasource "config").postgresql }}
+{{- $patroni := (datasource "config").patroni }}
+{{- if or $postgresql.enable $patroni.enable }}
+# Create xnet database (current default)
+/opt/csghub/bin/csghub-dbm -a create -d {{ $db.name }} -u {{ $db.user }} -p {{ $password }}
+{{- end }}
+
+{{- $minio := (datasource "config").minio }}
+{{- if $minio.enable }}
+# Create bucket
+[ -x "/opt/csghub/service/minio/create_bucket" ] && /opt/csghub/service/minio/create_bucket {{ $xnet.s3.bucket }}
+{{- end }}

@@ -136,6 +136,24 @@ server:
   logcollector:
     loki_url: "http://127.0.0.1:3100/-/loki"
 
+  ## Agent settings
+  agent:
+    langflow:
+      host: "http://127.0.0.1:8088"
+      token: ""
+      instance_quota_per_user: 5
+      code_instance_quota_per_user: 5
+
+  ## CSGBot settings
+  csgbot:
+    host: "http://127.0.0.1"
+    port: "8070"
+
+  ## XNet settings
+  xnet:
+    endpoint: ""
+    api_key: ""
+
 ##########################################################################
 ## Mirror Repository Service Configuration
 ## - Handles repository mirroring operations
@@ -239,6 +257,7 @@ moderation:
 portal:
   enable: true
   data: "/var/opt/csghub/portal"
+
   ## Database configuration
   postgresql:
     name: "csghub_portal"       ## Database name
@@ -292,6 +311,44 @@ notifier:
 ##########################################################################
 temporal_worker:
   enable: true
+
+##########################################################################
+## XNet Smart Trunk Accelerator
+##########################################################################
+xnet:
+  enable: true
+  listen_port: 8097
+
+  ## Logging settings
+  log:
+    level: "info"
+    dir: "/var/log/csghub/xnet"
+
+  ## NATS messaging configuration
+  nats:
+    url: ""                                                     ## NATS server URL
+    msg_fetch_timeout_in_sec: 5                                 ## Message fetch timeout
+
+  ## Database configuration
+  postgresql:
+    name: "csghub_xnet"         ## Database name
+    host: "127.0.0.1"           ## Database host
+    port: 5432                  ## Database port
+    user: "csghub"              ## Database user
+    password: ""                ## Database password
+    timezone: "Asia/Shanghai"
+
+  ## S3 storage configuration
+  s3:
+    access_key: "minio"         ## S3 access key
+    secret_key: ""              ## S3 secret key
+    region: "cn-north-1"        ## S3 region
+    endpoint: ""                ## S3 endpoint
+    internal_endpoint: ""       ## S3 internal endpoint
+    bucket: "csghub-xnet"       ## S3 Bucket name
+    encrypt: false              ## S3 Server-side encryption
+    secure: false               ## If S3 Use HTTPS
+    path_style: false           ## S3 Path-style access
 
 ##########################################################################
 ## Gitaly Service Configuration

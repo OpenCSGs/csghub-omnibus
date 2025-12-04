@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout
+exec 2>&1
+
+# fail on errors
+set -e
+
+# Run the pre-start script to ensure that the service meets the startup conditions
+if [ -x ./pre-start ]; then
+  ./pre-start
+fi
+
+{{- $xnet := (datasource "config").xnet }}
+{{- $dataDir := $xnet.data | default "/var/opt/csghub/xnet" }}
+{{- $configFile := printf "%s/config.toml" $dataDir }}
+
+# Define constants
+readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-xnet"
+readonly ENV_DIR="/opt/csghub/etc/xnet/env"
+
+# Build command arguments
+args=("start" "server" "-l" {{ $xnet.log.level | quote }})
+[[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
+
+echo "Starting xnet..."
+cd {{ $dataDir }}
+exec chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}"
