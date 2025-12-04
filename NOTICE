@@ -13,7 +13,7 @@ This project includes unmodified binary components from third-party open source 
    - Code Repository: http://thekelleys.org.uk/dnsmasq/
 
 3. **Casdoor** (Apache License 2.0)
-   - Source: Official Docker image `casbin/casdoor:v1.929.0`
+   - Source: Official Docker image `casbin/casdoor:v2.79.0`
    - Code Repository: https://github.com/casdoor/casdoor
 
 4. **Consul** (MPL-2.0 License)
