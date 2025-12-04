@@ -1,0 +1,66 @@
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
+api_token = {{ tmpl.Exec "GenHubApiToken" . | quote }}
+cas_url = {{ printf "%s/xnet" $csghub.external | quote }}
+
+{{ $xnet := (datasource "config").xnet -}}
+[xnet_server]
+port = {{ $xnet.listen_port }}
+
+# Only one of fdb and pg is active; If you compile using tags=fdb, no other configuration is needed.
+[fdb]
+# enabled: true - persistence-model | false - in-memory-model
+enabled = false
+cluster_file = "{fdb_cluster_file_path}"
+api_version = 740
+tenant = ""
+namespace = "default"
+default_timeout_ms = 5000
+tx_timeout_ms = 10000
+max_retry_attempts = 5
+retry_backoff_ms = 20
+
+{{ $postgresql := $xnet.postgresql }}
+{{- $pgUser := $postgresql.user -}}
+{{- $pgPassword := $postgresql.password | default (crypto.PBKDF2 $pgUser "opencsg" 2048 8) -}}
+[database]
+driver = "pg"
+dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" (conv.ToString $pgUser) (conv.ToString $pgPassword) (conv.ToString $postgresql.host) (conv.ToInt64 $postgresql.port) (conv.ToString $postgresql.name) | quote }}
+timezone = {{ $postgresql.timezone | quote }}
+
+{{ $s3 := $xnet.s3 -}}
+[xorb]
+{{- $s3Endpoint := $s3.endpoint | default (printf "%s:9000" $csghub.host) }}
+xorb_s3_url = {{ printf "%s/%s" $s3Endpoint $s3.bucket | quote }}
+signed_ul_expire_hours = {{ $xnet.s3.signed_ul_expire_hours | default 3 }}
+
+{{ $accessKeyId := $s3.access_key -}}
+{{- $secretKey := $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) -}}
+[s3]
+access_key_id = {{ $accessKeyId | quote }}
+access_key_secret = {{ $secretKey | quote }}
+region = {{ $s3.region | quote }}
+endpoint = {{ $s3Endpoint | quote }}
+internal_endpoint = {{ $s3.internal_endpoint | quote }}
+xorb_bucket = {{ $s3.bucket | quote }}
+enable_ssl = {{ $s3.secure }}
+{{- if $s3.path_style }}
+bucket_lookup = "path"
+{{- else }}
+bucket_lookup = "auto"
+{{- end }}
+
+[jwt]
+signing_key = {{ tmpl.Exec "GenSeed" . | crypto.SHA256 | quote }}
+valid_hour = 24
+
+[instrumentation]
+otlp_endpoint = "{otlp_endpoint}"
+otlp_logging = false
+
+{{ $nats := (datasource "config").nats }}
+{{- $natsUser := $nats.auth.user -}}
+{{- $natsPassword := $nats.auth.password | default (crypto.PBKDF2 $natsUser "opencsg" 2048 8) -}}
+{{- $xnetNats := $xnet.nats -}}
+[nats]
+url = {{ $xnetNats.url | default (printf "nats://%s:%s@localhost:4222" (conv.ToString $natsUser) (conv.ToString $natsPassword)) | quote }}
+msg_fetch_timeout_in_sec = {{ $xnetNats.msg_fetch_timeout_in_sec }}

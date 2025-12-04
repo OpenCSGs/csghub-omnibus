@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/xnet" }}
+{{- if has (datasource "config").xnet "log" }}
+{{- if has (datasource "config").xnet.log "dir" }}
+{{- if (datasource "config").xnet.log.dir }}
+{{- $logDir = (datasource "config").xnet.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

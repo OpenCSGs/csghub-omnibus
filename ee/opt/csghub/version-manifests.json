@@ -120,6 +120,11 @@
         "description": "Like Prometheus, but for logs.",
         "version": "3.5",
         "repository": "https://github.com/grafana/loki.git"
+      },
+      {
+        "name": "xnet",
+        "description": "XNet Smart Trunk Accelerator.",
+        "version": "1.14.0"
       }
     ]
   }

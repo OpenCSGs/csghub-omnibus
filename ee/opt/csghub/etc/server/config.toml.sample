@@ -289,3 +289,20 @@ api_address = {{ printf "%s/api/v1/query" $prometheus.address | quote }}
 {{ $logcollector := $server.logcollector -}}
 [logcollector]
 loki_url = {{ $logcollector.loki_url | quote }}
+
+{{ $agent := $server.agent -}}
+[agent]
+agent_hub_service_host = {{ $agent.langflow.token | quote }}
+agent_hub_service_token = {{ $agent.langflow.host | quote }}
+code_instance_quota_per_user = {{ $agent.code_instance_quota_per_user | default 5 }}
+langflow_instance_quota_per_user = {{ $agent.instance_quota_per_user | default 5 }}
+
+{{ $csgbot := $server.csgbot -}}
+[csgbot]
+host = {{ $csgbot.host | quote }}
+port = {{ $csgbot.port }}
+
+{{ $xnet := $server.xnet -}}
+[xnet]
+endpoint = {{ $xnet.endpoint | default (printf "%s/xnet" $csghub.external) | quote }}
+api_key = {{ $xnet.api_key | default (tmpl.Exec "GenHubApiToken" .)| quote }}

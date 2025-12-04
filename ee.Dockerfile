@@ -24,6 +24,7 @@ ARG CSGSHIP_BILLING=bl-2.0.1
 ARG CSGSHIP_AGENTIC=v0.4.0
 ARG PROM_VERSION=v3.7.3
 ARG LOKI_VERSION=3.5
+ARG XNET_VERSION=v1.14.0
 
 ## Install Runit Service Daemon
 FROM ${GITLAB_REGISTRY}/omnibus-runit:${RUNIT_VERSION}-${OS_TAG} AS runit
@@ -70,6 +71,9 @@ FROM ${REGISTRY}/csghub-server:${CSGHUB_VERSION} AS server
 ## Install csghub-portal
 FROM ${REGISTRY}/csghub-portal:${CSGHUB_VERSION} AS portal
 
+## Install csghub-xnet
+FROM ${REGISTRY}/csghub-xnet:${XNET_VERSION} AS xnet
+
 ## Install Prometheus
 FROM ${REGISTRY}/prom/prometheus:${PROM_VERSION} AS prometheus
 
@@ -106,7 +110,7 @@ SHELL ["/bin/bash", "-c"]
 RUN mkdir -p \
       ${CSGHUB_HOME}/{LICENSES,bin} \
       ${CSGHUB_EMBEDDED}/{bin,lib,sv} \
-      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus,loki}/bin
+      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus,loki,xnet}/bin
 
 ## Install Runit Service Daemon
 COPY --from=runit ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
@@ -169,6 +173,10 @@ RUN rm ${CSGHUB_HOME}/etc/server/starhub
 
 ## Install csghub-portal
 COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/portal/bin/
+
+## Install csghub-xnet
+COPY --from=xnet /usr/lib/libfdb_c.so /usr/lib/
+COPY --from=xnet /xnet-bin/xnet ${CSGHUB_SRV_HOME}/xnet/bin/csghub-xnet
 
 ## Install Prometheus
 COPY --from=prometheus /bin/prometheus ${CSGHUB_SRV_HOME}/prometheus/bin/
