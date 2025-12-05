@@ -11,9 +11,14 @@ if [ -x ./pre-start ]; then
   ./pre-start
 fi
 
-{{- $dataDir := (datasource "config").minio.data | default "/var/opt/csghub/minio/data" }}
+{{- $minio := (datasource "config").minio }}
+{{- $dataDir := $minio.data | default "/var/opt/csghub/minio/data" }}
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/etc/minio/env -P \
   -u minio:minio \
-  /opt/csghub/embedded/bin/minio server --json {{ $dataDir }}
+  /opt/csghub/embedded/bin/minio server \
+    --address {{ $minio.listen }}  \
+    --console-address {{ $minio.console.address }} \
+    --json \
+    {{ $dataDir }}

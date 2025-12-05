@@ -12,11 +12,13 @@ set -e
 # rm -rf {{ $envDir }}/* || true
 
 # Render environments
+{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
 {{- $minio := (datasource "config").minio }}
 {{- with $minio.auth }}
 {{- file.Write (printf "%s/MINIO_ROOT_USER" $envDir) .user }}
 {{- file.Write (printf "%s/MINIO_ROOT_PASSWORD" $envDir) (.password | default (crypto.PBKDF2 .user "opencsg" 2048 8)) }}
 {{- file.Write (printf "%s/MINIO_CONSOLE_ADDRESS" $envDir) (.password | default (crypto.PBKDF2 .user "opencsg" 2048 8)) }}
+{{- file.Write (printf "%s/MINIO_BROWSER_REDIRECT_URL" $envDir) ($minio.external_url | default (printf "%s://%s:9000/console/" $csghub.scheme $csghub.host)) }}
 {{- file.Write "/etc/csghub/init_minio_password" (printf "%s:%s\n" .user (.password | default (crypto.PBKDF2 .user "opencsg" 2048 8)) ) }}
 {{- end }}
 
