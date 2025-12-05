@@ -461,8 +461,16 @@ praefect:
 ##########################################################################
 minio:
   enable: true                        ## Enable MinIO service
+  listen: ":9001"
   data: "/var/opt/csghub/minio/data"  ## Data directory
   log: "/var/log/csghub/minio"        ## Log directory
+
+  ## MinIO Console
+  console:
+    address: ":9002"
+
+  ## MinIO External
+  external_url: ""
 
   ## Authentication
   auth:
@@ -470,8 +478,8 @@ minio:
     password: ""                ## Admin password
 
   ## Environment variables
-  environments:
-    MINIO_CONSOLE_ADDRESS: ":9002"    ## Console options
+  environments: {}
+    # MINIO_CONSOLE_ADDRESS: ":9002"    ## Console options
 
 ## Logger configuration section
 logger:
