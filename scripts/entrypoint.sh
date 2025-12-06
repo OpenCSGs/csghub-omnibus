@@ -15,7 +15,11 @@ retry() {
 }
 
 # Reconfigure all service enabled
-cd / && retry /usr/bin/csghub-ctl reconfigure
+# Run reconfigure twice gracefully
+for i in 1 2; do
+  echo "Running reconfigure ($i/2)..."
+  cd / && retry /usr/bin/csghub-ctl reconfigure
+done
 
 echo -e "\nService will be ready in minute.\n"
 echo -e "Initialization information is in the /etc/csghub."
