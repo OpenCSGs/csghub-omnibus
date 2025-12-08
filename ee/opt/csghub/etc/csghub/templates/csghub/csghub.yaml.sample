@@ -140,6 +140,24 @@ csghub:
   # logcollector:
   #   loki_url: "http://127.0.0.1:3100/-/loki"
 
+  ## Agent Settings
+  # agent:
+    # langflow:                                    ## Langflow service configuration
+    #   host: ""                                   ## Langflow endpoint URL
+    #   token: ""                                  ## API token for Langflow authentication
+    #   instance_quota_per_user: 5                 ## Max Langflow instances per user
+    #   code_instance_quota_per_user: 5            ## Max code-execution instances per user
+
+  ## CSGBot Settings
+  # csgbot:
+    # host: ""                                     ## CSGHub Bot service host
+    # port: "8070"                                 ## Bot listening port
+
+  ## XNet Settings
+  # xnet:
+    # endpoint: "http://csghub.example.com/xnet"    ## XNet service endpoint
+    # api_key: ""                                   ## Authentication key for XNet
+
 ##########################################################################
 ## Mirror Repository Service Configuration
 ## - Handles repository mirroring operations
@@ -220,6 +238,23 @@ csghub:
   # listen: "127.0.0.1:8088"
 
 ##########################################################################
+## Moderation Service Configuration
+## - Manages sensitive contents checking
+##########################################################################
+# moderation:
+  # enable: false
+  # address: "http://127.0.0.1:8089"   ## Moderation service endpoint
+  # encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
+
+  ## Sensitive Check Settings
+  # sensitive_check:
+  #   access_key_id: ""                ## Access key ID for the moderation service
+  #   access_key_secret: ""            ## Access key secret for the moderation service
+  #   region: ""                       ## Service region identifier
+  #   endpoint: ""                     ## Custom endpoint URL for the moderation service
+  #   enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
+
+##########################################################################
 ## Portal Service Configuration
 ## - Provides web interface and frontend functionality
 ##########################################################################
@@ -281,6 +316,44 @@ csghub:
 ##########################################################################
 # temporal_worker:
   # enable: true
+
+##########################################################################
+## XNet Smart Trunk Accelerator
+##########################################################################
+# xnet:
+  # enable: true
+  # listen_port: 8097
+
+  ## Logging Settings
+  # log:
+    # level: "info"
+    # dir: "/var/log/csghub/xnet"
+
+  ## NATS messaging configuration
+  # nats:
+    # url: ""                       ## NATS server URL
+    # msg_fetch_timeout_in_sec: 5   ## Message fetch timeout
+
+  ## PostgreSQL Settings
+  # postgresql:
+    # name: "csghub_xnet"
+    # host: "127.0.0.1"
+    # port: 5432
+    # user: "csghub"
+    # password: ""
+    # timezone: "Asia/Shanghai"
+
+  ## S3 Storage Settings
+  # s3:
+    # access_key: "minio"         ## S3 access key
+    # secret_key: ""              ## S3 secret key
+    # region: "cn-north-1"        ## S3 region
+    # endpoint: ""                ## S3 endpoint
+    # internal_endpoint: ""       ## S3 internal endpoint
+    # bucket: "csghub-xnet"       ## S3 Bucket name
+    # encrypt: false              ## S3 Server-side encryption
+    # secure: false               ## If S3 Use HTTPS
+    # path_style: false           ## S3 Path-style access
 
 ##########################################################################
 ## Gitaly Service Configuration
@@ -378,6 +451,76 @@ csghub:
   #   format: "json"
 
 ##########################################################################
+## Praefect Configuration
+## - Manages Gitaly cluster and provides high availability
+##########################################################################
+# praefect:
+  # enable: false
+  # listen_addr: "127.0.0.1:2305"
+
+  ## Authentication Settings
+  # auth:
+  #   token: ""
+
+  ## Logging Settings
+  # logging:
+  #   dir: "/var/log/csghub/praefect"
+  #   format: "json"
+  #   level: "info"
+
+  ## PostgreSQL Settings
+  # database:
+  #   host: "127.0.0.1"
+  #   port: 5432
+  #   user: "praefect"
+  #   password: ""
+  #   dbname: "praefect_production"
+
+  ## Virtual Storage Settings
+  # virtual_storage:
+  #   - name: "default"                      ## Virtual storage name
+  #     nodes:
+  #       - storage: "gitaly-01"             ## Gitaly storage name
+  #         address: "tcp://10.0.0.5:8075"   ## Gitaly address
+  #         token: ""                        ## Gitaly token
+  #       - storage: "gitaly-02"
+  #         address: "tcp://10.0.0.6:8075"
+  #         token: ""
+  #       - storage: "gitaly-03"
+  #         address: "tcp://10.0.0.7:8075"
+  #         token: ""
+
+  ## Replication Settings
+  # replication:
+  #   batch_size: 10  ## Replication batch size
+
+  ## Reconcile Settings
+  # reconciliation:
+  #   scheduling_interval: "1m"  ## Reconciliation scheduling interval
+  #   histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]  ## Histogram buckets
+
+  ## Failover Settings
+  # failover:
+  #   enabled: true  ## Enable automatic failover
+
+  # graceful_stop_timeout: "30s"
+
+  ## Prometheus Settings
+  # prometheus_listen_addr: "127.0.0.1:9652"
+  # prometheus:
+  #   grpc_latency_buckets: [ 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0 ]
+
+  ## Background Verification Settings
+  # background_verification:
+  #   delete_invalid_records: false
+  #   verification_interval: "72h"
+
+  ## Sentry Settings
+  # sentry: {}
+  #   # sentry_environment: ""
+  #   # sentry_dsn: ""
+
+##########################################################################
 ## MinIO Configuration
 ## - S3-compatible object storage service
 ##########################################################################
@@ -410,6 +553,26 @@ csghub:
   # auth_token: "MTIzYWJj"  ## Minio logger webhook auth token
 
 ##########################################################################
+## Consul Configuration
+## - Service discovery and configuration management
+##########################################################################
+# consul:
+  # enable: false
+  # datacenter: "csghub-consul-dc"                    ## Datacenter name
+  # data_dir: "/var/opt/csghub/consul"                ## Data directory
+  # server: true                                      ## Run in server mode
+  # bootstrap_expect: 3                               ## Expected server nodes
+  # log_dir: "/var/log/csghub/consul"                 ## Log directory
+  # bind_addr: "0.0.0.0"                              ## Network interface address to bind to
+  # client_addr: "127.0.0.1"                          ## Indicate Which client can connect to
+  # advertise_addr: "10.0.0.5"                        ## Address to advertise to other Consul nodes
+  # retry_join: ["10.0.0.5", "10.0.0.6", "10.0.0.7"]  ## List of Consul server addresses to join during startup
+
+  ## Consul Web UI Settings
+  # ui_config:
+  #   enabled: false
+
+##########################################################################
 ## PostgreSQL Configuration
 ## - Primary relational database for CSGHub
 ##########################################################################
@@ -436,6 +599,87 @@ csghub:
   ## Host-based Authentication Rules
   # pg_hba:
   #   - host all all all scram-sha-256
+
+##########################################################################
+## Patroni Configuration
+## - High Availability framework for PostgreSQL that automates
+##   failover and topology management
+##########################################################################
+# patroni:
+  # enable: false
+  # scope: "postgresql-ha"         ## Cluster name/identifier
+  # namespace: "/service"          ## DCS namespace path
+  # name: "patroni-01"             ## Unique node identifier
+  # listen: "10.0.0.5"             ## Listen address
+
+  ## Logging Settings
+  ## Level options: DEBUG, INFO, WARN, ERROR
+  ## Type options: plain, json
+  # log:
+  #   level: "INFO"
+  #   type: "plain"
+
+  ## Consul Settings
+  # consul: "127.0.0.1:8500"
+
+  ## Cluster Initialization Settings
+  # bootstrap:
+  #   loop_wait: 10                ## Leader check interval (seconds)
+  #   retry_timeout: 10            ## Operation retry timeout (seconds)
+  #   ttl: 30                      ## Leader lock TTL (seconds)
+  #   master_start_timeout: 60     ## Master startup timeout (seconds)
+  #   synchronous_mode: false      ## Enable synchronous replication
+  #   maximum_lag_on_failover: ""  ## Max replication lag for failover (bytes)
+
+  ## PostgreSQL Settings
+  # postgresql:
+  #   data_dir: "/var/opt/csghub/postgresql/data"
+
+    ## Authentication Settings
+    # authentication:
+    #   postgres: ""     ## PostgreSQL superuser password
+    #   replicator: ""   ## Replication user password
+    #   rewinder: ""     ## Rewind user password
+
+    ## PostgreSQL Parameters
+    # parameters:
+    #   shared_buffers: "256MB"   ## Shared memory buffers size
+
+    # pgpass: "/var/opt/csghub/patroni/.pgpass"   ## Password file path
+
+  ## Data Safety Settings
+  # remove_data_directory_on_rewind_failure: true      ## Cleanup after rewind failures
+  # remove_data_directory_on_diverged_timelines: true  ## Cleanup on timeline divergence
+
+  ## Standby Leader Settings
+  # standby_leader:
+  #   enable: false                      ## Enable standby leader
+  #   host: "127.0.0.1"                  ## Standby host address
+  #   port: "5432"                       ## Standby port
+  #   primary_slot_name: "standby_slot"  ## Replication slot name
+  #   recovery_min_apply_delay: "0"      ## Minimum replication delay
+
+  ## Virtual IP Management
+  # callback:
+  #   enable: false                      ## Enable VIP callback
+  #   virtual_ip: "127.0.0.1"            ## Virtual IP address
+  #   prefix: 24                         ## Network prefix length
+  #   interface: "ens33"                 ## Network interface name
+
+  ## Watchdog Configuration
+  # watchdog:
+  #   mode: "automatic"           ## Watchdog mode (off/automatic/required)
+  #   device: "/dev/watchdog"     ## Watchdog device path
+  #   safety_margin: 20           ## Safety margin in seconds
+
+  ## Cluster Tags Configuration
+  # tags:
+  #   clonefrom: true             ## Allow cloning from this node
+  #   failover_priority: 1        ## Failover priority (higher=preferred)
+  #   noloadbalance: false        ## Exclude from load balancing
+  #   nostream: false             ## Disable streaming replication
+  #   nosync: true                ## Disable synchronous replication
+  #   replicatefrom: ""           ## Specific source node for replication
 
 ##########################################################################
 ## Redis Configuration
@@ -599,6 +843,82 @@ csghub:
   #   port: 5432
   #   user: "csghub"
   #   password: ""
+
+##########################################################################
+# Csgship Configuration
+# - IDE AI Coding Assistant
+##########################################################################
+# csgship:
+  # enable: false
+  # listen:
+  #   frontend: "127.0.0.1:8001"    ## External URL for Csgship web interface
+  #   api: "127.0.0.1:8002"         ## External API URL for Csgship service
+
+  ## OAuth Settings
+  # oauth:
+  #   issuer: "https://gitlab.example.com"
+  #   client_id: "73f1c2922f51d68fa87de8c1ef0e23e8940f3aa42f5ac7a55a1f586c597d7e9c"
+  #   client_secret: "gloas-3ba02f02b3e993664ccdda2c4d76989caa11ce6f07a805b6872d266fbd465831"
+
+### Csgship-Web ###########################################################
+# web:
+  # listen: "127.0.0.1:8183"
+
+  ## PostgreSQL Settings
+  # postgresql:
+  #   name: "csgship"
+  #   host: "127.0.0.1"
+  #   port: 5432
+  #   user: "csghub"
+  #   password: ""
+
+  ## Redis Settings
+  # redis:
+  #   host: "127.0.0.1"
+  #   port: 6379
+  #   auth:
+  #     user: "default"
+  #     password: ""
+
+  ## OpenAI or Compatible Assistants
+  # openai:
+  #   model: "csg-gpt4o-mini"
+  #   ## API connection settings for Azure OpenAI service
+  #   api:
+  #     ## Base endpoint URL for Azure OpenAI API
+  #     ## Note: This should point to your Azure OpenAI service instance
+  #     base: "https://opencsg-us.openai.azure.com"
+  #     ## API version to use for compatibility
+  #     ## Important: This should match the API version supported by your Azure OpenAI deployment
+  #     version: "2024-06-01"
+  #     ## API key for authentication (keep empty in version control)
+  #     ## Security Note: Always set this via environment variables or secrets in production
+  #     ## Example: "123456abcdef7890" (actual key should never be committed to source control)
+  #     key: ""
+
+  ## NATS Messaging Settings
+  # nats:
+  #   url: ""  ## NATS server URL
+
+  ### MegaLinter-Server Settings
+  # megalinter_server:
+  #   endpoint: "http://megalinter-server:9000"
+
+### Csgship-Celery ########################################################
+## Producer Settings (empty for default settings)
+# producer: {}
+
+## Worker Settings (empty for default settings)
+# worker: {}
+
+### Csgship-Agentic #######################################################
+# agentic:
+  # listen: "127.0.0.1:8184"
+
+### Csgship-Billing #######################################################
+# billing:
+  # enable: false
+  # listen: "127.0.0.1:8185"
 
 ##########################################################################
 # Prometheus Configuration
