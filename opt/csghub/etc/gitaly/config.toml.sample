@@ -51,19 +51,19 @@ bin_path = {{ $gitaly.git.bin_path | quote }}
 catfile_cache_size = {{ $gitaly.git.catfile_cache_size }}
 signing_key = "{{ $gitaly.git.signing_key }}"
 
-# Git configuration
-{{- range $config := $gitaly.git.config }}
-[[git.config]]
-key = {{ $config.key | quote }}
-value = {{ $config.value | quote }}
-{{ end }}
+  # Git configuration
+  {{- range $config := $gitaly.git.config }}
+  [[git.config]]
+  key = {{ $config.key | quote }}
+  value = {{ $config.value | quote }}
+  {{ end }}
 
 # Storages configuration
-{{ range $gitaly.storage }}
+{{- range $gitaly.storage }}
 [[storage]]
 name = {{ .name | quote }}
 path = {{ .path | default (printf "%s/repositories" $dataDir) | quote }}
-{{ end }}
+{{- end }}
 
 [logging]
 format = {{ $gitaly.logging.format | quote }}
@@ -91,19 +91,26 @@ secret = {{ $gitaly.secret | default (tmpl.Exec "GenSeed" . | crypto.SHA256) | q
 read_timeout = {{ $gitaly.http_settings.read_timeout }}
 self_signed_cert = {{ $gitaly.http_settings.self_signed_cert }}
 
-{{ range $gitaly.concurrency }}
+{{ range $concurrency := $gitaly.concurrency }}
 [[concurrency]]
-rpc = {{ .rpc | quote }}
-max_per_repo = {{ .max_per_repo }}
-max_queue_wait = {{ .max_queue_wait | quote }}
-max_queue_size = {{ .max_queue_size }}
+{{- range $key, $value := $concurrency }}
+{{- if test.IsKind "string" $value }}
+{{ $key }} = {{ $value | quote }}
+{{- else if test.IsKind "number" $value }}
+{{ $key }} = {{ $value }}
 {{- end }}
+{{- end }}
+{{ end }}
 
-{{ range $gitaly.rate_limiting }}
+{{- range $limiting := $gitaly.rate_limiting }}
 [[rate_limiting]]
-rpc = {{ .rpc | quote }}
-interval = {{ .interval | quote }}
-burst = {{ .burst }}
+{{- range $key, $value := $limiting }}
+{{- if test.IsKind "string" $value }}
+{{ $key }} = {{ $value | quote }}
+{{- else if test.IsKind "number" $value }}
+{{ $key }} = {{ $value }}
+{{- end }}
+{{- end }}
 {{ end }}
 
 [daily_maintenance]
