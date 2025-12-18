@@ -6,6 +6,10 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
+default:
+  tags:
+    - runner3
+
 include:
   - template: Jobs/Secret-Detection.gitlab-ci.yml
 
