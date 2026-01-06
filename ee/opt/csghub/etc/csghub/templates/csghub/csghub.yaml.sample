@@ -126,7 +126,7 @@ csghub:
   #   operation_timeout: 120           ## Timeout in seconds for Git operations
   #   check_file_size_enabled: true    ## Enable file size checking
   #   max_un_lfs_file_size: 20971520   ## Maximum file size (in bytes) for non-LFS files (20MB)
-  #   skip_lfs_file_validation: false  ## Whether to skip LFS file validation
+  #   skip_lfs_file_validation: true   ## Whether to skip LFS file validation
 
   ## Telemetry Settings
   # telemetry:
