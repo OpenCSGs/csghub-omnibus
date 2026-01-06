@@ -97,7 +97,6 @@ http {
     {{- end }}
 
     {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
-
     {{- $server := (datasource "config").server -}}
     {{- $nginx := (datasource "config").nginx -}}
     {{- $dataDir := $nginx.data }}
@@ -252,6 +251,7 @@ http {
         # error_page 500 /500.html;
         error_page 502 /502.html;
         error_page 503 /503.html;
+
         location ~ ^/(404|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
             internal;
@@ -299,6 +299,7 @@ http {
         error_page 500 /500.html;
         error_page 502 /502.html;
         error_page 503 /503.html;
+
         location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
             internal;
@@ -342,6 +343,7 @@ http {
         error_page 500 /500.html;
         error_page 502 /502.html;
         error_page 503 /503.html;
+
         location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
             internal;
@@ -513,6 +515,7 @@ http {
         error_page 500 /500.html;
         error_page 502 /502.html;
         error_page 503 /503.html;
+
         location ~ ^/(404|500|502|503)(-custom)?\.html$ {
             root {{ $dataDir }}/html;
             internal;
