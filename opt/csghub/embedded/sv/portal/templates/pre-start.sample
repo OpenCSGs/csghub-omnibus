@@ -54,14 +54,15 @@ set -e
 {{- $additionalS3 := $portal.additionalS3 }}
 {{- $accessKeyId := $s3.access_key }}
 {{- $accessSecretKey := $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) }}
+
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ENABLE_SSL" $envDir) $s3.secure }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_REGION" $envDir) ($s3.region | default (printf "%s:9000" $csghub.host)) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ACCESS_KEY_ID" $envDir) $accessKeyId }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ACCESS_KEY_SECRET" $envDir) $accessSecretKey }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_S3_BUCKET" $envDir) $s3.bucket }}
-{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ENDPOINT" $envDir) $s3.endpoint }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_S3_ENDPOINT" $envDir) ($s3.endpoint | default (printf "%s:9000" $csghub.host) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_ENABLE_SSL" $envDir) ($additionalS3.secure | default $s3.secure) }}
-{{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_REGION" $envDir) ($s3.region | default (printf "%s:9000" $csghub.host)) }}
+{{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_REGION" $envDir) ($s3.region | default "cn-north-1") }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_ACCESS_KEY_ID" $envDir) ($additionalS3.accessKeyId | default $accessKeyId) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_ACCESS_KEY_SECRET" $envDir) ($additionalS3.accessSecretKey | default $accessSecretKey) }}
 {{- file.Write (printf "%s/CSGHUB_PORTAL_PRIVATE_S3_BUCKET" $envDir) ($additionalS3.bucket | default $s3.bucket) }}
