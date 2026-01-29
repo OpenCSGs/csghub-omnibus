@@ -10,6 +10,10 @@ default:
       command: [ "--feature=containerd-snapshotter", "--experimental" ]
       alias: docker
   retry: 2
+  tags:
+    - runner1
+    - runner3
+    - kubernetes
 
 stages:
   - prepare
