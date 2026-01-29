@@ -1,6 +1,6 @@
 services:
   csghub:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.15.0-ee
+    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v1.15.1-ee
     environment:
       CSGHUB_OMNIBUS_CONFIG: |
         csghub:
