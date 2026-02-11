@@ -403,6 +403,7 @@ minio:
   ## Console Settings
   console:
     address: ":9002"
+    enabled: false
 
   ## MinIO External Settings
   external_url: ""

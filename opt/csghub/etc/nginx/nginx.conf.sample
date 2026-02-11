@@ -368,6 +368,10 @@ http {
         proxy_buffer_size 512k;
         proxy_busy_buffers_size 1m;
 
+        location = /console {
+            return 301 /console/;
+        }
+
         location /console {
             proxy_set_header Host $http_host;
             proxy_set_header X-Real-IP $remote_addr;
