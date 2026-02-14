@@ -1,3 +1,7 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e04ca81e3547b9cdfa31ea9e3dec878ebb1a7fae19476beab812f97c1fef8f82
-size 205
+#!/bin/sh
+
+PATH=/opt/csghub/bin:/opt/csghub/embedded/bin:/usr/local/bin:/sbin:/usr/sbin:/bin:/usr/bin
+SVDIR=/opt/csghub/service
+
+exec env - PATH=$PATH \
+runsvdir -P "${SVDIR}" 'log: .....................'
