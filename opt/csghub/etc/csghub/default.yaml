@@ -638,13 +638,13 @@ prometheus:
 
   external_labels: {}                        ## External labels to add to all metrics (e.g., environment, region)
     # environment: "production"
-  # region: "cn-north-1"
+    # region: "cn-north-1"
 
   scrape_configs: []                         ## List of scrape configurations for Prometheus targets
     # - job_name: "node"
     #   static_configs:
     #     - targets:
-  #       - "127.0.0.1:9100"
+    #       - "127.0.0.1:9100"
 
 ##########################################################################
 # Loki Configuration
