@@ -306,3 +306,11 @@ port = {{ $csgbot.port }}
 [xnet]
 endpoint = {{ $xnet.endpoint | default (printf "%s/xnet" $csghub.external) | quote }}
 api_key = {{ $xnet.api_key | default (tmpl.Exec "GenHubApiToken" .)| quote }}
+
+{{ $aigateway := (datasource "config").aigateway -}}
+[aigateway]
+port = {{ $aigateway.port }}
+moderation_bypass_sensitive_check = {{ $aigateway.moderation_bypass_sensitive_check | quote }}
+
+[storagegateway]
+enable_presigned_url_proxy = {{ $server.enable_presigned_url_proxy }}
