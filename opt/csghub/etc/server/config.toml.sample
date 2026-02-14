@@ -292,7 +292,7 @@ loki_url = {{ $logcollector.loki_url | quote }}
 
 {{ $aigateway := (datasource "config").aigateway -}}
 [aigateway]
-port = {{ $aigateway.port | quote }}
+port = {{ $aigateway.port }}
 moderation_bypass_sensitive_check = {{ $aigateway.moderation_bypass_sensitive_check | quote }}
 
 [storagegateway]
