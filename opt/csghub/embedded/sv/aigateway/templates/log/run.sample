@@ -1,0 +1,14 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/aigateway" }}
+{{- if has (datasource "config").aigateway "log" }}
+{{- if has (datasource "config").aigateway.log "dir" }}
+{{- if (datasource "config").aigateway.log.dir }}
+{{- $logDir = (datasource "config").aigateway.log.dir }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}
