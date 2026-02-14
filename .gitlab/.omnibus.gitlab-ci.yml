@@ -11,9 +11,7 @@ default:
       alias: docker
   retry: 2
   tags:
-    - runner1
     - runner3
-    - kubernetes
 
 stages:
   - prepare
