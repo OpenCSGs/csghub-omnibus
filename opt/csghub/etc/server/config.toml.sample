@@ -295,3 +295,6 @@ loki_url = {{ $logcollector.loki_url | quote }}
 port = {{ $aigateway.port }}
 moderation_bypass_sensitive_check = {{ $aigateway.moderation_bypass_sensitive_check | quote }}
 
+[storagegateway]
+enable_presigned_url_proxy = {{ $server.enable_presigned_url_proxy | quote }}
+
