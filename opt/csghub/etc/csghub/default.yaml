@@ -213,6 +213,14 @@ dataviewer:
   enable: true
 
 ##########################################################################
+## Aigateway Service Configuration
+##########################################################################
+aigateway:
+  enable: true
+  port: 8094
+  moderation_bypass_sensitive_check: false
+
+##########################################################################
 ## DNSMasq Configuration
 ## - Provides DNS caching and forwarding
 ##########################################################################
