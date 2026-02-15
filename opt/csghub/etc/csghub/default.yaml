@@ -37,6 +37,7 @@ server:
   enable_https: false                 ## Enable HTTPS termination
   api_token: ""                       ## Authentication token for API access
   docs_host: "http://127.0.0.1:6636"  ## Documentation service host
+  enable_presigned_url_proxy: true    ## Enable presigned URL proxy
 
   ## Logging Settings
   log:
@@ -637,13 +638,13 @@ prometheus:
 
   external_labels: {}                        ## External labels to add to all metrics (e.g., environment, region)
     # environment: "production"
-  # region: "cn-north-1"
+    # region: "cn-north-1"
 
   scrape_configs: []                         ## List of scrape configurations for Prometheus targets
     # - job_name: "node"
     #   static_configs:
     #     - targets:
-  #       - "127.0.0.1:9100"
+    #       - "127.0.0.1:9100"
 
 ##########################################################################
 # Loki Configuration
