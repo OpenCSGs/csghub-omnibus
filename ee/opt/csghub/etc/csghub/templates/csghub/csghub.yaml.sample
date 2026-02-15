@@ -37,6 +37,7 @@ csghub:
   # enable_https: false                 ## Enable HTTPS termination
   # api_token: ""                       ## Authentication token for API access
   # docs_host: "http://127.0.0.1:6636"  ## Documentation service host
+  # enable_presigned_url_proxy: true    ## Enable presigned URL proxy
 
   ## Logging Settings
   # log:
@@ -222,6 +223,14 @@ csghub:
 ##########################################################################
 # dataviewer:
   # enable: true
+
+##########################################################################
+## Aigateway Service Configuration
+##########################################################################
+# aigateway:
+  # enable: true
+  # port: 8094
+  # moderation_bypass_sensitive_check: false
 
 ##########################################################################
 ## DNSMasq Configuration
