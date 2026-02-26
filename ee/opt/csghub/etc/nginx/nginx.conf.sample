@@ -91,6 +91,11 @@ http {
         ''      close;
     }
 
+    map $http_user_agent $block_docker {
+        default 0;
+        "~^(docker\/1\.(3|4|5(?!\.[0-9]-dev))|Go ).*$" 1;
+    }
+
     {{- if $nginx.rate_limit.enable }}
     limit_req_zone $binary_remote_addr zone=global:10m rate={{ $nginx.rate_limit.request }};
     limit_conn_zone $binary_remote_addr zone=addr:10m;
@@ -112,6 +117,9 @@ http {
 
         return 301 https://$host$request_uri;
     }
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
     {{- end }}
 
     server {
@@ -125,9 +133,6 @@ http {
         {{- if eq $csghub.scheme "https" }}
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
-
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- end }}
 
         {{- if $nginx.rate_limit.enable }}
@@ -138,10 +143,11 @@ http {
         # Default route
         location / {
             proxy_pass http://127.0.0.1:8090;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_set_header X-Forwarded-Host $server_name;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header Host $host;
         }
 
         # API route
@@ -169,6 +175,16 @@ http {
         location ~ ^/xnet/ {
             rewrite ^/xnet/(.*) /$1 break;
             proxy_pass http://127.0.0.1:{{ $xnet.listen_port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $server_name;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /aigateway {
+            rewrite ^/aigateway/(.*) /$1 break;
+            proxy_pass http://127.0.0.1:8094;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -210,9 +226,7 @@ http {
         }
 
         location /v2/ {
-            if ($http_user_agent ~ "^(docker\/1\.(3|4|5(?!\.[0-9]-dev))|Go ).*$") {
-                return 404;  # Block unsupported Docker clients
-            }
+            if ($block_docker) { return 404; }
 
             proxy_pass http://127.0.0.1:5000;
             proxy_set_header Host $http_host;
@@ -248,7 +262,7 @@ http {
 
         # Custom error page handling for 404,50x errors
         error_page 404 /404.html;
-        # error_page 500 /500.html;
+        error_page 500 /500.html;
         error_page 502 /502.html;
         error_page 503 /503.html;
 
@@ -272,9 +286,6 @@ http {
         {{- if eq $csghub.scheme "https" }}
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
-
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- end }}
 
         {{- if $nginx.rate_limit.enable }}
@@ -288,7 +299,7 @@ http {
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Host $http_host;
+            proxy_set_header X-Forwarded-Host $server_name;
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection $connection_upgrade;
@@ -316,9 +327,6 @@ http {
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
-
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
         listen {{ $casdoor.port }};
         server_name {{ $csghub.host }};
@@ -358,9 +366,6 @@ http {
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
-
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
         listen 9000;
         server_name {{ $csghub.host }};
@@ -384,34 +389,13 @@ http {
             return 301 /console/;
         }
 
-        location /aigateway {
-            proxy_set_header Host $http_host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-
-            proxy_connect_timeout 300s;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
-            chunked_transfer_encoding off;
-
-            rewrite ^/aigateway/(.*) /$1 break;
-            proxy_pass http://127.0.0.1:8094;
-        }
-
         location /console {
             proxy_set_header Host $http_host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
-
-            proxy_connect_timeout 300s;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
             proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
+            proxy_set_header Connection $connection_upgrade;
             chunked_transfer_encoding off;
 
             rewrite ^/console/(.*) /$1 break;
@@ -423,12 +407,8 @@ http {
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
-
-            proxy_connect_timeout 300s;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
             proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
+            proxy_set_header Connection $connection_upgrade;
             chunked_transfer_encoding off;
 
             proxy_pass http://127.0.0.1:9001;
@@ -445,9 +425,6 @@ http {
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
-
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
         listen {{ $csgshipFrontend.port }};
         server_name {{ $csgshipFrontend.host }};
@@ -469,9 +446,6 @@ http {
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
-
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
         {{- else }}
         listen {{ $csgshipApi.port }};
         server_name {{ $csgshipApi.host }};
