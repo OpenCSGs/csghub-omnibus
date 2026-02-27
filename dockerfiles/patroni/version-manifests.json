@@ -7,7 +7,7 @@
         "repository": "https://github.com/zalando/patroni",
         "environments": {
           "OS_RELEASE": "ubuntu:22.04",
-          "POSTGRESQL_VERSION": "16.8",
+          "POSTGRESQL_VERSION": "16.13",
           "SCWS_VERSION": "1.2.3",
           "PYTHON_VERSION": "3.11.11",
           "PATRONI_VERSION": "4.0.5"

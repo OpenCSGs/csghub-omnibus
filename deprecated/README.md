@@ -80,7 +80,7 @@ tar -zcf ~/rpmbuild/SOURCES/omnibus-csghub-1.6.0.tar.gz omnibus-csghub-1.6.0
 ##### 3. Download other source package
 
 ```shell
-export pgsql_version=16.8
+export pgsql_version=16.13
 export scws_version=1.2.3
 export zhparser_version=2.3
 export python_version=3.11.11
@@ -167,7 +167,7 @@ rpmbuild/
 |-- SOURCES
 |   |-- Python-3.11.11.tgz
 |   |-- omnibus-csghub-1.6.0.tar.gz
-|   |-- postgresql-16.8.tar.gz
+|   |-- postgresql-16.13.tar.gz
 |   |-- scws-1.2.3.tar.bz2
 |   `-- v2.3.zip
 |-- SPECS
