@@ -35,7 +35,7 @@
       {
         "name": "postgresql",
         "description": "PostgreSQL is a powerful, open source object-relational database system with over 35 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance.",
-        "version": "16.13",
+        "version": "15.17",
         "repository": "https://www.postgresql.org/"
       },
       {
