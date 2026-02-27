@@ -47,7 +47,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         rm -rf /var/cache/yum /tmp/* /var/tmp/* /var/log/*; \
     fi
 
-ARG POSTGRESQL_VERSION=16.13
+ARG POSTGRESQL_VERSION=15.17
 RUN wget https://ftp.postgresql.org/pub/source/v${POSTGRESQL_VERSION}/postgresql-${POSTGRESQL_VERSION}.tar.gz && \
     mkdir /postgresql && tar --strip-components=1 -zxf postgresql-${POSTGRESQL_VERSION}.tar.gz -C /postgresql && \
     cd /postgresql && ./configure --prefix=${CSGHUB_SRV_HOME}/postgresql \
