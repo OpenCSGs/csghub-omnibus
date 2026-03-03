@@ -29,9 +29,11 @@ timezone = {{ $postgresql.timezone | quote }}
 
 {{ $s3 := $xnet.s3 -}}
 [xorb]
+meta_store = "s3"
 {{- $s3Endpoint := $s3.endpoint | default (printf "%s:9000" $csghub.host) }}
 xorb_s3_url = {{ printf "%s/%s" $s3Endpoint $s3.bucket | quote }}
 signed_ul_expire_hours = {{ $xnet.s3.signed_ul_expire_hours | default 3 }}
+cleanup_timeout_seconds = 30
 
 {{ $accessKeyId := $s3.access_key -}}
 {{- $secretKey := $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) -}}
@@ -48,6 +50,13 @@ bucket_lookup = "path"
 {{- else }}
 bucket_lookup = "auto"
 {{- end }}
+{{ $s3 := (datasource "config").server.s3 }}
+lfs_bucket = {{ $s3.bucket | quote }}
+# Provider type: minio, aws, aliyun, isilon, rustfs, other etc.
+provider = ""
+
+[license]
+public_key_file = "/opt/csghub/etc/server/enterprise/public_key_ee.pem"
 
 [jwt]
 signing_key = {{ tmpl.Exec "GenSeed" . | crypto.SHA256 | quote }}
