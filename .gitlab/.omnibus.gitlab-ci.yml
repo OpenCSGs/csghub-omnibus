@@ -86,6 +86,9 @@ build-omnibus-$[[ inputs.tag ]]:
         DOCKERFILE=Dockerfile
       else
         DOCKERFILE=ee.Dockerfile
+        TAGS+=(
+            "-t" "${ACR_REGISTRY}/opencsghq/omnibus-csghub:latest"
+          )
       fi
 
       BUILD_PLATFORMS_CNT=$(echo "$BUILD_PLATFORMS" | tr ',' '\n' | wc -l)
