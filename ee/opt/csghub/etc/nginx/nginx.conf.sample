@@ -281,7 +281,7 @@ http {
         {{- else }}
         listen 80;
         {{- end }}
-        server_name {{ printf "*.public.%s" (tmpl.Exec "domain.root" .) }};
+        server_name {{ printf "*.%s" $csghub.host | quote }};
 
         {{- if eq $csghub.scheme "https" }}
         ssl_certificate {{ $csghubCert }};
