@@ -1,29 +1,29 @@
-# 定义默认目标
+# Define default target
 .PHONY: all
 all: build
 
-# 定义文件路径
+# Define file paths
 VERSION_MANIFEST := opt/csghub/version-manifests.json
 COMPONENT_FILES := dockerfiles/*/version-manifests.json
 TMP_FILE := $(VERSION_MANIFEST).tmp
 
-# 生成Docker build args
+# Generate Docker build arguments
 DOCKER_BUILD_ARGS := $(shell \
     jq -r '.version_manifest.components | unique_by(.name)[] | "--build-arg \(.name | ascii_upcase)_VERSION=\(.version)"' $(VERSION_MANIFEST) | \
     tr '\n' ' ' \
 )
 
-# 镜像仓库配置
+# Image registry configuration
 REGISTRY := opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq
 IMAGE_NAME := omnibus-csghub
 
-# 从 manifest 获取版本号，如果没有则使用默认值
-IMAGE_TAG := $(shell jq -r '.version_manifest.metadata.version' $(VERSION_MANIFESTS))
+# Get image version from manifest, fallback to default if not present
+IMAGE_TAG := $(shell jq -r '.version_manifest.metadata.version' $(VERSION_MANIFEST))
 
-# 构建平台配置
+# Build platform configuration
 PLATFORMS := linux/arm64,linux/amd64
 
-# 合并版本信息并更新主文件
+# Merge version manifests and update main file
 .PHONY: version-update
 version-update:
 	@echo "Merging version manifests..."
@@ -52,7 +52,7 @@ install-tools:
 	fi
 	@echo "All tools are ready."
 
-# 检查必要工具是否安装m
+# Check required tools
 .PHONY: check-tools
 check-tools:
 	@echo "Checking required tools..."
@@ -61,19 +61,19 @@ check-tools:
 	@command -v docker-buildx >/dev/null 2>&1 || { echo >&2 "Error: docker buildx is required but not installed."; exit 1; }
 	@echo "All required tools are installed."
 
-# 检查必要文件是否存在
+# Check required files
 .PHONY: check-files
 check-files:
 	@echo "Checking required files..."
-	@test -f "$(VERSION_MANIFESTS)" || { echo >&2 "Error: version manifest file $(VERSION_MANIFESTS) not found."; exit 1; }
+	@test -f "$(VERSION_MANIFEST)" || { echo >&2 "Error: version manifest file $(VERSION_MANIFEST) not found."; exit 1; }
 	@test -f "Dockerfile" || { echo >&2 "Error: Dockerfile not found."; exit 1; }
 	@echo "All required files exist."
 
-# 工具和文件检查
+# Check dependencies (tools and files)
 .PHONY: check-deps
 check-deps: check-tools check-files version-update
 
-# 构建 Docker 镜像
+# Build Docker image
 .PHONY: build
 build: check-deps
 	@echo "Building Docker image with the following build arguments:"
@@ -83,7 +83,7 @@ build: check-deps
 		-t $(REGISTRY)/$(IMAGE_NAME):latest \
 		.
 
-# 多平台构建并推送
+# Build and push multi-platform images
 .PHONY: buildx-push
 buildx-push: check-deps
 	@echo "Building multi-platform images with buildx and pushing to registry"
@@ -96,13 +96,13 @@ buildx-push: check-deps
 		-t $(REGISTRY)/$(IMAGE_NAME):latest \
 		--push .
 
-# 显示版本信息
+# Show version information
 .PHONY: versions
 versions:
 	@echo "Component versions:"
-	@jq -r '.version_manifest.components[] | "\(.name | ascii_upcase)_VERSION=\(.version)"' $(VERSION_MANIFESTS)
+	@jq -r '.version_manifest.components[] | "\(.name | ascii_upcase)_VERSION=\(.version)"' $(VERSION_MANIFEST)
 
-# 清理构建的镜像
+# Clean built images
 .PHONY: clean
 clean:
 	@echo "Removing local images..."
