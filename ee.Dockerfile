@@ -215,7 +215,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libxslt1.1 \
                 libcurl4t64 \
                 libpq-dev \
-                vim lsof jq \
+                vim lsof jq curl \
                 tzdata; \
         else \
             # Ubuntu 22.04 or older (旧包名)
@@ -231,7 +231,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libxslt1.1 \
                 libcurl3-gnutls \
                 libpq-dev \
-                vim lsof jq \
+                vim lsof jq curl \
                 tzdata; \
         fi && \
         apt clean && \
@@ -255,7 +255,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                     libxslt \
                     libcurl \
                     postgresql-devel \
-                    vim lsof jq \
+                    vim lsof jq curl \
                     tzdata; \
             else \
                 # CentOS 8 (GeoIP)
@@ -271,7 +271,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                     libxslt \
                     libcurl \
                     postgresql-devel \
-                    vim lsof jq \
+                    vim lsof jq curl \
                     tzdata; \
             fi && \
             dnf clean all; \
@@ -289,7 +289,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 libxslt \
                 libcurl \
                 postgresql-devel \
-                vim lsof jq \
+                vim lsof jq curl \
                 tzdata && \
             yum clean all; \
         fi; \
