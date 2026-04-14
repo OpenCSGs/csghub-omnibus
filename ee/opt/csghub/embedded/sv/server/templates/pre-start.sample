@@ -28,6 +28,11 @@ set -e
 {{- file.Write (printf "%s/DUCKDB_EXTENSION_DIRECTORY" $envDir) "/opt/csghub/embedded/sv/server" }}
 {{- file.Write (printf "%s/OPENCSG_LICENSE_PUBLIC_KEY_FILE" $envDir) "/opt/csghub/etc/server/enterprise/public_key_ee.pem" }}
 {{- file.Write (printf "%s/OPENCSG_LICENSE_PRIVATE_KEY_FILE" $envDir) "/opt/csghub/etc/server/enterprise/private_key_ee.pem" }}
+{{- file.Write (printf "%s/STARHUB_SERVER_RUNNER_KUBE_SCHEDULER" $envDir) "volcano" }}
+{{- file.Write (printf "%s/STARHUB_SERVER_RUNNER_VGPU_NODE_RESOURCE_NAME" $envDir) "volcano.sh/node-vgpu-register" }}
+{{- file.Write (printf "%s/STARHUB_SERVER_RUNNER_VGPU_POD_RESOURCE_NAME" $envDir) "volcano.sh/vgpu-ids-new" }}
+{{- file.Write (printf "%s/STARHUB_SERVER_RUNNER_VGPU_RESOURCE_REQ_KEY" $envDir) "volcano.sh/vgpu-number" }}
+{{- file.Write (printf "%s/STARHUB_SERVER_RUNNER_VGPU_MEMORY_REQ_KEY" $envDir) "volcano.sh/vgpu-memory" }}
 
 {{- $postgresql := (datasource "config").postgresql }}
 {{- $patroni := (datasource "config").patroni }}
