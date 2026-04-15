@@ -1,8 +1,8 @@
 [submodule "toolbox/logger"]
 	path = toolbox/logger
-	url = https://gitlab-ci-token:glpat-5PN8qrTSyE18TW42SqvV@git-devops.opencsg.com/product/infra/deployment-automation/toolbox/logger.git
+	url = ../../ToolBox/logger
 	branch = main
 [submodule "toolbox/csghub-ctl"]
 	path = toolbox/csghub-ctl
-	url = https://gitlab-ci-token:glpat-WLHtWC9FEx2VxBNfhE3Q@git-devops.opencsg.com/product/infra/deployment-automation/toolbox/csghub-ctl.git
+	url = ../../ToolBox/csghub-ctl
 	branch = main
