@@ -1,8 +1,8 @@
 [submodule "toolbox/logger"]
 	path = toolbox/logger
-	url = ../../ToolBox/logger
+	url = ../../ToolBox/logger.git
 	branch = main
 [submodule "toolbox/csghub-ctl"]
 	path = toolbox/csghub-ctl
-	url = ../../ToolBox/csghub-ctl
+	url = ../../ToolBox/csghub-ctl.git
 	branch = main
