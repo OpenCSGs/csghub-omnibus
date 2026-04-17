@@ -9,7 +9,7 @@ set -e
 # Define the repository parent directory
 {{- $gitaly := (datasource "config").gitaly }}
 {{- $dataDir := $gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
-mkdir -p {{ $dataDir }}/run {{ $dataDir }}/repositories || true
+mkdir -m 0777 -p {{ $dataDir }}/run {{ $dataDir }}/repositories || true
 
 # Create pid file and variable file
 {{- $pidFile := printf "%s/gitaly.pid" $dataDir }}
