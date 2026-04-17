@@ -124,7 +124,7 @@
       {
         "name": "xnet",
         "description": "XNet Smart Trunk Accelerator.",
-        "version": "1.16.1"
+        "version": "2.0.0"
       }
     ]
   }
