@@ -16,7 +16,7 @@ if [ -e /dev/watchdog ]; then
 fi
 
 {{- $dataDir := (datasource "config").patroni.data_dir | default "/var/opt/csghub/postgresql" }}
-[[ ! -d "{{ $dataDir }}" ]] && mkdir -p "{{ $dataDir }}"
+[[ ! -d "{{ $dataDir }}" ]] && mkdir -p "{{ $dataDir }}" || true
 
 {{- file.Write (printf "%s/PGHOME" $envDir) "/opt/csghub/embedded/sv/postgresql" }}
 {{- file.Write (printf "%s/PGDATA" $envDir) (printf "%s/data" $dataDir) }}
