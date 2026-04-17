@@ -22,7 +22,7 @@ KEYS_DIRECTORY="${KEYS_DIRECTORY:-"{{ $dataDir }}/ssh"}"
 SSH_DAEMON="${SSH_DAEMON:-"gitlab-sshd"}"
 
 if [ ! -d "$KEYS_DIRECTORY" ]; then
-  mkdir -p "$KEYS_DIRECTORY" 2>/dev/null
+  mkdir -m 0777 -p "$KEYS_DIRECTORY" 2>/dev/null
 fi
 
 if ls /etc/ssh/ssh_host_* 1> /dev/null 2>&1; then
