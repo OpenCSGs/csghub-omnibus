@@ -350,10 +350,10 @@ gitaly:
       max_queue_size: 10
 
   ## Rate Limiting Settings
-  rate_limiting:
-    - rpc: "/gitaly.SmartHTTPService/PostUploadPackWithSidechannel"
-      interval: "1m"
-      burst: 5  ## Max burst requests
+  rate_limiting: []
+    # - rpc: "/gitaly.SmartHTTPService/PostUploadPackWithSidechannel"
+    #   interval: "1m"
+    #   burst: 5  ## Max burst requests
 
   ## Maintenance Schedule Settings
   daily_maintenance:
