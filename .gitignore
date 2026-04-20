@@ -4,3 +4,4 @@
 **/*.rpm
 **/*.deb
 **/*-registry.yml
+CLAUDE.md
