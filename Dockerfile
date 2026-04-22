@@ -91,7 +91,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p \
       ${CSGHUB_HOME}/{LICENSES,bin} \
-      ${CSGHUB_EMBEDDED}/{bin,lib,sv} \
+      ${CSGHUB_EMBEDDED}/{bin,lib,sv,etc} \
       ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus,loki}/bin
 
 ## Install Runit Service Daemon
@@ -128,33 +128,37 @@ COPY --from=gitaly /usr/local/. ${CSGHUB_SRV_HOME}/gitaly/
 COPY --from=gitlab-shell /srv/gitlab-shell/. ${CSGHUB_SRV_HOME}/gitlab_shell/
 
 ## Install Temporal & Temporal-ui
-COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_HOME}/etc/temporal/
+COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_EMBEDDED}/etc/temporal/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal/
-COPY --from=temporal ${CSGHUB_HOME}/etc/temporal_ui/. ${CSGHUB_HOME}/etc/temporal_ui/
+COPY --from=temporal ${CSGHUB_HOME}/etc/temporal_ui/. ${CSGHUB_EMBEDDED}/etc/temporal_ui/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal_ui/. ${CSGHUB_SRV_HOME}/temporal_ui/
 
 # Using 8182 as temporal-ui default listen port
-RUN sed -i 's/8080/8182/g' ${CSGHUB_HOME}/etc/temporal_ui/config-template.yaml
+RUN sed -i 's/8080/8182/g' ${CSGHUB_EMBEDDED}/etc/temporal_ui/config-template.yaml
+
+# Remap temporal internal paths from component image to new embedded location
+RUN find ${CSGHUB_EMBEDDED}/etc/temporal -type f -exec sed -i 's|/opt/csghub/etc/temporal|/opt/csghub/embedded/etc/temporal|g' {} \;
 
 ## Install NATS
 COPY --from=nats /nats-server ${CSGHUB_SRV_HOME}/nats/bin/
 
 ## Install Casdoor
 COPY --from=casdoor /server ${CSGHUB_SRV_HOME}/casdoor/bin/casdoor
-COPY --from=casdoor /web ${CSGHUB_HOME}/etc/casdoor/web
+COPY --from=casdoor /web ${CSGHUB_EMBEDDED}/etc/casdoor/web
 
 ## Install Nginx
-COPY --from=nginx /opt/csghub/. /opt/csghub/
-COPY ./opt/csghub/etc/nginx/. /opt/csghub/etc/nginx/
+COPY --from=nginx /opt/csghub/embedded/sv/nginx/. /opt/csghub/embedded/sv/nginx/
+COPY --from=nginx /opt/csghub/etc/nginx/. /opt/csghub/embedded/etc/nginx/
+COPY ./opt/csghub/embedded/etc/nginx/. /opt/csghub/embedded/etc/nginx/
 
 ## Install csghub-server
 ENV GIN_MODE=release
 
 COPY --from=server /starhub-bin/starhub ${CSGHUB_SRV_HOME}/server/bin/csghub-server
-COPY --from=server /starhub-bin/. ${CSGHUB_HOME}/etc/server/
+COPY --from=server /starhub-bin/. ${CSGHUB_EMBEDDED}/etc/server/
 COPY --from=server /root/.duckdb ${CSGHUB_SRV_HOME}/server/.duckdb
 
-RUN rm ${CSGHUB_HOME}/etc/server/starhub
+RUN rm ${CSGHUB_EMBEDDED}/etc/server/starhub
 
 ## Install csghub-portal
 COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/portal/bin/
@@ -275,7 +279,7 @@ RUN chmod +x -R /opt/csghub/bin && \
     chmod +x -R /opt/csghub/embedded/sv/**/templates && \
     chmod +x -R /scripts && \
     ln -s /opt/csghub/bin/* /usr/bin/ && \
-    find /opt/csghub/etc/ -type f -name "*.sh" -exec chmod +x {} \;
+    find /opt/csghub/embedded/etc/ -type f -name "*.sh" -exec chmod +x {} \;
 
 EXPOSE 80 443 2222 5000 8000 9000 9001
 ENTRYPOINT ["/scripts/entrypoint.sh"]

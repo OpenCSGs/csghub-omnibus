@@ -12,8 +12,9 @@ ulimit -n 15000
 # Run the pre-start script to ensure that the service meets the startup conditions
 {{- $gitaly := (datasource "config").gitaly }}
 {{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
+{{- $configDir := (datasource "config").gitlab_shell.config | default "/opt/csghub/service/gitlab_shell/etc" }}
 {{- $token := $gitaly.auth.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) }}
-{{- file.Write "/opt/csghub/etc/gitlab_shell/.gitlab_shell_secret" $token }}
+{{- file.Write "/opt/csghub/service/gitlab_shell/.gitlab_shell_secret" $token }}
 
 # Exit if execute with any errors
 set -e
@@ -41,9 +42,9 @@ fi
 
 {{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
 if [ "${SSH_DAEMON}" == "gitlab-sshd" ]; then
-  exec chpst -e /opt/csghub/etc/gitlab_shell/env -P \
+  exec chpst -e /opt/csghub/service/gitlab_shell/env -P \
     -u git:git \
-    /opt/csghub/embedded/bin/gitlab-sshd -config-dir {{ $dataDir }}
+    /opt/csghub/embedded/bin/gitlab-sshd -config-dir {{ $configDir }}
 else
   if [ "${USE_GITLAB_LOGGER-0}" -eq 1 ]; then
     /usr/bin/gitlab-logger /var/log/gitlab-shell &

@@ -80,7 +80,7 @@ server:
   ## Casdoor (authentication) Integration
   casdoor:
     endpoint: ""                                               ## Casdoor endpoint
-    certificate: "/opt/csghub/etc/casdoor/token_jwt_key.pem"   ## SSL cert path
+    certificate: "/opt/csghub/embedded/etc/casdoor/token_jwt_key.pem"   ## SSL cert path
     organization_name: "OpenCSG"                               ## Organization name in Casdoor
     application_name: "CSGHub"                                 ## App name in Casdoor
 

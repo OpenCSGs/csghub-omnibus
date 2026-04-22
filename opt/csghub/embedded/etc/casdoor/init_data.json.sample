@@ -987,7 +987,7 @@
       "type": "Local File System",
       "method": "Normal",
       "domain": "{{ $casdoorEndpoint }}",
-      "pathPrefix": "/opt/csghub/etc/casdoor"
+      "pathPrefix": "/opt/csghub/embedded/etc/casdoor"
     }
   ]
 }

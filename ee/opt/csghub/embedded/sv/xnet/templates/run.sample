@@ -13,11 +13,12 @@ fi
 
 {{- $xnet := (datasource "config").xnet }}
 {{- $dataDir := $xnet.data | default "/var/opt/csghub/xnet" }}
-{{- $configFile := printf "%s/config.toml" $dataDir }}
+{{- $configDir := "/opt/csghub/service/xnet/etc" }}
+{{- $configFile := printf "%s/config.toml" $configDir }}
 
 # Define constants
 readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-xnet"
-readonly ENV_DIR="/opt/csghub/etc/xnet/env"
+readonly ENV_DIR="/opt/csghub/service/xnet/env"
 
 # Build command arguments
 args=("start" "server" "-l" {{ $xnet.log.level | quote }})

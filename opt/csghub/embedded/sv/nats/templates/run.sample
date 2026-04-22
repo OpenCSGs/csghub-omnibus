@@ -7,8 +7,9 @@ exec 2>&1
 set -e
 
 {{- $dataDir := (datasource "config").nats.data | default "/var/opt/csghub/nats" }}
+{{- $configDir := "/opt/csghub/service/nats/etc" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/nats/env -P \
+exec chpst -e /opt/csghub/service/nats/env -P \
   -u nats:nats \
-  /opt/csghub/embedded/bin/nats-server -c {{ $dataDir }}/nats.conf
+  /opt/csghub/embedded/bin/nats-server -c {{ $configDir }}/nats.conf

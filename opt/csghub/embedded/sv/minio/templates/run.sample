@@ -15,7 +15,7 @@ fi
 {{- $dataDir := $minio.data | default "/var/opt/csghub/minio/data" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/minio/env -P \
+exec chpst -e /opt/csghub/service/minio/env -P \
   -u minio:minio \
   /opt/csghub/embedded/bin/minio server \
     --address {{ $minio.listen }}  \

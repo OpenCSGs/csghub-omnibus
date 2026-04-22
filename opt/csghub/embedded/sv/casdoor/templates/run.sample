@@ -14,6 +14,6 @@ fi
 {{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/casdoor/env -P \
+exec chpst -e /opt/csghub/service/casdoor/env -P \
   -u casdoor:casdoor \
   /opt/csghub/embedded/bin/casdoor
