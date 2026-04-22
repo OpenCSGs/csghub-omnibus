@@ -13,6 +13,6 @@ set -e
 
 {{- $dataDir := (datasource "config").web.data | default "/var/opt/csghub/web" }}
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/web/env -P \
+exec chpst -e /opt/csghub/service/web/env -P \
   -u root:root \
   /opt/csghub/embedded/bin/gunicorn -c /opt/csghub/embedded/sv/web/project/gunicorn_config.py

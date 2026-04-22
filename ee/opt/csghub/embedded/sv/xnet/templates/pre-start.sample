@@ -6,8 +6,8 @@ exec 2>&1
 # exit when error
 set -e
 
-{{- $configDir := "/opt/csghub/etc/xnet" }}
-{{- $envDir := printf "%s/env" $configDir }}
+{{- $configDir := "/opt/csghub/embedded/etc/xnet" }}
+{{- $envDir := printf "%s/env" "/opt/csghub/service/xnet" }}
 
 # Clear all environment variable files
 # rm -rf {{ $envDir }}/* || true

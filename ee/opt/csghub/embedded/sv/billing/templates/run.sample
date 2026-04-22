@@ -13,6 +13,6 @@ set -e
 
 {{- $dataDir := (datasource "config").billing.data | default "/var/opt/csghub/billing" }}
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/web/env -P \
+exec chpst -e /opt/csghub/service/web/env -P \
   -u root:root \
-  /opt/csghub/embedded/bin/billing -config={{ $dataDir }}/config.yaml
+  /opt/csghub/embedded/bin/billing -config=/opt/csghub/service/billing/etc/config.yaml
