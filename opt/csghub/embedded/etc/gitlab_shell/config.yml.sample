@@ -39,7 +39,7 @@ auth_file: "/home/git/.ssh/authorized_keys"
 
 # File that contains the secret key for verifying access to GitLab.
 # Default is .gitlab_shell_secret in the gitlab-shell directory.
-secret_file: "/opt/csghub/etc/gitlab_shell/.gitlab_shell_secret"
+secret_file: "/opt/csghub/service/gitlab_shell/.gitlab_shell_secret"
 
 # The secret field supersedes the secret_file, and if set that
 # file will not be read.

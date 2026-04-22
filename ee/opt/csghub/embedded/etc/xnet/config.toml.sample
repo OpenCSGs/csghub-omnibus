@@ -56,7 +56,7 @@ lfs_bucket = {{ $s3.bucket | quote }}
 provider = ""
 
 [license]
-public_key_file = "/opt/csghub/etc/server/enterprise/public_key_ee.pem"
+public_key_file = "/opt/csghub/embedded/etc/server/enterprise/public_key_ee.pem"
 
 [jwt]
 signing_key = {{ tmpl.Exec "GenSeed" . | crypto.SHA256 | quote }}

@@ -12,8 +12,9 @@ if [ -x ./pre-start ]; then
 fi
 
 {{- $dataDir := (datasource "config").redis.data | default "/var/opt/csghub/redis" }}
+{{- $configDir := "/opt/csghub/service/redis/etc" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/redis/env -P \
+exec chpst -e /opt/csghub/service/redis/env -P \
   -u redis:redis \
-  /opt/csghub/embedded/bin/redis-server {{ $dataDir }}/redis.conf
+  /opt/csghub/embedded/bin/redis-server {{ $configDir }}/redis.conf

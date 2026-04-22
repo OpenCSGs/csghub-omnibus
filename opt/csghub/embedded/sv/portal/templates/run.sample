@@ -15,7 +15,7 @@ if [ -x ./pre-start ]; then
 fi
 
 readonly PORTAL_BIN="/opt/csghub/embedded/bin/csghub-portal"
-readonly ENV_DIR="/opt/csghub/etc/portal/env"
+readonly ENV_DIR="/opt/csghub/service/portal/env"
 
 echo "Initializing database migrations..."
 chpst -e "$ENV_DIR" -P \
