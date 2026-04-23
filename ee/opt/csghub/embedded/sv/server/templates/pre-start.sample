@@ -6,8 +6,8 @@ exec 2>&1
 # exit when error
 set -e
 
-{{- $configDir := "/opt/csghub/etc/server" }}
-{{- $envDir := printf "%s/env" $configDir }}
+{{- $configDir := "/opt/csghub/service/server/etc" }}
+{{- $envDir := "/opt/csghub/service/server/env" }}
 
 # Clear all environment variable files
 # rm -rf {{ $envDir }}/* || true
@@ -26,8 +26,8 @@ set -e
 {{- file.Write (printf "%s/STARHUB_SERVER_PUBLIC_ROOT_DOMAIN" $envDir) " " }}
 {{- file.Write (printf "%s/DUCKDB_HOME" $envDir) "/opt/csghub/embedded/sv/server" }}
 {{- file.Write (printf "%s/DUCKDB_EXTENSION_DIRECTORY" $envDir) "/opt/csghub/embedded/sv/server" }}
-{{- file.Write (printf "%s/OPENCSG_LICENSE_PUBLIC_KEY_FILE" $envDir) "/opt/csghub/etc/server/enterprise/public_key_ee.pem" }}
-{{- file.Write (printf "%s/OPENCSG_LICENSE_PRIVATE_KEY_FILE" $envDir) "/opt/csghub/etc/server/enterprise/private_key_ee.pem" }}
+{{- file.Write (printf "%s/OPENCSG_LICENSE_PUBLIC_KEY_FILE" $envDir) "/opt/csghub/embedded/etc/server/enterprise/public_key_ee.pem" }}
+{{- file.Write (printf "%s/OPENCSG_LICENSE_PRIVATE_KEY_FILE" $envDir) "/opt/csghub/embedded/etc/server/enterprise/private_key_ee.pem" }}
 {{- file.Write (printf "%s/STARHUB_SERVER_RUNNER_KUBE_SCHEDULER" $envDir) "volcano" }}
 {{- file.Write (printf "%s/STARHUB_SERVER_RUNNER_VGPU_NODE_RESOURCE_NAME" $envDir) "volcano.sh/node-vgpu-register" }}
 {{- file.Write (printf "%s/STARHUB_SERVER_RUNNER_VGPU_POD_RESOURCE_NAME" $envDir) "volcano.sh/vgpu-ids-new" }}
@@ -46,11 +46,11 @@ set -e
 {{- end }}
 
 {{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
-{{- $configFile := printf "%s/config.toml" $dataDir }}
+{{- $configFile := printf "%s/config.toml" $configDir }}
 
 # Define constants
 readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
-readonly ENV_DIR="/opt/csghub/etc/server/env"
+readonly ENV_DIR="/opt/csghub/service/server/env"
 
 # Build command arguments
 ## Migration init
@@ -69,7 +69,7 @@ cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@
 
 # Load local sql scripts
 cd /opt/csghub/service/server
-[ -x "/opt/csghub/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_executor
+[ -x "/opt/csghub/embedded/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/embedded/etc/csghub/scripts/pg_executor
 
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}

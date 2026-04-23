@@ -6,8 +6,8 @@ exec 2>&1
 # exit on error
 set -e
 
-{{- $envDir := "/opt/csghub/etc/casdoor/env" }}
-{{- $configDir := "/opt/csghub/etc/casdoor" }}
+{{- $envDir := "/opt/csghub/service/casdoor/env" }}
+{{- $configDir := "/opt/csghub/embedded/etc/casdoor" }}
 
 {{- file.Write (printf "%s/DSN" $envDir) (tmpl.Exec "config.casdoor.db.dsn" .) }}
 
@@ -24,11 +24,13 @@ set -e
 {{- end }}
 
 {{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
-if [ -f {{ $dataDir }}/app.conf ]; then
-  mkdir -p {{ $dataDir }}/conf || true
-  mv {{ $dataDir }}/app.conf {{ $dataDir }}/conf
-  cp -a {{ $configDir }}/{web,files} {{ $dataDir }}/ || true
-fi
+
+# Ensure casdoor can find app.conf & init_data.json via conf -> etc symlink
+mkdir -p {{ $dataDir }}/conf
+ln -sfn /opt/csghub/service/casdoor/etc/app.conf {{ $dataDir }}/conf/app.conf
+ln -sfn /opt/csghub/service/casdoor/etc/init_data.json {{ $dataDir }}/init_data.json
+
+cp -a {{ $configDir }}/{web,files} {{ $dataDir }}/ || true
 
 COMMAND="/opt/csghub/embedded/bin/casdoor"
 
@@ -62,4 +64,4 @@ fi
 
 # Load local sql scripts
 cd /opt/csghub/service/casdoor
-[ -x "/opt/csghub/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_executor
+[ -x "/opt/csghub/embedded/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/embedded/etc/csghub/scripts/pg_executor

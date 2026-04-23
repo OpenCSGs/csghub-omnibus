@@ -6,7 +6,7 @@ exec 2>&1
 # Exit if execute with any errors
 set -e
 
-{{- $configDir := "/opt/csghub/etc/dnsmasq" }}
+{{- $configDir := "/opt/csghub/embedded/etc/dnsmasq" }}
 {{- $runner := (datasource "config").runner }}
 {{- $ns := $runner.namespace }}
 {{- $services := $runner.knative.services }}

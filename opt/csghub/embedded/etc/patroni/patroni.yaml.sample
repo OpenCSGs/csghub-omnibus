@@ -123,9 +123,9 @@ postgresql:
   remove_data_directory_on_diverged_timelines: {{ $patroni.remove_data_directory_on_diverged_timelines }}
   {{- if $patroni.callback.enable }}
   callbacks:
-    on_start: /var/opt/csghub/patroni/patroni_callback.sh
-    on_stop: /var/opt/csghub/patroni/patroni_callback.sh
-    on_role_change: /var/opt/csghub/patroni/patroni_callback.sh
+    on_start: /opt/csghub/service/patroni/etc/patroni_callback.sh
+    on_stop: /opt/csghub/service/patroni/etc/patroni_callback.sh
+    on_role_change: /opt/csghub/service/patroni/etc/patroni_callback.sh
   {{- end }}
 
 {{- if has $patroni "watchdog" }}

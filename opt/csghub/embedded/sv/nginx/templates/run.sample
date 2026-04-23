@@ -13,6 +13,6 @@ fi
 
 {{- $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/nginx/env -P \
+exec chpst -e /opt/csghub/service/nginx/env -P \
     -u root:root \
-    /opt/csghub/embedded/bin/nginx -c {{ $dataDir }}/nginx.conf -g "daemon off;"
+    /opt/csghub/embedded/bin/nginx -c {{ $dataDir }}/nginx.conf -g "pid {{ $dataDir }}/nginx.pid; lock_file {{ $dataDir }}/nginx.lock; daemon off;"

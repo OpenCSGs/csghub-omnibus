@@ -14,6 +14,8 @@ fi
 {{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/postgresql/env -P \
+exec chpst -e /opt/csghub/service/postgresql/env -P \
   -u postgres:postgres \
-  /opt/csghub/embedded/bin/postgres -D  {{ $dataDir }}
+  /opt/csghub/embedded/bin/postgres -D {{ $dataDir }} \
+    -c config_file=/opt/csghub/service/postgresql/etc/postgresql.conf \
+    -c hba_file=/opt/csghub/service/postgresql/etc/pg_hba.conf

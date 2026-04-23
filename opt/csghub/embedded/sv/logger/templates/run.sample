@@ -11,6 +11,6 @@ if [ -x ./pre-start ]; then
   ./pre-start
 fi
 
-exec chpst -e /opt/csghub/etc/minio/env -P \
+exec chpst -e /opt/csghub/service/minio/env -P \
   -u root:root \
   /opt/csghub/embedded/bin/logger

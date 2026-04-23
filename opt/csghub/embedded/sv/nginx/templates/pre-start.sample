@@ -6,7 +6,14 @@ exec 2>&1
 # Exit if execute with any errors
 set -e
 
-{{- $configDir := "/opt/csghub/etc/nginx" }}
+{{- $configDir := "/opt/csghub/service/nginx/etc" }}
 {{- $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
-find {{ $configDir }} -type f ! -name '*.default' ! -name '*.sample' ! -name 'nginx.conf' ! -name 'env' ! -name '*.so' -exec cp -p {} {{ $dataDir }} \;
 
+# Copy all files from embedded nginx dir to data dir
+find /opt/csghub/embedded/etc/nginx -type f ! -name '*.default' ! -name '*.sample' ! -name 'nginx.conf' ! -name 'env' ! -name '*.so' -exec cp -p {} {{ $dataDir }} \;
+
+# Link rendered nginx.conf to data dir
+ln -sf {{ $configDir }}/nginx.conf {{ $dataDir }}/nginx.conf
+
+# Link html error pages to data dir
+ln -sfn {{ $configDir }}/html {{ $dataDir }}/html

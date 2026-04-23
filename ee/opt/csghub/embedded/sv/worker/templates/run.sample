@@ -12,6 +12,6 @@ fi
 set -e
 
 cd /opt/csghub/embedded/sv/web/project
-exec chpst -e /opt/csghub/etc/web/env -P \
+exec chpst -e /opt/csghub/service/web/env -P \
   -u root:root \
   /opt/csghub/embedded/bin/celery -A config worker --loglevel=INFO -Q high_priority_queue,default -c 2 -n worker%%h

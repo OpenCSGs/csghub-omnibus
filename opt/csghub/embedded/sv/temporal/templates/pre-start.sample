@@ -7,7 +7,7 @@ exec 2>&1
 set -e
 
 {{- $dataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
-{{- $envDir := printf "%s/env" $dataDir }}
+{{- $envDir := "/opt/csghub/service/temporal/env" }}
 
 # Clear all environment variable files
 # rm -rf {{ $envDir }}/* || true
@@ -41,4 +41,4 @@ set -e
 
 # Load local sql scripts
 cd /opt/csghub/service/temporal
-[ -x "/opt/csghub/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_executor
+[ -x "/opt/csghub/embedded/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/embedded/etc/csghub/scripts/pg_executor

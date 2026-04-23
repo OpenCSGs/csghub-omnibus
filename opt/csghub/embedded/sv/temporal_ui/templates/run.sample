@@ -15,6 +15,6 @@ fi
 {{- $temporalDataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
 cd {{ $dataDir }}
 exec chpst -P \
-  -e /opt/csghub/etc/temporal_ui/env \
+  -e /opt/csghub/service/temporal_ui/env \
   -u temporal:temporal \
-  /opt/csghub/embedded/bin/ui-server --env docker --root {{ $dataDir }}/env --config .. start
+  /opt/csghub/embedded/bin/ui-server --env docker --root /opt/csghub/service/temporal_ui --config etc/ start

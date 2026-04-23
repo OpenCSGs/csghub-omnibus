@@ -11,6 +11,6 @@ if [ -x ./pre-start ]; then
   ./pre-start
 fi
 
-exec chpst -e /opt/csghub/etc/dnsmasq/env -P \
+exec chpst -e /opt/csghub/service/dnsmasq/env -P \
   -u dnsmasq:dnsmasq \
-  /opt/csghub/embedded/bin/dnsmasq --conf-dir=/opt/csghub/etc/dnsmasq --no-daemon
+  /opt/csghub/embedded/bin/dnsmasq --conf-dir=/opt/csghub/embedded/etc/dnsmasq --no-daemon

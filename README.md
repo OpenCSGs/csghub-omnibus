@@ -118,7 +118,7 @@ Omnibus-CSGHub 是 OpenCSG CSGHub 的一键式 Docker Compose 部署方案，让
 
     *Contains all configurable parameters, with minimal modifications typically required under default settings.*
 
-- 默认参数文件 `/opt/csghub/etc/csghub/default.yaml`
+- 默认参数文件 `/opt/csghub/embedded/etc/csghub/default.yaml`
 
     定义了所有参数的默认值。
 
