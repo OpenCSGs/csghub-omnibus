@@ -9,10 +9,8 @@ ulimit -n 15000
 # Exit if execute with any errors
 set -e
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
+# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
+csghub-ctl hook pre-start gitaly
 
 {{- $dataDir := (datasource "config").gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
 {{- $configDir := "/opt/csghub/service/gitaly/etc" }}

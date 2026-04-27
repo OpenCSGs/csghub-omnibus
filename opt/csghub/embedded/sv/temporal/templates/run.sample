@@ -3,10 +3,8 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
+# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
+csghub-ctl hook pre-start temporal
 
 : "${TEMPORAL_HOME:=/opt/csghub/embedded/etc/temporal}"
 export TEMPORAL_HOME

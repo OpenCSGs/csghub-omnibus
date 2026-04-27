@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# MinIO readiness check script
+# Usage: ./ping_minio
+# Returns 0 if Minio is ready, 1 otherwise.
+
+{{- $minio := (datasource "config").minio }}
+{{- $user := $minio.auth.user }}
+{{- $password := $minio.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
+
+MC_PATH="/opt/csghub/embedded/bin/mc"
+MINIO_ALIAS="myMinio"
+MINIO_ENDPOINT="http://127.0.0.1:9000"
+MINIO_ACCESS_KEY={{ $user }}
+MINIO_SECRET_KEY={{ $password }}
+
+# Configure MinIO alias if not already set
+if ! "$MC_PATH" alias list | grep -q "$MINIO_ALIAS"; then
+    "$MC_PATH" alias set "$MINIO_ALIAS" "$MINIO_ENDPOINT" "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY" > /dev/null 2>&1
+fi
+
+# Check if Minio is ready (10s timeout per attempt)
+timeout 10 "$MC_PATH" ping "$MINIO_ALIAS" -c 1 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    echo "MinIO is ready"
+    exit 0
+else
+    echo "MinIO is not ready"
+    exit 1
+fi
