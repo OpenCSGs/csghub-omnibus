@@ -11,10 +11,11 @@ fi
 # fail on errors
 set -e
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $agentic := (datasource "config").agentic }}
 cd /opt/csghub/embedded/sv/agentic
 exec chpst -e /opt/csghub/service/web/env -P \
-  -u root:root \
+  -u {{ $runUser }}:{{ $runUser }} \
   /opt/csghub/embedded/bin/hypercorn starship.main:starlette \
     --bind {{ $agentic.listen }} \
     --log-level info

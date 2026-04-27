@@ -9,8 +9,9 @@ csghub-ctl hook pre-start web
 # fail on errors
 set -e
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $dataDir := (datasource "config").web.data | default "/var/opt/csghub/web" }}
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/web/env -P \
-  -u root:root \
+  -u {{ $runUser }}:{{ $runUser }} \
   /opt/csghub/embedded/bin/gunicorn -c /opt/csghub/embedded/sv/web/project/gunicorn_config.py

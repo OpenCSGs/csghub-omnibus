@@ -6,6 +6,7 @@ exec 2>&1
 # fail on errors
 set -e
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $server := (datasource "config").server }}
 {{- $dataDir := $server.data | default "/var/opt/csghub/server" }}
 {{- $configDir := "/opt/csghub/service/server/etc" }}
@@ -21,4 +22,4 @@ args=("start" "rproxy" "-l" {{ $server.log.level | quote }})
 
 echo "Starting server..."
 cd {{ $dataDir }}
-exec chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}"
+exec chpst -e "$ENV_DIR" -P -u {{ $runUser }}:{{ $runUser }} "$SERVER_BIN" "${args[@]}"

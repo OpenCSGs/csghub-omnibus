@@ -11,6 +11,7 @@ fi
 # fail on errors
 set -e
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
 {{- $prometheus := (datasource "config").prometheus }}
 {{- $dataDir := $prometheus.data | default "/var/opt/csghub/prometheus" }}
@@ -23,7 +24,7 @@ set -e
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/prometheus/env -P \
-  -u prometheus:prometheus \
+  -u {{ $runUser }}:{{ $runUser }} \
   /opt/csghub/embedded/bin/prometheus \
   --config.file={{ $configDir }}/prometheus.yml \
   --storage.tsdb.path={{ $tsdbPath }} \
