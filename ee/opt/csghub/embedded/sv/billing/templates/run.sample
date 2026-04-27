@@ -11,8 +11,9 @@ fi
 # fail on errors
 set -e
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $dataDir := (datasource "config").billing.data | default "/var/opt/csghub/billing" }}
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/web/env -P \
-  -u root:root \
+  -u {{ $runUser }}:{{ $runUser }} \
   /opt/csghub/embedded/bin/billing -config=/opt/csghub/service/billing/etc/config.yaml

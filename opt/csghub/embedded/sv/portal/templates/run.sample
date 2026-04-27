@@ -12,20 +12,21 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start portal
 
+{{- $runUser := (datasource "run_user").run_user }}
 readonly PORTAL_BIN="/opt/csghub/embedded/bin/csghub-portal"
 readonly ENV_DIR="/opt/csghub/service/portal/env"
 
 echo "Initializing database migrations..."
 chpst -e "$ENV_DIR" -P \
-  -u root:root \
+  -u {{ $runUser }}:{{ $runUser }} \
   "$PORTAL_BIN" migration init
 
 echo "Running database migrations..."
 chpst -e "$ENV_DIR" -P \
-  -u root:root \
+  -u {{ $runUser }}:{{ $runUser }} \
   "$PORTAL_BIN" migration migrate
 
 echo "Starting portal..."
 exec chpst -e "$ENV_DIR" -P \
-  -u root:root \
+  -u {{ $runUser }}:{{ $runUser }} \
   "$PORTAL_BIN" start server

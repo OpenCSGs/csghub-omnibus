@@ -9,11 +9,12 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start postgresql
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql" }}
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/postgresql/env -P \
-  -u postgres:postgres \
+  -u {{ $runUser }}:{{ $runUser }} \
   /opt/csghub/embedded/bin/postgres -D {{ $dataDir }} \
     -c config_file=/opt/csghub/service/postgresql/etc/postgresql.conf \
     -c hba_file=/opt/csghub/service/postgresql/etc/pg_hba.conf

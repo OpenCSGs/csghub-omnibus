@@ -9,12 +9,13 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start minio
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $minio := (datasource "config").minio }}
 {{- $dataDir := $minio.data | default "/var/opt/csghub/minio/data" }}
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/minio/env -P \
-  -u minio:minio \
+  -u {{ $runUser }}:{{ $runUser }} \
   /opt/csghub/embedded/bin/minio server \
     --address {{ $minio.listen }}  \
     --console-address {{ $minio.console.address }} \
