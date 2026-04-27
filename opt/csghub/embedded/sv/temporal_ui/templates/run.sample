@@ -11,10 +11,11 @@ if [ -x ./pre-start ]; then
   ./pre-start
 fi
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $dataDir := (datasource "config").temporal_ui.data | default "/var/opt/csghub/temporal_ui" }}
 {{- $temporalDataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
 cd {{ $dataDir }}
 exec chpst -P \
   -e /opt/csghub/service/temporal_ui/env \
-  -u temporal:temporal \
+  -u {{ $runUser }}:{{ $runUser }} \
   /opt/csghub/embedded/bin/ui-server --env docker --root /opt/csghub/service/temporal_ui --config etc/ start

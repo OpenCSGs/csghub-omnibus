@@ -9,8 +9,9 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start nginx
 
+{{- $runUser := (datasource "run_user").run_user }}
 {{- $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/nginx/env -P \
-    -u root:root \
+    -u {{ $runUser }}:{{ $runUser }} \
     /opt/csghub/embedded/bin/nginx -c {{ $dataDir }}/nginx.conf -g "pid {{ $dataDir }}/nginx.pid; lock_file {{ $dataDir }}/nginx.lock; daemon off;"
