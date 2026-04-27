@@ -6,10 +6,8 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
+# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
+csghub-ctl hook pre-start redis
 
 {{- $dataDir := (datasource "config").redis.data | default "/var/opt/csghub/redis" }}
 {{- $configDir := "/opt/csghub/service/redis/etc" }}

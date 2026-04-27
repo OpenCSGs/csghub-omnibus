@@ -5,3 +5,4 @@
 **/*.deb
 **/*-registry.yml
 CLAUDE.md
+.claude
