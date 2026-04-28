@@ -6,6 +6,9 @@ exec 2>&1
 # Exit if execute with any errors
 set -e
 
+# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
+csghub-ctl hook pre-start gitlab_shell
+
 # Attempt to change ulimit before the set -e flag, ignore failures
 ulimit -n 15000
 

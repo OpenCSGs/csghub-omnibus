@@ -4,9 +4,7 @@
 exec 2>&1
 
 # Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
+csghub-ctl hook pre-start producer
 
 # fail on errors
 set -e
