@@ -6,6 +6,9 @@ exec 2>&1
 # fail on errors
 set -e
 
+# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
+csghub-ctl hook pre-start moderation
+
 {{- $runUser := (datasource "run_user").run_user }}
 {{- $server := (datasource "config").server }}
 {{- $dataDir := $server.data | default "/var/opt/csghub/server" }}

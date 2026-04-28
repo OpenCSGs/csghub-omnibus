@@ -7,9 +7,7 @@ exec 2>&1
 ulimit -n 15000
 
 # Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
+csghub-ctl hook pre-start portal
 
 # Exit if execute with any errors
 set -e
