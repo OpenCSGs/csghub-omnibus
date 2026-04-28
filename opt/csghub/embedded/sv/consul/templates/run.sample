@@ -6,6 +6,9 @@ exec 2>&1
 # Exit if execute with any errors
 set -e
 
+# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
+csghub-ctl hook pre-start consul
+
 {{- $runUser := (datasource "run_user").run_user }}
 {{- $dataDir := (datasource "config").consul.data_dir | default "/var/opt/csghub/consul" }}
 if [ -e {{ $dataDir }}/server_metadata.json ]; then
