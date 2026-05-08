@@ -9,11 +9,10 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start nats
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $dataDir := (datasource "config").nats.data | default "/var/opt/csghub/nats" }}
+{{- $dataDir := .nats.data | default "/var/opt/csghub/nats" }}
 {{- $configDir := "/opt/csghub/service/nats/etc" }}
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/nats/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/nats-server -c {{ $configDir }}/nats.conf

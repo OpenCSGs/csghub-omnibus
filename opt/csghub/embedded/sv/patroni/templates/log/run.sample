@@ -1,9 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/patroni" }}
-{{- if has (datasource "config").patroni "log_dir" }}
-{{- if (datasource "config").patroni.log_dir }}
-{{- $logDir = (datasource "config").patroni.log_dir }}
+{{- if has .patroni "log_dir" }}
+{{- if .patroni.log_dir }}
+{{- $logDir = .patroni.log_dir }}
 {{- end }}
 {{- end }}
 

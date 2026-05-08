@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/casdoor" }}
-{{- if has (datasource "config").casdoor "log" }}
-{{- if has (datasource "config").casdoor.log "dir" }}
-{{- if (datasource "config").casdoor.log.dir }}
-{{- $logDir = (datasource "config").casdoor.log.dir }}
-{{- end }}
+{{- if has .casdoor "log" }}
+{{- if .casdoor.log.dir }}
+{{- $logDir = .casdoor.log.dir }}
 {{- end }}
 {{- end }}
 

@@ -13,12 +13,11 @@ csghub-ctl hook pre-start gitlab_shell
 ulimit -n 15000
 
 # Run the pre-start script to ensure that the service meets the startup conditions
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $gitaly := (datasource "config").gitaly }}
-{{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
-{{- $configDir := (datasource "config").gitlab_shell.config | default "/opt/csghub/service/gitlab_shell/etc" }}
-{{- $token := $gitaly.auth.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) }}
-{{- file.Write "/opt/csghub/service/gitlab_shell/.gitlab_shell_secret" $token }}
+
+{{- $dataDir := .gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
+{{- $configDir := .gitlab_shell.config | default "/opt/csghub/service/gitlab_shell/etc" }}
+{{- $token := .gitaly.auth.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) }}
+{{- fileWrite "/opt/csghub/service/gitlab_shell/.gitlab_shell_secret" $token }}
 
 # Exit if execute with any errors
 set -e
@@ -44,10 +43,9 @@ else
   ssh-keygen -t ed25519 -f $KEYS_DIRECTORY/ssh_host_ed25519_key -N ""
 fi
 
-{{- $dataDir := (datasource "config").gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
 if [ "${SSH_DAEMON}" == "gitlab-sshd" ]; then
   exec chpst -e /opt/csghub/service/gitlab_shell/env -P \
-    -u {{ $runUser }}:{{ $runUser }} \
+    -u {{ .run_user }}:{{ .run_user }} \
     /opt/csghub/embedded/bin/gitlab-sshd -config-dir {{ $configDir }}
 else
   if [ "${USE_GITLAB_LOGGER-0}" -eq 1 ]; then

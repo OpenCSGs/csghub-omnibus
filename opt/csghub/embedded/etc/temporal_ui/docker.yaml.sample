@@ -1,10 +1,7 @@
-{{- $temporal := (datasource "config").temporal -}}
-{{- $temporalUI := (datasource "config").temporal_ui -}}
-{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
-{{- $server := (datasource "config").server }}
-temporalGrpcAddress: {{ printf "%s:%d" $temporal.rpc.bind_on_ip $temporal.rpc.grpc_port }}
-port: {{ $temporalUI.listen_port }}
-publicPath: {{ $temporalUI.public_path }}
+{{- $csghub := resolveUrl .csghub.external_url }}
+temporalGrpcAddress: {{ printf "%s:%d" .temporal.rpc.bind_on_ip .temporal.rpc.grpc_port }}
+port: {{ .temporal_ui.listen_port }}
+publicPath: {{ .temporal_ui.public_path }}
 enableUi: true
 bannerText:
 cloudUi: false
@@ -23,11 +20,11 @@ batchActionsDisabled: false
 startWorkflowDisabled: true
 hideWorkflowQueryErrors: false
 cors:
-  cookieInsecure: {{ $temporalUI.cors.cookie_insecure }}
+  cookieInsecure: {{ .temporal_ui.cors.cookie_insecure }}
   allowOrigins:
     # override framework's default that allows all origins "*"
-    - {{ $csghub.external }}
-    {{- range $temporalUI.cors.allow_origins }}
+    - {{ $csghub.url }}
+    {{- range .temporal_ui.cors.allow_origins }}
     - {{ . }}
     {{- end }}
 
@@ -40,7 +37,9 @@ tls:
   keyData:
   enableHostVerification: false
   serverName:
-{{- $provider := $server.casdoor.endpoint | default (tmpl.Exec "endpoint.casdoor" .) }}
+{{- $casdoorEp := resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000" }}
+{{- $provider := .server.casdoor.endpoint | default $casdoorEp.url }}
+
 auth:
   enabled: true
   providers:
@@ -48,13 +47,14 @@ auth:
     type: oidc
     providerUrl: {{ $provider }}
     issuerUrl: {{ $provider }}
-    clientId: {{ tmpl.Exec "GenClientId" "Admin" }}
-    clientSecret: {{ tmpl.Exec "GenClientSecret" "Admin" }}
-    callbackUrl: {{ printf "%s/-/temporal/auth/sso/callback" $csghub.external }}
+    clientId: {{ generateClientId "Admin" }}
+    clientSecret: {{ generateClientSecret "Admin" }}
+    callbackUrl: {{ printf "%s/-/temporal/auth/sso/callback" $csghub.url }}
     scopes:
       - openid
       - email
       - profile
+
 codec:
   endpoint:
   passAccessToken: false
@@ -62,4 +62,4 @@ codec:
 
 forwardHeaders:
 
-hideLogs: {{ $temporalUI.hideLogs }}
+hideLogs: {{ .temporal_ui.hideLogs }}

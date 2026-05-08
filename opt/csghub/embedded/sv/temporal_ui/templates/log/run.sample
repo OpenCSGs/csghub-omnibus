@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/temporal_ui" }}
-{{- if has (datasource "config").temporal_ui "log" }}
-{{- if has (datasource "config").temporal_ui.log "dir" }}
-{{- if (datasource "config").temporal_ui.log.dir }}
-{{- $logDir = (datasource "config").temporal_ui.log.dir }}
-{{- end }}
+{{- if has .temporal_ui "log" }}
+{{- if .temporal_ui.log.dir }}
+{{- $logDir = .temporal_ui.log.dir }}
 {{- end }}
 {{- end }}
 

@@ -9,9 +9,7 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start rproxy
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $server := (datasource "config").server }}
-{{- $dataDir := $server.data | default "/var/opt/csghub/server" }}
+{{- $dataDir := .server.data | default "/var/opt/csghub/server" }}
 {{- $configDir := "/opt/csghub/service/server/etc" }}
 {{- $configFile := printf "%s/config.toml" $configDir }}
 
@@ -20,9 +18,9 @@ readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
 readonly ENV_DIR="/opt/csghub/service/server/env"
 
 # Build command arguments
-args=("start" "rproxy" "-l" {{ $server.log.level | quote }})
+args=("start" "rproxy" "-l" {{ .server.log.level | quote }})
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 echo "Starting server..."
 cd {{ $dataDir }}
-exec chpst -e "$ENV_DIR" -P -u {{ $runUser }}:{{ $runUser }} "$SERVER_BIN" "${args[@]}"
+exec chpst -e "$ENV_DIR" -P -u {{ .run_user }}:{{ .run_user }} "$SERVER_BIN" "${args[@]}"

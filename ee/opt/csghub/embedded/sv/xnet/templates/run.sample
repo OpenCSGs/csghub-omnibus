@@ -9,9 +9,7 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start xnet
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $xnet := (datasource "config").xnet }}
-{{- $dataDir := $xnet.data | default "/var/opt/csghub/xnet" }}
+{{- $dataDir := .xnet.data | default "/var/opt/csghub/xnet" }}
 {{- $configDir := "/opt/csghub/service/xnet/etc" }}
 {{- $configFile := printf "%s/config.toml" $configDir }}
 
@@ -20,9 +18,9 @@ readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-xnet"
 readonly ENV_DIR="/opt/csghub/service/xnet/env"
 
 # Build command arguments
-args=("start" "server" "-l" {{ $xnet.log.level | quote }})
+args=("start" "server" "-l" {{ .xnet.log.level | quote }})
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 echo "Starting xnet..."
 cd {{ $dataDir }}
-exec chpst -e "$ENV_DIR" -P -u {{ $runUser }}:{{ $runUser }} "$SERVER_BIN" "${args[@]}"
+exec chpst -e "$ENV_DIR" -P -u {{ .run_user }}:{{ .run_user }} "$SERVER_BIN" "${args[@]}"

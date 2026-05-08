@@ -2,9 +2,9 @@
 # If you change this file in a Merge Request, please also create
 # a Merge Request on https://gitlab.com/gitlab-org/omnibus-gitlab/merge_requests
 #
-{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
-{{- $gitlabShell := (datasource "config").gitlab_shell -}}
-{{- $dataDir := $gitlabShell.data | default "/var/opt/csghub/gitlab_shell" }}
+
+{{- $dataDir := .gitlab_shell.data | default "/var/opt/csghub/gitlab_shell" }}
+{{- $csghub := resolveUrl .csghub.external_url }}
 # GitLab user. git by default
 user: git
 
@@ -15,7 +15,7 @@ user: git
 # only listen on a Unix domain socket. For Unix domain sockets use
 # "http+unix://<urlquoted-path-to-socket>", e.g.
 # "http+unix://%2Fpath%2Fto%2Fsocket"
-gitlab_url: {{ $csghub.external }}
+gitlab_url: {{ $csghub.url }}
 
 # When a http+unix:// is used in gitlab_url, this is the relative URL root to GitLab.
 # Not used if gitlab_url is http:// or https://.
@@ -47,9 +47,9 @@ secret: "signing-key"
 
 # Log file.
 # Default is gitlab-shell.log in the root directory.
-{{- $log := $gitlabShell.log }}
+{{- $log := .gitlab_shell.log }}
 {{- $logDir := $log.dir }}
-log_file: {{ filepath.Join $logDir "gitlab-shell.log" }}
+log_file: {{ filepathJoin $logDir "gitlab-shell.log" }}
 
 # Log level. INFO by default
 log_level: {{ $log.level }}
@@ -69,7 +69,7 @@ audit_usernames: false
 # This section configures the built-in SSH server. Ignored when running on OpenSSH.
 sshd:
   # Address which the SSH server listens on. Defaults to [::]:22.
-  listen: {{ printf "[::]:%d" $gitlabShell.ssh_port | quote }}
+  listen: {{ printf "[::]:%d" .gitlab_shell.ssh_port | quote }}
   # Set to true if gitlab-sshd is being fronted by a load balancer that implements
   # the PROXY protocol.
   proxy_protocol: false

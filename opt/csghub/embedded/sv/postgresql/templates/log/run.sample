@@ -1,9 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/postgresql" }}
-{{- if has (datasource "config").postgresql "log_dir" }}
-{{- if (datasource "config").postgresql.log_dir }}
-{{- $logDir = (datasource "config").postgresql.log_dir }}
+{{- if has .postgresql "log_dir" }}
+{{- if .postgresql.log_dir }}
+{{- $logDir = .postgresql.log_dir }}
 {{- end }}
 {{- end }}
 

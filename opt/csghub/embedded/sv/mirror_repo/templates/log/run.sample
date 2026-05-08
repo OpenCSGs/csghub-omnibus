@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/mirror_repo" }}
-{{- if has (datasource "config").mirror_repo "log" }}
-{{- if has (datasource "config").mirror_repo.log "dir" }}
-{{- if (datasource "config").mirror_repo.log.dir }}
-{{- $logDir = (datasource "config").mirror_repo.log.dir }}
-{{- end }}
+{{- if has .mirror_repo "log" }}
+{{- if .mirror_repo.log.dir }}
+{{- $logDir = .mirror_repo.log.dir }}
 {{- end }}
 {{- end }}
 

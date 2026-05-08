@@ -1,23 +1,22 @@
-{{- $temporal := (datasource "config").temporal -}}
 log:
   stdout: true
-  level: {{ $temporal.log.level }}
+  level: {{ .temporal.log.level }}
 
 persistence:
-  numHistoryShards: {{ $temporal.persistence.num_history_shards }}
-  defaultStore: {{ $temporal.persistence.default_store }}
-  visibilityStore: {{ $temporal.persistence.visibility_store }}
+  numHistoryShards: {{ .temporal.persistence.num_history_shards }}
+  defaultStore: {{ .temporal.persistence.default_store }}
+  visibilityStore: {{ .temporal.persistence.visibility_store }}
   datastores:
-      {{- $sql := $temporal.persistence.datastores.default.sql }}
+      {{- $sql := .temporal.persistence.datastores.default.sql }}
       default:
-        {{- $db := $temporal.postgresql }}
+        {{- $db := .temporal.postgresql }}
         sql:
           pluginName: "postgres12"
           databaseName: {{ $db.name | quote }}
           connectAddr: {{ printf "%s:%d" $db.host $db.port | quote }}
           connectProtocol: "tcp"
           user: {{ $db.user | quote }}
-          password: {{ $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8) | quote }}
+          password: {{ $db.password | default (pbkdf2 $db.user "opencsg" 2048 8) | quote }}
           maxConns: {{ $sql.max_conns }}
           maxIdleConns: {{ $sql.max_idle_conns }}
           maxConnLifetime: {{ $sql.max_conn_lifetime }}
@@ -30,7 +29,7 @@ persistence:
           connectAddr: {{ printf "%s:%d" $db.host $db.port | quote }}
           connectProtocol: "tcp"
           user: {{ $db.user | quote }}
-          password: {{ $db.password | default (crypto.PBKDF2 $db.user "opencsg" 2048 8)  | quote }}
+          password: {{ $db.password | default (pbkdf2 $db.user "opencsg" 2048 8)  | quote }}
           maxConns: {{ $sql.max_conns }}
           maxIdleConns: {{ $sql.max_idle_conns }}
           maxConnLifetime: {{ $sql.max_conn_lifetime }}
@@ -84,7 +83,7 @@ global:
 services:
   frontend:
     rpc:
-      {{- $rpc := $temporal.rpc }}
+      {{- $rpc := .temporal.rpc }}
       grpcPort: {{ $rpc.grpc_port }}
       membershipPort: {{ $rpc.membership_port }}
       bindOnIP: {{ $rpc.bind_on_ip | quote }}

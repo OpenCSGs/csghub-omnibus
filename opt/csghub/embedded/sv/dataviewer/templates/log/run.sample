@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/dataviewer" }}
-{{- if has (datasource "config").dataviewer "log" }}
-{{- if has (datasource "config").dataviewer.log "dir" }}
-{{- if (datasource "config").dataviewer.log.dir }}
-{{- $logDir = (datasource "config").dataviewer.log.dir }}
-{{- end }}
+{{- if has .dataviewer "log" }}
+{{- if .dataviewer.log.dir }}
+{{- $logDir = .dataviewer.log.dir }}
 {{- end }}
 {{- end }}
 

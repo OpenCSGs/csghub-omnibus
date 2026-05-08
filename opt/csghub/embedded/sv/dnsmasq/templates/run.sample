@@ -9,7 +9,6 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start dnsmasq
 
-{{- $runUser := (datasource "run_user").run_user }}
 exec chpst -e /opt/csghub/service/dnsmasq/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/dnsmasq --conf-dir=/opt/csghub/embedded/etc/dnsmasq --no-daemon

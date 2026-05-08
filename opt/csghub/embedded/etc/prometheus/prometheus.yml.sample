@@ -1,12 +1,11 @@
-{{- $prometheus := (datasource "config").prometheus }}
 global:
-  scrape_interval: {{ $prometheus.scrape_interval | default "15s" }}
-  evaluation_interval: {{ $prometheus.evaluation_interval | default "15s" }}
-  scrape_timeout: {{ $prometheus.scrape_timeout | default "10s" }}
+  scrape_interval: {{ .prometheus.scrape_interval | default "15s" }}
+  evaluation_interval: {{ .prometheus.evaluation_interval | default "15s" }}
+  scrape_timeout: {{ .prometheus.scrape_timeout | default "10s" }}
 
-{{- if $prometheus.external_labels }}
+{{- if .prometheus.external_labels }}
   external_labels:
-    {{- range $key, $value := $prometheus.external_labels }}
+    {{- range $key, $value := .prometheus.external_labels }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
 {{- end }}
@@ -18,6 +17,6 @@ scrape_configs:
   - job_name: "prometheus"
     static_configs:
       - targets: ["localhost:9090"]
-{{- if $prometheus.scrape_configs }}
-{{ toYAML $prometheus.scrape_configs | strings.Indent 2 }}
+{{- if .prometheus.scrape_configs }}
+{{ toYaml .prometheus.scrape_configs | indent 2 }}
 {{- end }}

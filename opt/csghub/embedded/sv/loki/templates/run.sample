@@ -9,12 +9,11 @@ csghub-ctl hook pre-start loki
 # fail on errors
 set -e
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $dataDir := (datasource "config").loki.data | default "/var/opt/csghub/loki" }}
+{{- $dataDir := .loki.data | default "/var/opt/csghub/loki" }}
 {{- $configDir := "/opt/csghub/service/loki/etc" }}
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/loki/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/loki \
     -config.file={{ $configDir }}/loki-config.yaml \
     -server.path-prefix="/-/loki"

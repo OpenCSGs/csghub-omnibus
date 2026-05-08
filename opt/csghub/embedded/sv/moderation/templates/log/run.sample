@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/moderation" }}
-{{- if has (datasource "config").moderation "log" }}
-{{- if has (datasource "config").moderation.log "dir" }}
-{{- if (datasource "config").moderation.log.dir }}
-{{- $logDir = (datasource "config").moderation.log.dir }}
-{{- end }}
+{{- if has .moderation "log" }}
+{{- if .moderation.log.dir }}
+{{- $logDir = .moderation.log.dir }}
 {{- end }}
 {{- end }}
 
