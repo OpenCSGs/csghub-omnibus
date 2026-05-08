@@ -12,7 +12,7 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start portal
 
-{{- $runUser := (datasource "run_user").run_user }}
+{{- $runUser := .run_user }}
 readonly PORTAL_BIN="/opt/csghub/embedded/bin/csghub-portal"
 readonly ENV_DIR="/opt/csghub/service/portal/env"
 

@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/prometheus" }}
-{{- if has (datasource "config").prometheus "log" }}
-{{- if has (datasource "config").prometheus.log "dir" }}
-{{- if (datasource "config").prometheus.log.dir }}
-{{- $logDir = (datasource "config").prometheus.log.dir }}
-{{- end }}
+{{- if has .prometheus "log" }}
+{{- if .prometheus.log.dir }}
+{{- $logDir = .prometheus.log.dir }}
 {{- end }}
 {{- end }}
 

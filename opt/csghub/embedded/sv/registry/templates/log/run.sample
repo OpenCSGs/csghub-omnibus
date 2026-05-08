@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/registry" }}
-{{- if has (datasource "config").registry "log" }}
-{{- if has (datasource "config").registry.log "dir" }}
-{{- if (datasource "config").registry.log.dir }}
-{{- $logDir = (datasource "config").registry.log.dir }}
-{{- end }}
+{{- if has .registry "log" }}
+{{- if .registry.log.dir }}
+{{- $logDir = .registry.log.dir }}
 {{- end }}
 {{- end }}
 

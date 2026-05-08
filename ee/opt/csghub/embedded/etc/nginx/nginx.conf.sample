@@ -11,7 +11,7 @@ events {
     use epoll;                   # Use epoll for scalable I/O
 }
 
-{{ $nginx := (datasource "config").nginx }}
+{{- $csghub := resolveUrl .csghub.external_url }}
 # HTTP block configuration
 http {
     # Disable server version token in responses
@@ -96,20 +96,16 @@ http {
         "~^(docker\/1\.(3|4|5(?!\.[0-9]-dev))|Go ).*$" 1;
     }
 
-    {{- if $nginx.rate_limit.enable }}
-    limit_req_zone $binary_remote_addr zone=global:10m rate={{ $nginx.rate_limit.request }};
+    {{- if .nginx.rate_limit.enable }}
+    limit_req_zone $binary_remote_addr zone=global:10m rate={{ .nginx.rate_limit.request }};
     limit_conn_zone $binary_remote_addr zone=addr:10m;
     {{- end }}
 
-    {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
-    {{- $server := (datasource "config").server -}}
-    {{- $nginx := (datasource "config").nginx -}}
-    {{- $dataDir := $nginx.data }}
+    {{- $dataDir := .nginx.data }}
 
-    {{- $csghubCert := $nginx.ssl_certificate | default (printf "/etc/csghub/ssl/%s.crt" $csghub.host) | quote }}
-    {{- $csghubCertKey := $nginx.ssl_certificate_key | default (printf "/etc/csghub/ssl/%s.key" $csghub.host) | quote }}
-
-    {{- if eq $csghub.scheme "https" -}}
+    {{- $csghubCert := .nginx.ssl_certificate | default (printf "/etc/csghub/ssl/%s.crt" $csghub.host) | quote }}
+    {{- $csghubCertKey := .nginx.ssl_certificate_key | default (printf "/etc/csghub/ssl/%s.key" $csghub.host) | quote }}
+    {{- if eq $csghub.scheme "https" }}
     # Main server configurations
     server {
         listen 80;
@@ -135,9 +131,9 @@ http {
         ssl_certificate_key {{ $csghubCertKey }};
         {{- end }}
 
-        {{- if $nginx.rate_limit.enable }}
-        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
-        limit_conn addr {{ $nginx.rate_limit.conn }};
+        {{- if .nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ .nginx.rate_limit.burst }};
+        limit_conn addr {{ .nginx.rate_limit.conn }};
         {{- end }}
 
         # Default route
@@ -171,10 +167,9 @@ http {
         }
 
         # xnet
-        {{ $xnet := (datasource "config").xnet -}}
         location ~ ^/xnet/ {
             rewrite ^/xnet/(.*) /$1 break;
-            proxy_pass http://127.0.0.1:{{ $xnet.listen_port }};
+            proxy_pass http://127.0.0.1:{{ .xnet.listen_port }};
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -192,10 +187,9 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        {{- $temporalUI := (datasource "config").temporal_ui -}}
-        {{ if $temporalUI.enable }}
+        {{- if .temporal_ui.enable }}
         # Temporal UI route with basic auth
-        location {{ $temporalUI.public_path }} {
+        location {{ .temporal_ui.public_path }} {
             proxy_pass http://127.0.0.1:8182;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
@@ -236,8 +230,7 @@ http {
             proxy_read_timeout 900;
         }
 
-        {{- $runner := (datasource "config").runner -}}
-        {{- if and (not $runner.use_public_domain) (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host) }}
+        {{- if and (not .runner.use_public_domain) (regexMatch `^[a-zA-Z0-9.-]+$` $csghub.host) }}
         # Endpoint route
         location /endpoint/ {
             proxy_pass http://127.0.0.1:8083;
@@ -272,9 +265,9 @@ http {
         }
     }
 
-    {{ if and $runner.use_public_domain
-        (regexp.Match `^[a-zA-Z0-9.-]+$` $csghub.host)
-        (not (regexp.Match `^[0-9.]+$` $csghub.host)) -}}
+    {{ if and .runner.use_public_domain
+        (regexMatch `^[a-zA-Z0-9.-]+$` $csghub.host)
+        (not (regexMatch `^[0-9.]+$` $csghub.host)) -}}
     server {
         {{- if eq $csghub.scheme "https" }}
         listen 443 ssl;
@@ -288,9 +281,9 @@ http {
         ssl_certificate_key {{ $csghubCertKey }};
         {{- end }}
 
-        {{- if $nginx.rate_limit.enable }}
-        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
-        limit_conn addr {{ $nginx.rate_limit.conn }};
+        {{- if .nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ .nginx.rate_limit.burst }};
+        limit_conn addr {{ .nginx.rate_limit.conn }};
         {{- end }}
 
         # Endpoint route
@@ -318,23 +311,22 @@ http {
     }
     {{- end }}
 
-    {{ $casdoor := tmpl.Exec "config.casdoor.conn" . | data.YAML -}}
     # Casdoor service configuration
     server {
         {{- if eq $csghub.scheme "https" }}
-        listen {{ $casdoor.port }} ssl;
+        listen {{ (resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000").port }} ssl;
         server_name {{ $csghub.host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
         {{- else }}
-        listen {{ $casdoor.port }};
+        listen {{ (resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000").port }};
         server_name {{ $csghub.host }};
         {{- end }}
 
-        {{- if $nginx.rate_limit.enable }}
-        limit_req zone=global burst={{ $nginx.rate_limit.burst }};
-        limit_conn addr {{ $nginx.rate_limit.conn }};
+        {{- if .nginx.rate_limit.enable }}
+        limit_req zone=global burst={{ .nginx.rate_limit.burst }};
+        limit_conn addr {{ .nginx.rate_limit.conn }};
         {{- end }}
 
         location / {
@@ -415,22 +407,20 @@ http {
         }
     }
 
-    {{ $csgship := (datasource "config").csgship -}}
-    {{- if $csgship.enable }}
-    {{- $csgshipFrontend := tmpl.Exec "config.csgship.frontend" . | data.YAML -}}
-    server {
+    {{- if .csgship.enable }}
+        server {
         {{- if eq $csghub.scheme "https" }}
-        listen {{ $csgshipFrontend.port }} ssl;
-        server_name {{ $csgshipFrontend.host }};
+        listen {{ .csgship_frontend_port }} ssl;
+        server_name {{ .csgship_frontend_host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
         {{- else }}
-        listen {{ $csgshipFrontend.port }};
-        server_name {{ $csgshipFrontend.host }};
+        listen {{ .csgship_frontend_port }};
+        server_name {{ .csgship_frontend_host }};
         {{- end }}
 
-        {{ $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
+        {{- $dataDir := .nginx.data | default "/var/opt/csghub/nginx" }}
         location / {
             root {{ $dataDir }}/html;
             index index.html;
@@ -438,22 +428,21 @@ http {
         }
     }
 
-    {{ $csgshipApi := tmpl.Exec "config.csgship.api" . | data.YAML -}}
     server {
         {{- if eq $csghub.scheme "https" }}
-        listen {{ $csgshipApi.port }} ssl;
-        server_name {{ $csgshipApi.host }};
+        listen {{ .csgship_api_port }} ssl;
+        server_name {{ .csgship_api_host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
         {{- else }}
-        listen {{ $csgshipApi.port }};
-        server_name {{ $csgshipApi.host }};
+        listen {{ .csgship_api_port }};
+        server_name {{ .csgship_api_host }};
         {{- end }}
 
         location /agentic {
-            {{- $agentic := (datasource "config").agentic }}
-            proxy_pass http://{{ $agentic.listen }};
+
+            proxy_pass http://{{ .agentic.listen }};
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

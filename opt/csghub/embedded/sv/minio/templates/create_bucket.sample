@@ -3,9 +3,8 @@
 # MinIO bucket creation script
 # Usage: ./create_bucket <bucket_name>
 
-{{- $minio := (datasource "config").minio }}
-{{- $user := $minio.auth.user }}
-{{- $password := $minio.auth.password | default (crypto.PBKDF2 $user "opencsg" 2048 8) }}
+{{- $user := .minio.auth.user }}
+{{- $password := .minio.auth.password | default (pbkdf2 $user "opencsg" 2048 8) }}
 
 # Configuration
 MC_PATH="/opt/csghub/embedded/bin/mc"          # Path to mc client

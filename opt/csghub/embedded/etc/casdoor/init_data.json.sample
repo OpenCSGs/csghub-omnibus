@@ -1,15 +1,14 @@
-{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
-{{- $csgship := (datasource "config").csgship -}}
-{{- $casdoorEndpoint := tmpl.Exec "endpoint.casdoor" . -}}
+{{- $csghub := resolveUrl .csghub.external_url }}
+{{- $casdoorEp := resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000" }}
 {
   "organizations": [
     {
       "owner": "admin",
       "name": "OpenCSG",
       "displayName": "OpenCSG",
-      "websiteUrl": "{{ $csghub.external }}",
-      "favicon": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/favicon.png",
-      "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
+      "websiteUrl": "{{ $csghub.url }}",
+      "favicon": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/favicon.png",
+      "logo": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/logo.png",
       "passwordType": "bcrypt",
       "passwordSalt": "OpenCSG",
       "passwordOptions": [
@@ -21,7 +20,7 @@
         "CN",
         "US"
       ],
-      "defaultAvatar": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/robot.png",
+      "defaultAvatar": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/robot.png",
       "defaultApplication": "CSGHub",
       "tags": [],
       "languages": [
@@ -150,8 +149,8 @@
       "owner": "admin",
       "name": "CSGHub",
       "displayName": "CSGHub",
-      "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
-      "homepageUrl": "{{ $csghub.external }}",
+      "logo": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/logo.png",
+      "homepageUrl": "{{ $csghub.url }}",
       "organization": "OpenCSG",
       "cert": "csghub-cert",
       "enablePassword": true,
@@ -166,8 +165,8 @@
       "enableLinkWithEmail": true,
       "orgChoiceMode": "Select",
       "samlReplyUrl": "",
-      "clientId": {{ tmpl.Exec "GenClientId" "CSGHub" | quote }},
-      "clientSecret": {{ tmpl.Exec "GenClientSecret" "CSGHub" | quote }},
+      "clientId": {{ generateClientId "CSGHub" | quote }},
+      "clientSecret": {{ generateClientSecret "CSGHub" | quote }},
       "providers": [
         {
           "owner": "",
@@ -362,7 +361,7 @@
         "id_token"
       ],
       "redirectUris": [
-        "{{ $csghub.external }}/api/v1/callback/casdoor"
+        "{{ $csghub.url }}/api/v1/callback/casdoor"
       ],
       "tokenFormat": "JWT",
       "tokenFields": [],
@@ -378,7 +377,7 @@
       "footerHtml": "<C2><A9>2025 OpenCSG. All rights reserved.",
       "formCSS": "",
       "formOffset": 2,
-      "formSideHtml": "<style>  .left-model{    text-align: center;    padding: 60px;    background-image: url('{{ $casdoorEndpoint }}/files/avatar/OpenCSG/background.png');    background-size: cover;    background-position: center;    position: absolute;    transform: none;    width: 100%;    height: 100%;  }  .side-logo {    display: flex;    align-items: center;  }  .side-logo span {    font-family: Montserrat, sans-serif;    font-weight: 900;    font-size: 2.4rem;    line-height: 1.3;    margin-left: 16px;    color: #404040;  }  .img{    max-width: none;    margin: 41px 0 13px;  }</style><div class='left-model'>  <span class='side-logo'> <img src='' alt='' style='width: 120px'>   </span>  <div class='img'>    <img src='' alt='' style='width: 120px'/>  </div></div>",
+      "formSideHtml": "<style>  .left-model{    text-align: center;    padding: 60px;    background-image: url('{{ $casdoorEp.url }}/files/avatar/OpenCSG/background.png');    background-size: cover;    background-position: center;    position: absolute;    transform: none;    width: 100%;    height: 100%;  }  .side-logo {    display: flex;    align-items: center;  }  .side-logo span {    font-family: Montserrat, sans-serif;    font-weight: 900;    font-size: 2.4rem;    line-height: 1.3;    margin-left: 16px;    color: #404040;  }  .img{    max-width: none;    margin: 41px 0 13px;  }</style><div class='left-model'>  <span class='side-logo'> <img src='' alt='' style='width: 120px'>   </span>  <div class='img'>    <img src='' alt='' style='width: 120px'/>  </div></div>",
       "failedSigninLimit": 5,
       "failedSigninFrozenTime": 15
     },
@@ -386,8 +385,8 @@
       "owner": "admin",
       "name": "Admin",
       "displayName": "Admin",
-      "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
-      "homepageUrl": "{{ $csghub.external }}",
+      "logo": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/logo.png",
+      "homepageUrl": "{{ $csghub.url }}",
       "organization": "OpenCSG",
       "cert": "csghub-cert",
       "enablePassword": true,
@@ -405,8 +404,8 @@
       "tags": [
         "is_admin"
       ],
-      "clientId": {{ tmpl.Exec "GenClientId" "Admin" | quote }},
-      "clientSecret": {{ tmpl.Exec "GenClientSecret" "Admin" | quote }},
+      "clientId": {{ generateClientId "Admin" | quote }},
+      "clientSecret": {{ generateClientSecret "Admin" | quote }},
       "providers": [
         {
           "owner": "",
@@ -592,7 +591,7 @@
         "id_token"
       ],
       "redirectUris": [
-        "{{ $csghub.external }}/-/temporal/auth/sso/callback"
+        "{{ $csghub.url }}/-/temporal/auth/sso/callback"
       ],
       "tokenFormat": "JWT",
       "tokenFields": [],
@@ -608,17 +607,17 @@
       "footerHtml": "<C2><A9>2025 OpenCSG. All rights reserved.",
       "formCSS": "",
       "formOffset": 2,
-      "formSideHtml": "<style>  .left-model{    text-align: center;    padding: 60px;    background-image: url('{{ $casdoorEndpoint }}/files/avatar/OpenCSG/background.png');    background-size: cover;    background-position: center;    position: absolute;    transform: none;    width: 100%;    height: 100%;  }  .side-logo {    display: flex;    align-items: center;  }  .side-logo span {    font-family: Montserrat, sans-serif;    font-weight: 900;    font-size: 2.4rem;    line-height: 1.3;    margin-left: 16px;    color: #404040;  }  .img{    max-width: none;    margin: 41px 0 13px;  }</style><div class='left-model'>  <span class='side-logo'> <img src='' alt='' style='width: 120px'>   </span>  <div class='img'>    <img src='' alt='' style='width: 120px'/>  </div></div>",
+      "formSideHtml": "<style>  .left-model{    text-align: center;    padding: 60px;    background-image: url('{{ $casdoorEp.url }}/files/avatar/OpenCSG/background.png');    background-size: cover;    background-position: center;    position: absolute;    transform: none;    width: 100%;    height: 100%;  }  .side-logo {    display: flex;    align-items: center;  }  .side-logo span {    font-family: Montserrat, sans-serif;    font-weight: 900;    font-size: 2.4rem;    line-height: 1.3;    margin-left: 16px;    color: #404040;  }  .img{    max-width: none;    margin: 41px 0 13px;  }</style><div class='left-model'>  <span class='side-logo'> <img src='' alt='' style='width: 120px'>   </span>  <div class='img'>    <img src='' alt='' style='width: 120px'/>  </div></div>",
       "failedSigninLimit": 5,
       "failedSigninFrozenTime": 15
     }
-    {{- if $csgship.enable -}}
+    {{- if .csgship.enable }}
     ,{
       "owner": "admin",
       "name": "CSGShip",
       "displayName": "CSGShip",
-      "logo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png",
-      "homepageUrl": {{ tmpl.Exec "endpoint.csgship.frontend" . | quote }},
+      "logo": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/logo.png",
+      "homepageUrl": {{ (resolveEndpoint $csghub.scheme $csghub.host .csgship.listen.frontend "127.0.0.1:8001").url | quote }},
       "organization": "OpenCSG",
       "cert": "csgship-cert",
       "enablePassword": true,
@@ -633,8 +632,8 @@
       "enableLinkWithEmail": true,
       "orgChoiceMode": "Select",
       "samlReplyUrl": "",
-      "clientId": {{ tmpl.Exec "GenClientId" "CSGShip" | quote }},
-      "clientSecret": {{ tmpl.Exec "GenClientSecret" "CSGShip" | quote }},
+      "clientId": {{ generateClientId "CSGShip" | quote }},
+      "clientSecret": {{ generateClientSecret "CSGShip" | quote }},
       "providers": [
         {
           "owner": "",
@@ -841,7 +840,7 @@
         "id_token"
       ],
       "redirectUris": [
-        "{{ tmpl.Exec "endpoint.csgship.api" . }}/api/v1/account/casdoor/login/callback"
+        "{{ (resolveEndpoint $csghub.scheme $csghub.host .csgship.listen.api "127.0.0.1:8002").url }}/api/v1/account/casdoor/login/callback"
       ],
       "tokenFormat": "JWT",
       "tokenFields": [],
@@ -857,11 +856,11 @@
       "footerHtml": "<C2><A9>2025 OpenCSG. All rights reserved.",
       "formCSS": "",
       "formOffset": 2,
-      "formSideHtml": "<style>  .left-model{    text-align: center;    padding: 60px;    background-image: url('{{ $casdoorEndpoint }}/files/avatar/OpenCSG/background.png');    background-size: cover;    background-position: center;    position: absolute;    transform: none;    width: 100%;    height: 100%;  }  .side-logo {    display: flex;    align-items: center;  }  .side-logo span {    font-family: Montserrat, sans-serif;    font-weight: 900;    font-size: 2.4rem;    line-height: 1.3;    margin-left: 16px;    color: #404040;  }  .img{    max-width: none;    margin: 41px 0 13px;  }</style><div class='left-model'>  <span class='side-logo'> <img src='' alt='' style='width: 120px'>   </span>  <div class='img'>    <img src='' alt='' style='width: 120px'/>  </div></div>",
+      "formSideHtml": "<style>  .left-model{    text-align: center;    padding: 60px;    background-image: url('{{ $casdoorEp.url }}/files/avatar/OpenCSG/background.png');    background-size: cover;    background-position: center;    position: absolute;    transform: none;    width: 100%;    height: 100%;  }  .side-logo {    display: flex;    align-items: center;  }  .side-logo span {    font-family: Montserrat, sans-serif;    font-weight: 900;    font-size: 2.4rem;    line-height: 1.3;    margin-left: 16px;    color: #404040;  }  .img{    max-width: none;    margin: 41px 0 13px;  }</style><div class='left-model'>  <span class='side-logo'> <img src='' alt='' style='width: 120px'>   </span>  <div class='img'>    <img src='' alt='' style='width: 120px'/>  </div></div>",
       "failedSigninLimit": 5,
       "failedSigninFrozenTime": 15
     }
-    {{- end -}}
+    {{- end }}
   ],
   "certs": [
     {
@@ -889,32 +888,32 @@
        "privateKey": "-----BEGIN RSA PRIVATE KEY-----\n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\n-----END RSA PRIVATE KEY-----\n"
      }
   ],
-  {{- $initPassFile := "/etc/csghub/init_root_password" -}}
-  {{- $pass := "" -}}
-  {{- if file.Exists $initPassFile -}}
-    {{- $content := file.Read $initPassFile | trimSpace }}
-    {{- $parts := strings.Split ":" $content }}
+  {{- $initPassFile := "/etc/csghub/init_root_password" }}
+  {{- $pass := "" }}
+  {{- if fileExists $initPassFile }}
+    {{- $content := fileRead $initPassFile | trim }}
+    {{- $parts := splitList ":" $content }}
     {{- if gt (len $parts) 1 }}
-      {{- $pass = index $parts 1 -}}
+      {{- $pass = index $parts 1 }}
     {{- else }}
-      {{- $pass = $content -}}
+      {{- $pass = $content }}
     {{- end }}
-  {{- end -}}
-  {{- if not $pass -}}
-    {{- $pass = random.Alpha 24 -}}
-    {{- file.Write $initPassFile (printf "root:%s\n" $pass) -}}
-  {{- end -}}
+  {{- end }}
+  {{- if not $pass }}
+    {{- $pass = randomAlpha 24 }}
+    {{- fileWrite $initPassFile (printf "root:%s\n" $pass) }}
+  {{- end }}
   "users": [
     {
       "owner": "OpenCSG",
       "name": "root",
-      "password": {{ $pass | crypto.Bcrypt | quote }},
+      "password": {{ $pass | bcrypt | quote }},
       "passwordSalt": "OpenCSG",
       "passwordType": "bcrypt",
       "displayName": "root",
       "email": "root@example.com",
       "type": "normal-user",
-      "avatar": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/robot.png",
+      "avatar": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/robot.png",
       "isAdmin": true,
       "signupApplication": "CSGHub",
       "tag": "is_admin"
@@ -951,7 +950,7 @@
       "port": 465,
       "disableSsl": false,
       "title": "OpenCSG Verification Code",
-      "content": "\u003c!DOCTYPE html\u003e\n\u003chtml lang=\u0022en\u0022\u003e\n\u003chead\u003e\n\u003cmeta charset=\u0022UTF-8\u0022\u003e\n\u003cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022\u003e\n\u003ctitle\u003eVerification Code Email\u003c/title\u003e\n\u003cstyle\u003ebody { font-family: Arial, sans-serif; } .email-container { width: 600px; margin: 0 auto; } .header { text-align: center; } .code { font-size: 24px; margin: 20px 0; text-align: center; } .footer { font-size: 12px; text-align: center; margin-top: 50px; } .footer a { color: #000; text-decoration: none; } .center { text-align: center; } .center a { text-decoration: none; color: #1C8B7F; }\u003c/style\u003e\n\u003c/head\u003e\n\u003cbody\u003e\n\u003cdiv class=\u0022email-container\u0022\u003e\n  \u003cdiv class=\u0022header\u0022\u003e\n    \u003cimg src=\u0022{{ $casdoorEndpoint }}/files/avatar/OpenCSG/logo.png\u0022 alt=\u0022OpenCSG Logo\u0022 width=\u0022300\u0022\u003e\n  \u003c/div\u003e\n    \u003cp\u003e\u003cstrong\u003e%{user.friendlyName}\u003c/strong\u003e, here is your verification code\u003c/p\u003e\n    \u003cp\u003eUse this code for your transaction. It's valid for 5 minutes\u003c/p\u003e\n    \u003cdiv class=\u0022code\u0022\u003e\n        %s\n    \u003c/div\u003e\n  \u003chr\u003e\n  \u003cp class=\u0022center\u0022\u003e\n    \u003ca href=\u0022https://opencsg.com\u0022 target=\u0022_blank\u0022\u003eOpenCSG Team\u003c/a\u003e\n  \u003c/p\u003e\n\u003c/div\u003e\n\u003c/body\u003e\n\u003c/html\u003e",
+      "content": "\u003c!DOCTYPE html\u003e\n\u003chtml lang=\u0022en\u0022\u003e\n\u003chead\u003e\n\u003cmeta charset=\u0022UTF-8\u0022\u003e\n\u003cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022\u003e\n\u003ctitle\u003eVerification Code Email\u003c/title\u003e\n\u003cstyle\u003ebody { font-family: Arial, sans-serif; } .email-container { width: 600px; margin: 0 auto; } .header { text-align: center; } .code { font-size: 24px; margin: 20px 0; text-align: center; } .footer { font-size: 12px; text-align: center; margin-top: 50px; } .footer a { color: #000; text-decoration: none; } .center { text-align: center; } .center a { text-decoration: none; color: #1C8B7F; }\u003c/style\u003e\n\u003c/head\u003e\n\u003cbody\u003e\n\u003cdiv class=\u0022email-container\u0022\u003e\n  \u003cdiv class=\u0022header\u0022\u003e\n    \u003cimg src=\u0022{{ $casdoorEp.url }}/files/avatar/OpenCSG/logo.png\u0022 alt=\u0022OpenCSG Logo\u0022 width=\u0022300\u0022\u003e\n  \u003c/div\u003e\n    \u003cp\u003e\u003cstrong\u003e%{user.friendlyName}\u003c/strong\u003e, here is your verification code\u003c/p\u003e\n    \u003cp\u003eUse this code for your transaction. It's valid for 5 minutes\u003c/p\u003e\n    \u003cdiv class=\u0022code\u0022\u003e\n        %s\n    \u003c/div\u003e\n  \u003chr\u003e\n  \u003cp class=\u0022center\u0022\u003e\n    \u003ca href=\u0022https://opencsg.com\u0022 target=\u0022_blank\u0022\u003eOpenCSG Team\u003c/a\u003e\n  \u003c/p\u003e\n\u003c/div\u003e\n\u003c/body\u003e\n\u003c/html\u003e",
       "enableSignAuthnRequest": false
     },
     {
@@ -961,12 +960,12 @@
       "category": "OAuth",
       "type": "Custom",
       "method": "Normal",
-      "clientId": {{ $csgship.oauth.client_id | default "" | quote }},
-      "clientSecret": {{ $csgship.oauth.client_secret | default "" | quote }},
-      "customAuthUrl": {{ printf "%s/oauth/authorize" $csgship.oauth.issuer | default "" | quote }},
-      "customTokenUrl": {{ printf "%s/oauth/token" $csgship.oauth.issuer | default "" | quote }},
-      "customUserInfoUrl": {{ printf "%s/api/v4/user" $csgship.oauth.issuer | default "" | quote }},
-      "customLogo": "{{ $casdoorEndpoint }}/files/avatar/OpenCSG/gitlab_favicon.png",
+      "clientId": {{ .csgship.oauth.client_id | default "" | quote }},
+      "clientSecret": {{ .csgship.oauth.client_secret | default "" | quote }},
+      "customAuthUrl": {{ printf "%s/oauth/authorize" .csgship.oauth.issuer | default "" | quote }},
+      "customTokenUrl": {{ printf "%s/oauth/token" .csgship.oauth.issuer | default "" | quote }},
+      "customUserInfoUrl": {{ printf "%s/api/v4/user" .csgship.oauth.issuer | default "" | quote }},
+      "customLogo": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/gitlab_favicon.png",
       "scopes": "read_user openid profile email",
       "userMapping":
       {
@@ -976,8 +975,8 @@
         "id": "id",
         "username": "username"
       },
-      "issuerUrl": {{ $csgship.oauth.issuer | default "" | quote }},
-      "providerUrl": {{ $csgship.oauth.issuer | default "" | quote }}
+      "issuerUrl": {{ .csgship.oauth.issuer | default "" | quote }},
+      "providerUrl": {{ .csgship.oauth.issuer | default "" | quote }}
     },
     {
       "owner": "OpenCSG",
@@ -986,7 +985,7 @@
       "category": "Storage",
       "type": "Local File System",
       "method": "Normal",
-      "domain": "{{ $casdoorEndpoint }}",
+      "domain": "{{ $casdoorEp.url }}",
       "pathPrefix": "/opt/csghub/embedded/etc/casdoor"
     }
   ]

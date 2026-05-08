@@ -1,7 +1,7 @@
 #!/bin/sh
 exec 1>&2
 
-{{- $dataDir := (datasource "config").nginx.data | default "/var/opt/csghub/nginx" }}
+{{- $dataDir := .nginx.data | default "/var/opt/csghub/nginx" }}
 if pgrep nginx; then
     chpst -e /opt/csghub/service/nginx/env -P \
         -u root:root \

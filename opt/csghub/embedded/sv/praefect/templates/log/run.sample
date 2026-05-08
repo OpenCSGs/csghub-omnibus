@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/praefect" }}
-{{- if has (datasource "config").praefect "logging" }}
-{{- if has (datasource "config").praefect.logging "dir" }}
-{{- if (datasource "config").praefect.logging.dir }}
-{{- $logDir = (datasource "config").praefect.logging.dir }}
-{{- end }}
+{{- if has .praefect "logging" }}
+{{- if .praefect.logging.dir }}
+{{- $logDir = .praefect.logging.dir }}
 {{- end }}
 {{- end }}
 

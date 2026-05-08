@@ -9,9 +9,7 @@ csghub-ctl hook pre-start producer
 # fail on errors
 set -e
 
-{{- $runUser := (datasource "run_user").run_user }}
-
 cd /opt/csghub/embedded/sv/web/project
 exec chpst -e /opt/csghub/service/web/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/celery -A config beat --loglevel=INFO

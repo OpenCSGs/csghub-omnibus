@@ -9,11 +9,10 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start patroni
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $dataDir := (datasource "config").patroni.data_dir | default "/var/opt/csghub/patroni" }}
-{{- $configDir := (datasource "config").patroni.config_dir | default "/opt/csghub/service/patroni/etc" }}
+{{- $dataDir := .patroni.data_dir | default "/var/opt/csghub/patroni" }}
+{{- $configDir := .patroni.config_dir | default "/opt/csghub/service/patroni/etc" }}
 
 cd {{ $configDir }}
 exec chpst -e /opt/csghub/service/patroni/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/python3.11 /opt/csghub/embedded/bin/patroni {{ $configDir }}/patroni.yaml

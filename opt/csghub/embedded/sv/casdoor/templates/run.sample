@@ -9,10 +9,9 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start casdoor
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $dataDir := (datasource "config").casdoor.data | default "/var/opt/csghub/casdoor" }}
+{{- $dataDir := .casdoor.data | default "/var/opt/csghub/casdoor" }}
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/casdoor/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/casdoor

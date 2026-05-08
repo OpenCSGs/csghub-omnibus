@@ -1,9 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/consul" }}
-{{- if has (datasource "config").consul "log_dir" }}
-{{- if (datasource "config").consul.log_dir }}
-{{- $logDir = (datasource "config").consul.log_dir }}
+{{- if has .consul "log_dir" }}
+{{- if .consul.log_dir }}
+{{- $logDir = .consul.log_dir }}
 {{- end }}
 {{- end }}
 

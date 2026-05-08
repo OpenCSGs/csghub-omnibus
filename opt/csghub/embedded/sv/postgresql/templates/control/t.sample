@@ -1,7 +1,7 @@
 #!/bin/sh
 exec 1>&2
 
-{{- $dataDir := (datasource "config").postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
+{{- $dataDir := .postgresql.data_dir | default "/var/opt/csghub/postgresql/data" }}
 if [ -f "{{ $dataDir }}/postmaster.pid" ]; then
     chpst -e /opt/csghub/service/postgresql/env -P \
       -u postgres:postgres \
@@ -33,4 +33,3 @@ if pgrep postgres >/dev/null; then
 else
     echo "No PostgreSQL processes running"
 fi
-

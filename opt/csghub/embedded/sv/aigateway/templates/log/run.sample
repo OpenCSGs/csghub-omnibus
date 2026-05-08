@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/aigateway" }}
-{{- if has (datasource "config").aigateway "log" }}
-{{- if has (datasource "config").aigateway.log "dir" }}
-{{- if (datasource "config").aigateway.log.dir }}
-{{- $logDir = (datasource "config").aigateway.log.dir }}
-{{- end }}
+{{- if has .aigateway "log" }}
+{{- if .aigateway.log.dir }}
+{{- $logDir = .aigateway.log.dir }}
 {{- end }}
 {{- end }}
 

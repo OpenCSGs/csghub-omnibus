@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/producer" }}
-{{- if has (datasource "config").producer "log" }}
-{{- if has (datasource "config").producer.log "dir" }}
-{{- if (datasource "config").producer.log.dir }}
-{{- $logDir = (datasource "config").producer.log.dir }}
-{{- end }}
+{{- if has .producer "log" }}
+{{- if .producer.log.dir }}
+{{- $logDir = .producer.log.dir }}
 {{- end }}
 {{- end }}
 

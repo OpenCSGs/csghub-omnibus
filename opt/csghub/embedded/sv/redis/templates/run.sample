@@ -9,11 +9,10 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start redis
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $dataDir := (datasource "config").redis.data | default "/var/opt/csghub/redis" }}
+{{- $dataDir := .redis.data | default "/var/opt/csghub/redis" }}
 {{- $configDir := "/opt/csghub/service/redis/etc" }}
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/redis/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/redis-server {{ $configDir }}/redis.conf

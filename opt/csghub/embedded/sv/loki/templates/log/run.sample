@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/loki" }}
-{{- if has (datasource "config").loki "log" }}
-{{- if has (datasource "config").loki.log "dir" }}
-{{- if (datasource "config").loki.log.dir }}
-{{- $logDir = (datasource "config").loki.log.dir }}
-{{- end }}
+{{- if has .loki "log" }}
+{{- if .loki.log.dir }}
+{{- $logDir = .loki.log.dir }}
 {{- end }}
 {{- end }}
 

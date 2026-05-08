@@ -1,11 +1,10 @@
-{{- $loki := (datasource "config").loki }}
-{{- $dataDir := (datasource "config").loki.data | default "/var/opt/csghub/loki" -}}
+{{- $dataDir := .loki.data | default "/var/opt/csghub/loki" }}
 
 auth_enabled: false
 
 server:
-  http_listen_port: {{ $loki.listen_port | default 3100 }}
-  log_level: {{ $loki.log_level | default "info" }}
+  http_listen_port: {{ .loki.listen_port | default 3100 }}
+  log_level: {{ .loki.log_level | default "info" }}
 
 common:
   instance_addr: 127.0.0.1

@@ -4,18 +4,17 @@ readonly OPERATION=$1
 readonly ROLE=$2
 readonly SCOPE=$3
 
-{{- if has (datasource "config").patroni "callback" }}
-{{- $callback := (datasource "config").patroni.callback }}
-VIP={{ $callback.virtual_ip | default "127.0.0.1" }}
-PREFIX={{ $callback.virtual_ip | default 24 }}
-BRD={{ $parts := strings.Split "." $callback.virtual_ip }}{{ join (coll.Slice $parts 0 3) "." }}.255
-INF={{ $callback.interface | default "eth0" }}
+{{- if has .patroni "callback" }}
+
+VIP={{ .patroni.callback.virtual_ip | default "127.0.0.1" }}
+PREFIX={{ .patroni.callback.virtual_ip | default 24 }}
+BRD={{ $parts := splitList "." .patroni.callback.virtual_ip }}{{ join (sliceList $parts 0 3) "." }}.255
+INF={{ .patroni.callback.interface | default "eth0" }}
 {{- end }}
 
 function usage() {
     echo "Usage: $0 <on_start|on_stop|on_role_change> <ROLE> <SCOPE>";
     exit 1;
-
 
 echo "$(date "+%Y-%m-%d %H:%M:%S %z") This is patroni callback $OPERATION $ROLE $SCOPE"
 

@@ -4,84 +4,82 @@
 # and run:
 # sudo csghub-ctl reconfigure
 
-{{- $praefect := (datasource "config").praefect }}
 # TCP address to listen on
-listen_addr = {{ $praefect.listen_addr | quote }}
+listen_addr = {{ .praefect.listen_addr | quote }}
 
-{{- if $praefect.tls_listen_addr }}
+{{- if .praefect.tls_listen_addr }}
 # Secured TCP address to listen on.
-tls_listen_addr = {{ $praefect.tls_listen_addr | quote }}
+tls_listen_addr = {{ .praefect.tls_listen_addr | quote }}
 {{- end }}
-
-{{- if has $praefect "tls" }}
+{{- if has .praefect "tls" }}
 # Path to the certificate and its key used for TLS listening address.
 [tls]
-{{- if $praefect.tls.certificate_path }}
-certificate_path = {{ $praefect.tls.certificate_path | quote }}
+{{- if .praefect.tls.certificate_path }}
+certificate_path = {{ .praefect.tls.certificate_path | quote }}
 {{- end }}
-{{- if $praefect.tls.key_path }}
-key_path = {{ $praefect.tls.key_path | quote }}
+{{- if .praefect.tls.key_path }}
+key_path = {{ .praefect.tls.key_path | quote }}
 {{- end }}
 {{- end }}
 
 # Optional: grace period before a praefect process is forcibly terminated (duration)
 # Defaults to "1m"
-graceful_stop_timeout = {{ $praefect.graceful_stop_timeout | quote }}
+graceful_stop_timeout = {{ .praefect.graceful_stop_timeout | quote }}
 
 # Optional: export metrics via Prometheus
-prometheus_listen_addr = {{ $praefect.prometheus_listen_addr | quote }}
+prometheus_listen_addr = {{ .praefect.prometheus_listen_addr | quote }}
 
 # You can optionally configure Praefect to output JSON-formatted log messages to stdout
 [logging]
-format = {{ $praefect.logging.format | quote }}
+format = {{ .praefect.logging.format | quote }}
 # Optional: Set log level to only log entries with that severity or above
 # One of, in order: debug, info, warn, error, fatal, panic
 # Defaults to "info"
-level = {{ $praefect.logging.level | quote }}
+level = {{ .praefect.logging.level | quote }}
 
 [prometheus]
-grpc_latency_buckets = [{{- range $i, $v := $praefect.prometheus.grpc_latency_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
+grpc_latency_buckets = [{{- range $i, $v := .praefect.prometheus.grpc_latency_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
 
 [sentry]
-sentry_environment = {{ $praefect.sentry.sentry_environment | quote }}
-sentry_dsn = {{ $praefect.sentry.sentry_dsn | quote }}
+sentry_environment = {{ .praefect.sentry.sentry_environment | quote }}
+sentry_dsn = {{ .praefect.sentry.sentry_dsn | quote }}
 
-{{ $pgUser := $praefect.database.user }}
-{{- $pgPassword := $praefect.database.password | default (crypto.PBKDF2 $pgUser "opencsg" 2048 8) }}
+{{- $pgUser := .praefect.database.user }}
+{{- $pgPassword := .praefect.database.password | default (pbkdf2 $pgUser "opencsg" 2048 8) }}
 [database]
-host = {{ $praefect.database.host | quote }}
-port = {{ $praefect.database.port }}
+host = {{ .praefect.database.host | quote }}
+port = {{ .praefect.database.port }}
 user = {{ $pgUser | quote }}
 password = {{ $pgPassword | quote }}
-dbname = {{ $praefect.database.dbname | quote }}
+dbname = {{ .praefect.database.dbname | quote }}
 
 # Optional: authenticate Gitaly requests using a shared secret. This token works the same way as a gitaly token
 [auth]
-token = {{ $praefect.auth.token | default (crypto.PBKDF2 "praefect" "opencsg" 2048 8) | quote }}
+token = {{ .praefect.auth.token | default (pbkdf2 "praefect" "opencsg" 2048 8) | quote }}
 
 # One or more Gitaly servers need to be configured to be managed. The names
 # of each server are used to link multiple nodes, or `gitaly_server`s together
 # as shard. listen_addr should be unique for all nodes.
 # Requires the protocol to be defined, e.g. tcp://host.tld:1234
 [replication]
-batch_size = {{ $praefect.replication.batch_size }}
+batch_size = {{ .praefect.replication.batch_size }}
 
 [reconciliation]
 # Duration value specifying an interval at which to run the automatic repository reconciler.
 # Automatic reconciliation is disabled if set to 0. Example: "1m" for reconciliation every minute.
-scheduling_interval = "{{ $praefect.reconciliation.scheduling_interval }}"
+scheduling_interval = "{{ .praefect.reconciliation.scheduling_interval }}"
 # Scheduling duration histogram buckets.
-histogram_buckets = [{{- range $i, $v := $praefect.reconciliation.histogram_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
+histogram_buckets = [{{- range $i, $v := .praefect.reconciliation.histogram_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
 
 [failover]
-enabled = {{ $praefect.failover.enabled }}
+enabled = {{ .praefect.failover.enabled }}
 
 [background_verification]
-delete_invalid_records = {{ $praefect.background_verification.delete_invalid_records }}
-verification_interval = {{ $praefect.background_verification.verification_interval | quote }}
+delete_invalid_records = {{ .praefect.background_verification.delete_invalid_records }}
+verification_interval = {{ .praefect.background_verification.verification_interval | quote }}
 
-{{ if has $praefect "virtual_storage" }}
-{{- range $vs := $praefect.virtual_storage }}
+{{- if has .praefect "virtual_storage" }}
+{{- range $vs := .praefect.virtual_storage }}
 [[virtual_storage]]
 name = "{{ $vs.name }}"
 {{- if $vs.default_replication_factor }}
@@ -91,17 +89,16 @@ default_replication_factor = {{ $vs.default_replication_factor }}
 [[virtual_storage.node]]
 storage = "{{ $node.storage }}"
 address = "{{ $node.address }}"
-token = "{{ $node.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) }}"
+token = "{{ $node.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) }}"
 {{- end }}
 {{- end }}
 {{- end }}
-
-{{ if has $praefect "yamux" }}
+{{- if has .praefect "yamux" }}
 [yamux]
 # MaximumStreamWindowSizeBytes sets the maximum window size in bytes used for yamux streams.
 # Higher value can increase throughput at the cost of more memory usage.
-maximum_stream_window_size_bytes = {{ $praefect.yamux.maximum_stream_window_size_bytes | default 262144 }}
+maximum_stream_window_size_bytes = {{ .praefect.yamux.maximum_stream_window_size_bytes | default 262144 }}
 # AcceptBacklog sets the maximum number of stream openings in-flight
 # before further openings block.
-accept_backlog = {{ $praefect.yamux.accept_backlog | default 256 }}
-{{ end }}
+accept_backlog = {{ .praefect.yamux.accept_backlog | default 256 }}
+{{- end }}

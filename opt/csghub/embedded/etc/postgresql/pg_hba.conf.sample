@@ -82,7 +82,6 @@
 # the database superuser.  If you do not trust all your local users,
 # use another authentication method.
 
-
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
 
 # "local" is for Unix domain socket connections only
@@ -96,9 +95,9 @@ host    all             all             ::1/128                 trust
 local   replication     all                                     trust
 host    replication     all             127.0.0.1/32            trust
 host    replication     all             ::1/128                 trust
-{{- $postgresql := (datasource "config").postgresql }}
-{{- if has $postgresql "pg_hba" }}
-{{- range (datasource "config").postgresql.pg_hba }}
+
+{{- if has .postgresql "pg_hba" }}
+{{- range .postgresql.pg_hba }}
 {{ . }}
 {{- end }}
 {{- end }}
