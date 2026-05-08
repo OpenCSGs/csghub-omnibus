@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/rproxy" }}
-{{- if has (datasource "config").rproxy "log" }}
-{{- if has (datasource "config").rproxy.log "dir" }}
-{{- if (datasource "config").rproxy.log.dir }}
-{{- $logDir = (datasource "config").rproxy.log.dir }}
-{{- end }}
+{{- if has .rproxy "log" }}
+{{- if .rproxy.log.dir }}
+{{- $logDir = .rproxy.log.dir }}
 {{- end }}
 {{- end }}
 

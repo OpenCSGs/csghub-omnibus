@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/redis" }}
-{{- if has (datasource "config").redis "log" }}
-{{- if has (datasource "config").redis.log "dir" }}
-{{- if (datasource "config").redis.log.dir }}
-{{- $logDir = (datasource "config").redis.log.dir }}
-{{- end }}
+{{- if has .redis "log" }}
+{{- if .redis.log.dir }}
+{{- $logDir = .redis.log.dir }}
 {{- end }}
 {{- end }}
 

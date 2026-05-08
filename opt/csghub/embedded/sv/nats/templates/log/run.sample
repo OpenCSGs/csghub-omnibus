@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/nats" }}
-{{- if has (datasource "config").nats "log" }}
-{{- if has (datasource "config").nats.log "dir" }}
-{{- if (datasource "config").nats.log.dir }}
-{{- $logDir = (datasource "config").nats.log.dir }}
-{{- end }}
+{{- if has .nats "log" }}
+{{- if .nats.log.dir }}
+{{- $logDir = .nats.log.dir }}
 {{- end }}
 {{- end }}
 

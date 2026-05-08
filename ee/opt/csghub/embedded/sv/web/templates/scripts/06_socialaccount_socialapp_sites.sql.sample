@@ -11,6 +11,5 @@ pg_catalog.setval('public.socialaccount_socialapp_sites_id_seq', (
             MAX(id)
         FROM public.socialaccount_socialapp_sites), TRUE);
 
-{{- $csgshipApiEndpoint := tmpl.Exec "endpoint.csgship.api" . -}}
 -- Change django_site to the correct domain
-UPDATE django_site SET domain = '{{ $csgshipApiEndpoint }}', name = '{{ $csgshipApiEndpoint }}' WHERE id = 1;
+UPDATE django_site SET domain = '{{ .csgship_api_url }}', name = '{{ .csgship_api_url }}' WHERE id = 1;

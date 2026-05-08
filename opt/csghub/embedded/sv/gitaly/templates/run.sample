@@ -12,11 +12,10 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start gitaly
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $dataDir := (datasource "config").gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
+{{- $dataDir := .gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
 {{- $configDir := "/opt/csghub/service/gitaly/etc" }}
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/gitaly/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/gitaly-wrapper /opt/csghub/embedded/bin/gitaly serve {{ $configDir }}/config.toml

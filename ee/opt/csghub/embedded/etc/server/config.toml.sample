@@ -1,55 +1,50 @@
-{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
-{{- $server := (datasource "config").server -}}
-{{- $runner := (datasource "config").runner -}}
-{{- $praefect := (datasource "config").praefect -}}
-{{- $gitlabShell := (datasource "config").gitlab_shell -}}
-
-saas = {{ $server.saas }}
+{{- $csghub := resolveUrl .csghub.external_url }}
+saas = {{ .server.saas }}
 oversea = false
 instance_id = ""
-enable_swagger = {{ $server.enable_swagger }}
-enable_https = {{ $server.enable_https }}
-api_token = {{ tmpl.Exec "GenHubApiToken" . | quote }}
+enable_swagger = {{ .server.enable_swagger }}
+enable_https = {{ .server.enable_https }}
+api_token = {{ deriveToken | quote }}
 docs_host = {{ printf "%s://%s:6636" $csghub.scheme $csghub.host | quote }}
-server_failure_redirect_url = {{ printf "%s/errors/server-error" $csghub.external | quote }}
+server_failure_redirect_url = {{ printf "%s/errors/server-error" $csghub.url | quote }}
 
 [api_server]
-port = {{ $server.listen_port }}
-public_domain = {{ $csghub.external | quote }}
-{{- $shell_port := $gitlabShell.ssh_port }}
+port = {{ .server.listen_port }}
+public_domain = {{ $csghub.url | quote }}
+{{- $shell_port := .gitlab_shell.ssh_port }}
 {{- if eq $shell_port 22 }}
-ssh_domain = {{ printf "git@%s:%d" (conv.ToString $csghub.host) (conv.ToInt64 $shell_port) | quote }}
+ssh_domain = {{ printf "git@%s:%d" (toString $csghub.host) (int64 $shell_port) | quote }}
 {{- else }}
-ssh_domain = {{ printf "ssh://git@%s:%d" (conv.ToString $csghub.host) (conv.ToInt64 $shell_port) | quote }}
+ssh_domain = {{ printf "ssh://git@%s:%d" (toString $csghub.host) (int64 $shell_port) | quote }}
 {{- end }}
 
-{{ $mirrorRepo := (datasource "config").mirror_repo }}
-{{- $mirrorLfs := (datasource "config").mirror_lfs -}}
 [mirror]
-url = {{ printf "http://localhost:%d" $mirrorRepo.listen_port | quote }}
+url = {{ printf "http://localhost:%d" .mirror_repo.listen_port | quote }}
 token = ""
-port = {{ $mirrorRepo.listen_port }}
-{{- if $server.saas }}
+port = {{ .mirror_repo.listen_port }}
+{{- if .server.saas }}
 remote = true
 {{- else }}
 remote = false
 {{- end }}
-session_secret_key = {{ tmpl.Exec "GenSeed" . | crypto.SHA1 | quote }}
-worker_number = {{ $mirrorRepo.worker_number }}
-lfs_concurrency = {{ $mirrorLfs.lfs_concurrency }}
-part_size = {{ $mirrorLfs.part_size  }}
+session_secret_key = {{ persistentSeed | sha1sum | quote }}
+worker_number = {{ .mirror_repo.worker_number }}
+lfs_concurrency = {{ .mirror_lfs.lfs_concurrency }}
+part_size = {{ .mirror_lfs.part_size  }}
 
-{{ $postgresql := $server.postgresql }}
-{{- $pgUser := $postgresql.user -}}
-{{- $pgPassword := $postgresql.password | default (crypto.PBKDF2 $pgUser "opencsg" 2048 8) -}}
+{{- $postgresql := .server.postgresql }}
+{{- $pgUser := $postgresql.user }}
+{{- $pgPassword := $postgresql.password | default (pbkdf2 $pgUser "opencsg" 2048 8) }}
+
 [database]
 driver = "pg"
-dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" (conv.ToString $pgUser) (conv.ToString $pgPassword) (conv.ToString $postgresql.host) (conv.ToInt64 $postgresql.port) (conv.ToString $postgresql.name) | quote }}
+dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" (toString $pgUser) (toString $pgPassword) (toString $postgresql.host) (int64 $postgresql.port) (toString $postgresql.name) | quote }}
 timezone = {{ $postgresql.timezone | quote }}
 
-{{ $redis := $server.redis }}
-{{- $redisUser := $redis.auth.user -}}
-{{- $redisPassword := $redis.auth.password | default (crypto.PBKDF2 $redisUser "opencsg" 2048 8) -}}
+{{- $redis := .server.redis }}
+{{- $redisUser := $redis.auth.user }}
+{{- $redisPassword := $redis.auth.password | default (pbkdf2 $redisUser "opencsg" 2048 8) }}
+
 [redis]
 endpoint = {{ $redis.endpoint | quote }}
 max_retries = {{ $redis.max_retries }}
@@ -63,20 +58,22 @@ sentinel_master = {{ $redis.sentinel.master | quote }}
 [git_server]
 type = "gitaly"
 
-{{ $gitaly := $server.gitaly }}
-{{- $gitalyToken := $gitaly.token | default (crypto.PBKDF2 "gitaly" "opencsg" 2048 8) -}}
+{{- $gitaly := .server.gitaly }}
+{{- $gitalyToken := $gitaly.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) }}
+
 [gitaly_server]
 address = {{ $gitaly.address | quote }}
 storge = {{ $gitaly.storage | quote }}
 token = {{ $gitalyToken | quote }}
-jwt_secret ={{ $gitaly.secret | default (tmpl.Exec "GenSeed" . | crypto.SHA256) | quote }}
+jwt_secret ={{ $gitaly.secret | default (persistentSeed | sha256sum) | quote }}
 
 [frontend]
-url = {{ $csghub.external | quote }}
+url = {{ $csghub.url | quote }}
 
-{{ $s3 := $server.s3 }}
-{{- $accessKeyId := $s3.access_key -}}
-{{- $secretKey := $s3.secret_key | default (crypto.PBKDF2 $accessKeyId "opencsg" 2048 8) -}}
+{{- $s3 := .server.s3 }}
+{{- $accessKeyId := $s3.access_key }}
+{{- $secretKey := $s3.secret_key | default (pbkdf2 $accessKeyId "opencsg" 2048 8) }}
+
 [s3]
 access_key_id = {{ $accessKeyId | quote }}
 access_key_secret = {{ $secretKey | quote }}
@@ -92,82 +89,85 @@ bucket_lookup = "auto"
 {{- end }}
 
 [jwt]
-signing_key = {{ $gitaly.secret | default (tmpl.Exec "GenSeed" . | crypto.SHA256) | quote }}
+signing_key = {{ $gitaly.secret | default (persistentSeed | sha256sum) | quote }}
 valid_hour = 24
 
 [space]
 internal_root_domain = "spaces.app.internal:8083"
-{{- if $runner.use_public_domain }}
+{{- if .runner.use_public_domain }}
 public_root_domain = {{ printf "%s:%v" $csghub.host $csghub.port | quote }}
 {{- else }}
 public_root_domain = ""
 {{- end }}
-session_secret_key = {{ tmpl.Exec "GenSeed" . | crypto.SHA1 | quote }}
-pypi_index_url = {{ $runner.pip_index_url | quote }}
+session_secret_key = {{ persistentSeed | sha1sum | quote }}
+pypi_index_url = {{ .runner.pip_index_url | quote }}
 
-{{ $model := $runner.model -}}
+{{- $model := .runner.model }}
+
 [model]
 deploy_timeout_in_min = {{ $model.deploy_timeout }}
-download_endpoint = {{ $csghub.external | quote }}
+download_endpoint = {{ $csghub.url | quote }}
 docker_reg_base = {{ $model.registry | quote }}
 nim_docker_secret_name = "ngc-secret"
 nim_ngc_secret_name = "nvidia-nim-secrets"
 
 [event]
-sync_interval = {{ $mirrorRepo.sync_interval }}
+sync_interval = {{ .mirror_repo.sync_interval }}
 
-{{ $casdoor := (datasource "config").casdoor -}}
-{{- $serverCasdoor := $server.casdoor -}}
+{{- $serverCasdoor := .server.casdoor }}
+{{- $casdoorEp := resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000" }}
 [casdoor]
-client_id = {{ tmpl.Exec "GenClientId" "CSGHub" | quote }}
-client_secret = {{ tmpl.Exec "GenClientSecret" "CSGHub" | quote }}
-endpoint = {{ $serverCasdoor.endpoint | default (tmpl.Exec "endpoint.casdoor" .) | quote }}
+client_id = {{ generateClientId "CSGHub" | quote }}
+client_secret = {{ generateClientSecret "CSGHub" | quote }}
+endpoint = {{ $serverCasdoor.endpoint | default ($casdoorEp.url) | quote }}
 certificate = {{ $serverCasdoor.certificate | quote }}
 organization_name = {{ $serverCasdoor.organization_name | quote }}
 application_name = {{ $serverCasdoor.application_name | quote }}
 
-{{ $nats := (datasource "config").nats }}
-{{- $natsUser := $nats.auth.user -}}
-{{- $natsPassword := $nats.auth.password | default (crypto.PBKDF2 $natsUser "opencsg" 2048 8) -}}
-{{- $serverNats := $server.nats -}}
+{{- $natsUser := .nats.auth.user }}
+{{- $natsPassword := .nats.auth.password | default (pbkdf2 $natsUser "opencsg" 2048 8) }}
+{{- $serverNats := .server.nats }}
+
 [nats]
-url = {{ $serverNats.url | default (printf "nats://%s:%s@localhost:4222" (conv.ToString $natsUser) (conv.ToString $natsPassword)) | quote }}
+url = {{ $serverNats.url | default (printf "nats://%s:%s@localhost:4222" (toString $natsUser) (toString $natsPassword)) | quote }}
 msg_fetch_timeout_in_sec = {{ $serverNats.msg_fetch_timeout_in_sec }}
 
-{{ $accounting := (datasource "config").accounting }}
-{{- $actParts := $accounting.listen | strings.Split ":" -}}
-{{- $actHost := index $actParts 0 -}}
-{{- $actPort := "" -}}
-{{- if gt (len $actParts) 1 -}}
-    {{- $actPort = index $actParts 1 -}}
-{{- else -}}
-    {{- $actPort = "8086" -}}
-{{- end -}}
+{{- $actParts := .accounting.listen | toString | splitList ":" }}
+{{- $actHost := index $actParts 0 }}
+{{- $actPort := "" }}
+{{- if gt (len $actParts) 1 }}
+    {{- $actPort = index $actParts 1 }}
+{{- else }}
+    {{- $actPort = "8086" }}
+{{- end }}
+
 [accounting]
 host = {{ printf "http://%s" $actHost | quote }}
 port = {{ $actPort }}
 
-{{ $user := (datasource "config").user }}
-{{- $userParts := $user.listen | strings.Split ":" -}}
-{{- $userHost := index $userParts 0 -}}
-{{- $userPort := "" -}}
-{{- if gt (len $userParts) 1 -}}
-    {{- $userPort = index $userParts 1 -}}
-{{- else -}}
-    {{- $actPort = "8088" -}}
-{{- end -}}
+{{- $userParts := .user.listen | splitList ":" }}
+{{- $userHost := index $userParts 0 }}
+{{- $userPort := "" }}
+{{- if gt (len $userParts) 1 }}
+    {{- $userPort = index $userParts 1 }}
+{{- else }}
+    {{- $actPort = "8088" }}
+{{- end }}
+
 [user]
 host = {{ printf "http://%s" $userHost | quote }}
 port = {{ $userPort }}
-signin_success_redirect_url = {{ printf "%s/server/callback" $csghub.external | quote }}
+signin_success_redirect_url = {{ printf "%s/server/callback" $csghub.url | quote }}
 
-{{ $multi_sync := $server.multi_sync -}}
+{{- $multi_sync := .server.multi_sync }}
+
 [multi_sync]
 enabled = {{ $multi_sync.enabled }}
 saas_api_domain = "https://hub.opencsg.com"
 saas_sync_domain = "https://sync.opencsg.com"
 
-{{ $telemetry := $server.telemetry -}}
+{{- $telemetry := .server.telemetry }}
+
 [telemetry]
 enable = {{ $telemetry.enabled | default true }}
 report_url = "http://hub.opencsg.com/api/v1/telemetry"
@@ -175,46 +175,49 @@ report_url = "http://hub.opencsg.com/api/v1/telemetry"
 [auto_clean]
 instance = false
 
-{{ $dataset := $server.dataset -}}
+{{- $dataset := .server.dataset }}
+
 [dataset]
 prompt_max_jsonl_file_size = {{ $dataset.prompt_max_jsonl_file_size }}
 
-{{ $dataflow := $server.dataflow -}}
-{{- $dfUrl := conv.URL $dataflow.address -}}
-{{- $dfUrlParts := $dfUrl.Host | strings.Split ":" -}}
-{{- $dfHost := index $dfUrlParts 0 -}}
-{{- $dfPort := "" -}}
-{{- if gt (len $dfUrlParts) 1 -}}
-  {{- $dfPort = index $dfUrlParts 1 -}}
-{{- else -}}
-  {{- if eq $dfUrl.Scheme "https" -}}
-    {{- $dfPort = "443" -}}
-  {{- else -}}
-    {{- $dfPort = "80" -}}
-  {{- end -}}
-{{- end -}}
+{{- $dataflow := .server.dataflow }}
+{{- $dfUrl := parseURL $dataflow.address }}
+{{- $dfUrlParts := $dfUrl.Host | splitList ":" }}
+{{- $dfHost := index $dfUrlParts 0 }}
+{{- $dfPort := "" }}
+{{- if gt (len $dfUrlParts) 1 }}
+  {{- $dfPort = index $dfUrlParts 1 }}
+{{- else }}
+  {{- if eq $dfUrl.Scheme "https" }}
+    {{- $dfPort = "443" }}
+  {{- else }}
+    {{- $dfPort = "80" }}
+  {{- end }}
+{{- end }}
+
 [dataflow]
 host = {{ printf "%s://%s" $dfUrl.Scheme $dfHost | quote }}
 port = {{ $dfPort }}
 
-{{ $moderation := (datasource "config").moderation -}}
-{{- if $moderation.enable -}}
-{{- $moderationAddress := $moderation.address -}}
-{{- $moderationUrl := conv.URL $moderationAddress -}}
-{{- $moderationParts := $moderationUrl.Host | strings.Split ":" -}}
-{{- $moderationHost := index $moderationParts 0 | default "127.0.0.1" -}}
-{{- $moderationPort := "" -}}
+{{- if .moderation.enable }}
+{{- $moderationAddress := .moderation.address }}
+{{- $moderationUrl := parseURL $moderationAddress }}
+{{- $moderationParts := $moderationUrl.Host | splitList ":" }}
+{{- $moderationHost := index $moderationParts 0 | default "127.0.0.1" }}
+{{- $moderationPort := "" }}
 {{- if gt (len $moderationParts) 1 }}
-  {{- $moderationPort = index $moderationParts 1 -}}
-{{- else -}}
-    {{- $moderationPort = "8089" -}}
-{{- end -}}
+  {{- $moderationPort = index $moderationParts 1 }}
+{{- else }}
+    {{- $moderationPort = "8089" }}
+{{- end }}
+
 [moderation]
 host = {{ printf "%s://%s" $moderationUrl.Scheme $moderationHost | quote }}
 port = {{ $moderationPort }}
-encoded_sensitive_words = {{ $moderation.encoded_sensitive_words | quote }}
+encoded_sensitive_words = {{ .moderation.encoded_sensitive_words | quote }}
 
-{{ $sensitive := $moderation.sensitive_check -}}
+{{- $sensitive := .moderation.sensitive_check }}
+
 [sensitive_check]
 enable = true
 access_key_id = {{ $sensitive.access_key_id | quote }}
@@ -222,9 +225,10 @@ access_key_secret = {{ $sensitive.access_key_secret | quote }}
 region = {{ $sensitive.region | quote }}
 endpoint = {{ $sensitive.endpoint | quote }}
 enable_ssl = {{ $sensitive.enable_ssl }}
-{{- end -}}
+{{- end }}
 
-{{ $workflow := $server.workflow -}}
+{{- $workflow := .server.workflow }}
+
 [workflow]
 endpoint = {{ $workflow.endpoint | quote }}
 
@@ -232,19 +236,22 @@ endpoint = {{ $workflow.endpoint | quote }}
 sync_as_client_cron_expression = {{ $multi_sync.sync_as_client_cron_expression | quote }}
 calc_recom_score_cron_expression = {{ $multi_sync.calc_recom_score_cron_expression | quote }}
 
-{{ $proxy := $server.proxy -}}
+{{- $proxy := .server.proxy }}
+
 [proxy]
 hosts = [{{- range $k, $v := $proxy.hosts }}{{if $k}}, {{end}}{{$v | quote }}{{- end }}]
 
-{{ $instrumentation := $server.instrumentation -}}
+{{- $instrumentation := .server.instrumentation }}
+
 [instrumentation]
 otlp_logging = {{ $instrumentation.otlp_logging }}
 otlp_endpoint = {{ $instrumentation.otlp_endpoint | quote }}
 
-{{ $git := $server.git -}}
+{{- $git := .server.git }}
+
 [git]
 operation_timeout = {{ $git.operation_timeout }}
-{{- if $praefect.enable }}
+{{- if .praefect.enable }}
 check_file_size_enabled = false
 {{- else }}
 check_file_size_enabled = {{ $git.check_file_size_enabled }}
@@ -252,28 +259,28 @@ check_file_size_enabled = {{ $git.check_file_size_enabled }}
 max_un_lfs_file_size = {{ $git.max_un_lfs_file_size }}
 skip_lfs_file_validation = {{ $git.skip_lfs_file_validation }}
 
+{{- if .notifier.enable }}
+{{- $notifyListen := .notifier.listen }}
+{{- $notifyParts := $notifyListen | splitList ":" }}
+{{- $notifyHost := index $notifyParts 0 | default "127.0.0.1" }}
+{{- $notifyPort := "8095" }}
+{{- if eq (len $notifyParts) 2 }}
+  {{- $notifyPort = index $notifyParts 1 }}
+{{- end }}
 
-{{ $notifier := (datasource "config").notifier -}}
-{{- if $notifier.enable }}
-{{- $notifyListen := $notifier.listen -}}
-{{- $notifyParts := $notifyListen | strings.Split ":" -}}
-{{- $notifyHost := index $notifyParts 0 | default "127.0.0.1" -}}
-{{- $notifyPort := "8095" -}}
-{{- if eq (len $notifyParts) 2 -}}
-  {{- $notifyPort = index $notifyParts 1 -}}
-{{- end -}}
 [notification]
 host = {{ printf "http://%s" $notifyHost | quote }}
 port = {{ $notifyPort }}
-mailer_host = {{ $notifier.smtp.host | quote }}
-mailer_port = {{ $notifier.smtp.port }}
-mailer_username = {{ $notifier.smtp.username | quote }}
-mailer_password = {{ $notifier.smtp.password | quote }}
-repo_sync_timezone = {{ $notifier.repo_sync_timezone | quote }}
-broadcast_user_page_size = {{ $notifier.broadcast_user_page_size }}
-broadcast_email_page_size = {{ $notifier.broadcast_email_page_size }}
+mailer_host = {{ .notifier.smtp.host | quote }}
+mailer_port = {{ .notifier.smtp.port }}
+mailer_username = {{ .notifier.smtp.username | quote }}
+mailer_password = {{ .notifier.smtp.password | quote }}
+repo_sync_timezone = {{ .notifier.repo_sync_timezone | quote }}
+broadcast_user_page_size = {{ .notifier.broadcast_user_page_size }}
+broadcast_email_page_size = {{ .notifier.broadcast_email_page_size }}
 
-{{ $feishu := $notifier.feishu -}}
+{{- $feishu := .notifier.feishu }}
+
 [feishu]
 app_id = {{ $feishu.app_id | quote }}
 app_secret = {{ $feishu.app_secret | quote }}
@@ -283,36 +290,39 @@ max_delay_duration = {{ $feishu.max_delay_duration }}
 chat_ids_cache_ttl = {{ $feishu.chat_ids_cache_ttl }}
 {{- end }}
 
-{{ $prometheus := $server.prometheus -}}
+{{- $prometheus := .server.prometheus }}
+
 [prometheus]
 api_address = {{ printf "%s/api/v1/query" $prometheus.address | quote }}
 
-{{ $logcollector := $server.logcollector -}}
+{{- $logcollector := .server.logcollector }}
 [logcollector]
 loki_url = {{ $logcollector.loki_url | quote }}
 
-{{ $agent := $server.agent -}}
+{{- $agent := .server.agent }}
+
 [agent]
 agent_hub_service_host = {{ $agent.langflow.token | quote }}
 agent_hub_service_token = {{ $agent.langflow.host | quote }}
 code_instance_quota_per_user = {{ $agent.code_instance_quota_per_user | default 5 }}
 langflow_instance_quota_per_user = {{ $agent.instance_quota_per_user | default 5 }}
 
-{{ $csgbot := $server.csgbot -}}
+{{- $csgbot := .server.csgbot }}
+
 [csgbot]
 host = {{ $csgbot.host | quote }}
 port = {{ $csgbot.port }}
 
-{{ $xnet := $server.xnet -}}
-[xnet]
-endpoint = {{ $xnet.endpoint | default (printf "%s/xnet" $csghub.external) | quote }}
-api_key = {{ $xnet.api_key | default (tmpl.Exec "GenHubApiToken" .)| quote }}
+{{- $xnet := .server.xnet }}
 
-{{ $aigateway := (datasource "config").aigateway -}}
+[xnet]
+endpoint = {{ $xnet.endpoint | default (printf "%s/xnet" $csghub.url) | quote }}
+api_key = {{ $xnet.api_key | default (deriveToken)| quote }}
+
 [aigateway]
-port = {{ $aigateway.port }}
-moderation_bypass_sensitive_check = {{ $aigateway.moderation_bypass_sensitive_check }}
+port = {{ .aigateway.port }}
+moderation_bypass_sensitive_check = {{ .aigateway.moderation_bypass_sensitive_check }}
 advertise_addr = "{{ $csghub.host }}:8094"
 
 [storagegateway]
-enable_presigned_url_proxy = {{ $server.enable_presigned_url_proxy }}
+enable_presigned_url_proxy = {{ .server.enable_presigned_url_proxy }}

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/minio" }}
-{{- if (datasource "config").minio.log }}
-{{- $logDir = (datasource "config").minio.log }}
+{{- if .minio.log }}
+{{- $logDir = .minio.log }}
 {{- end }}
 
 exec chpst -P \

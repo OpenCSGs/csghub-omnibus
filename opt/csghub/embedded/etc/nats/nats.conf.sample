@@ -1,8 +1,7 @@
-{{- $nats := (datasource "config").nats }}
-{{- $dataDir := $nats.data }}
-{{- $auth := $nats.auth }}
+{{- $dataDir := .nats.data }}
+{{- $auth := .nats.auth }}
 {{- $natsUser := $auth.user }}
-{{- $natsPassword := $auth.password | default (crypto.PBKDF2 $natsUser "opencsg" 2048 8) }}
+{{- $natsPassword := $auth.password | default (pbkdf2 $natsUser "opencsg" 2048 8) }}
 debug = false
 trace = false
 
@@ -27,7 +26,7 @@ authorization {
   }
 
   users = [
-    {user: {{ $auth.user }}, password: {{ $natsPassword | crypto.Bcrypt }}, permissions: $ADMIN}
+    {user: {{ $auth.user }}, password: {{ $natsPassword | bcrypt }}, permissions: $ADMIN}
   ]
 }
 

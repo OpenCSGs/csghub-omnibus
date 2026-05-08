@@ -9,15 +9,13 @@ set -e
 # Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
 csghub-ctl hook pre-start praefect
 
-{{- $runUser := (datasource "run_user").run_user }}
-{{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
+{{- $dataDir := .praefect.data_dir | default "/var/opt/csghub/praefect" }}
 {{- $configDir := "/opt/csghub/service/praefect/etc" }}
 cd {{ $dataDir }}
 chpst -e /opt/csghub/service/praefect/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
     /opt/csghub/embedded/bin/praefect --config {{ $configDir }}/config.toml sql-migrate
 
 exec chpst -e /opt/csghub/service/praefect/env -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/gitaly-wrapper /opt/csghub/embedded/bin/praefect -config {{ $configDir }}/config.toml
-

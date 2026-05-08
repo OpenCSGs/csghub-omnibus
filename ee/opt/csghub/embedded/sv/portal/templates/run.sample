@@ -12,27 +12,25 @@ csghub-ctl hook pre-start portal
 # Exit if execute with any errors
 set -e
 
-{{- $runUser := (datasource "run_user").run_user }}
-
 readonly PORTAL_BIN="/opt/csghub/embedded/bin/csghub-portal"
 readonly ENV_DIR="/opt/csghub/service/portal/env"
 
 echo "Initializing database migrations..."
 chpst -e "$ENV_DIR" -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   "$PORTAL_BIN" migration init
 
 echo "Running database migrations..."
 chpst -e "$ENV_DIR" -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   "$PORTAL_BIN" migration migrate
 
 echo "Seed database ..."
 chpst -e "$ENV_DIR" -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   "$PORTAL_BIN" db seed
 
 echo "Starting portal..."
 exec chpst -e "$ENV_DIR" -P \
-  -u {{ $runUser }}:{{ $runUser }} \
+  -u {{ .run_user }}:{{ .run_user }} \
   "$PORTAL_BIN" start server
