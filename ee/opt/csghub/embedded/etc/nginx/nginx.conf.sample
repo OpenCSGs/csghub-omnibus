@@ -312,16 +312,17 @@ http {
     {{- end }}
 
     # Casdoor service configuration
+    {{- $casdoorEp := resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000" }}
     server {
         {{- if eq $csghub.scheme "https" }}
-        listen {{ (resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000").port }} ssl;
-        server_name {{ $csghub.host }};
+        listen {{ $casdoorEp.port }} ssl;
+        server_name {{ $casdoorEp.host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
         {{- else }}
-        listen {{ (resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000").port }};
-        server_name {{ $csghub.host }};
+        listen {{ $casdoorEp.port }};
+        server_name {{ $casdoorEp.host }};
         {{- end }}
 
         {{- if .nginx.rate_limit.enable }}
@@ -408,16 +409,17 @@ http {
     }
 
     {{- if .csgship.enable }}
-        server {
+    {{- $csgshipFrontend := resolveEndpoint $csghub.scheme $csghub.host .csgship.listen.frontend "127.0.0.1:8001" }}
+    server {
         {{- if eq $csghub.scheme "https" }}
-        listen {{ .csgship_frontend_port }} ssl;
-        server_name {{ .csgship_frontend_host }};
+        listen {{ $csgshipFrontend.port }} ssl;
+        server_name {{ $csgshipFrontend.host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
         {{- else }}
-        listen {{ .csgship_frontend_port }};
-        server_name {{ .csgship_frontend_host }};
+        listen {{ $csgshipFrontend.port }};
+        server_name {{ $csgshipFrontend.host }};
         {{- end }}
 
         {{- $dataDir := .nginx.data | default "/var/opt/csghub/nginx" }}
@@ -428,20 +430,20 @@ http {
         }
     }
 
+    {{- $csgshipAPI := resolveEndpoint $csghub.scheme $csghub.host .csgship.listen.api "127.0.0.1:8002" }}
     server {
         {{- if eq $csghub.scheme "https" }}
-        listen {{ .csgship_api_port }} ssl;
-        server_name {{ .csgship_api_host }};
+        listen {{ $csgshipAPI.port }} ssl;
+        server_name {{ $csgshipAPI.host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
         {{- else }}
-        listen {{ .csgship_api_port }};
-        server_name {{ .csgship_api_host }};
+        listen {{ $csgshipAPI.port }};
+        server_name {{ $csgshipAPI.host }};
         {{- end }}
 
         location /agentic {
-
             proxy_pass http://{{ .agentic.listen }};
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;

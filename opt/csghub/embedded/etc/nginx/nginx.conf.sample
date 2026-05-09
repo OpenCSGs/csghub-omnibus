@@ -302,15 +302,16 @@ http {
     {{- end }}
 
     # Casdoor service configuration
+    {{- $casdoorEp := resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000" }}
     server {
         {{- if eq $csghub.scheme "https" }}
-        listen {{ (resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000").port }} ssl;
-        server_name {{ $csghub.host }};
+        listen {{ $casdoorEp.port }} ssl;
+        server_name {{ $casdoorEp.host }};
 
         ssl_certificate {{ $csghubCert }};
         ssl_certificate_key {{ $csghubCertKey }};
         {{- else }}
-        listen {{ (resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000").port }};
+        listen {{ $casdoorEp.port }};
         server_name {{ $csghub.host }};
         {{- end }}
 
