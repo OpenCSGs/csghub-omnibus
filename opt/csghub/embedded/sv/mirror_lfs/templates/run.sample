@@ -6,9 +6,6 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
-csghub-ctl hook pre-start mirror_lfs
-
 {{- $dataDir := .server.data | default "/var/opt/csghub/server" }}
 {{- $configDir := "/opt/csghub/service/server/etc" }}
 {{- $configFile := printf "%s/config.toml" $configDir }}

@@ -6,9 +6,6 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
-csghub-ctl hook pre-start patroni
-
 {{- $dataDir := .patroni.data_dir | default "/var/opt/csghub/patroni" }}
 {{- $configDir := .patroni.config_dir | default "/opt/csghub/service/patroni/etc" }}
 

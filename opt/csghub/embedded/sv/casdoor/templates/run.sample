@@ -6,10 +6,51 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
-csghub-ctl hook pre-start casdoor
+readonly ENV_DIR=/opt/csghub/service/casdoor/env
 
+{{ if or .postgresql.enable .patroni.enable }}
+# Wait for PostgreSQL
+echo "Waiting for PostgreSQL to become ready..."
+while ! /opt/csghub/embedded/sv/postgresql/bin/pg_isready -q; do sleep 2; done
+echo "PostgreSQL is ready."
+DB_USER=$(cat "$ENV_DIR/DB_USER")
+DB_PASSWORD=$(cat "$ENV_DIR/DB_PASSWORD")
+DB_NAME=$(cat "$ENV_DIR/DB_NAME")
+# Create database and update permissions for casdoor user
+/opt/csghub/bin/csghub-dbm -a rename -d casdoor -n "$DB_NAME"
+/opt/csghub/bin/csghub-dbm -a create -d "$DB_NAME" -u "$DB_USER" -p "$DB_PASSWORD"
+/opt/csghub/bin/csghub-dbm -a update -d "$DB_NAME" -N "$DB_USER"
+{{- end }}
+
+readonly CASDOOR_BIN=/opt/csghub/embedded/bin/casdoor
 {{- $dataDir := .casdoor.data | default "/var/opt/csghub/casdoor" }}
+cd {{ $dataDir }}
+# Run casdoor in the background to perform initialization tasks, then shut it down once done.
+LOGFILE={{ $dataDir }}/init.log
+$CASDOOR_BIN > "$LOGFILE" 2>&1 &
+bg_pid=$!
+echo "Started casdoor (PID $bg_pid) for initialization..."
+echo "Waiting for casdoor to reach Radius initialization stage..."
+until grep -q "Starting Radius server" "$LOGFILE"; do
+  sleep 1
+done
+echo "Detected 'Starting Radius server' in casdoor logs; initialization is complete."
+# Force-stop the casdoor process now that initialization is done
+echo "Checking for existing casdoor processes..."
+if pgrep -f "$CASDOOR_BIN" >/dev/null; then
+  echo "Found existing casdoor process, attempting graceful shutdown..."
+  pkill -f "$CASDOOR_BIN" || true
+  # Force kill if still running after graceful attempt
+  if pgrep -f "$CASDOOR_BIN" >/dev/null; then
+    echo "Forcing termination of remaining processes..."
+    pkill -9 -f "$CASDOOR_BIN" || true
+  fi
+else
+  echo "No existing casdoor process found."
+fi
+
+# Execute SQL seed scripts (after casdoor init so tables exist)
+cd /opt/csghub/service/casdoor && chpst -e "$ENV_DIR" /opt/csghub/embedded/etc/csghub/scripts/pg_executor
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/casdoor/env -P \

@@ -3,9 +3,6 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-csghub-ctl hook pre-start prometheus
-
 # fail on errors
 set -e
 

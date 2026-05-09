@@ -6,8 +6,15 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
-csghub-ctl hook pre-start registry
+{{ if .minio.enable }}
+# Wait for MinIO and create bucket
+echo "Waiting for MinIO to become ready..."
+while ! /opt/csghub/service/minio/ping_minio; do sleep 2; done
+echo "MinIO is ready."
+S3_BUCKET=$(cat /opt/csghub/service/registry/env/S3_BUCKET)
+# Create bucket for registry
+/opt/csghub/service/minio/create_bucket "$S3_BUCKET"
+{{- end }}
 
 {{- $dataDir := .registry.data | default "/var/opt/csghub/registry" }}
 {{- $configDir := "/opt/csghub/service/registry/etc" }}

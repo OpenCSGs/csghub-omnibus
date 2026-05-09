@@ -6,16 +6,56 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
-csghub-ctl hook pre-start server
-
 {{- $dataDir := .server.data | default "/var/opt/csghub/server" }}
 {{- $configDir := "/opt/csghub/service/server/etc" }}
 {{- $configFile := printf "%s/config.toml" $configDir }}
 
-# Define constants
-readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
-readonly ENV_DIR="/opt/csghub/service/server/env"
+readonly ENV_DIR=/opt/csghub/service/server/env
+readonly SERVER_BIN=/opt/csghub/embedded/bin/csghub-server
+CONFIG_ARG=""
+[ -f "{{ $configFile }}" ] && CONFIG_ARG="--config={{ $configFile }}"
+
+{{ if or .postgresql.enable .patroni.enable }}
+# Wait for PostgreSQL
+echo "Waiting for PostgreSQL to become ready..."
+while ! /opt/csghub/embedded/sv/postgresql/bin/pg_isready -q; do sleep 2; done
+echo "PostgreSQL is ready."
+DB_USER=$(cat "$ENV_DIR/POSTGRES_USER")
+DB_PASSWORD=$(cat "$ENV_DIR/POSTGRES_PASSWORD")
+DB_NAME=$(cat "$ENV_DIR/POSTGRES_DB")
+# Create database and update permissions for server user
+/opt/csghub/bin/csghub-dbm -a create -d "$DB_NAME" -u "$DB_USER" -p "$DB_PASSWORD"
+/opt/csghub/bin/csghub-dbm -a promote -u "$DB_USER" -P SUPERUSER
+/opt/csghub/bin/csghub-dbm -a update -d "$DB_NAME" -N "$DB_USER"
+{{- end }}
+
+# Run server migrations before SQL seed scripts so tables exist (tolerate failure)
+echo "Running server migration init..."
+cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u {{ .run_user }}:{{ .run_user }} "$SERVER_BIN" $CONFIG_ARG migration init || true
+echo "Running server migration migrate..."
+cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u {{ .run_user }}:{{ .run_user }} "$SERVER_BIN" $CONFIG_ARG migration migrate || true
+
+# Execute SQL seed scripts (after migration so tables exist)
+cd /opt/csghub/service/server && chpst -e "$ENV_DIR" /opt/csghub/embedded/etc/csghub/scripts/pg_executor
+
+{{ if .minio.enable }}
+# Wait for MinIO and create buckets
+echo "Waiting for MinIO to become ready..."
+while ! /opt/csghub/service/minio/ping_minio; do sleep 2; done
+echo "MinIO is ready."
+# Create bucket for server
+/opt/csghub/service/minio/create_bucket {{ .server.s3.bucket | default "csghub-server" }}
+/opt/csghub/service/minio/create_bucket csghub-runner
+{{- end }}
+
+{{ if .server.multi_sync.enabled }}
+# Start multi-sync in background
+pkill -f "csghub-server sync sync-as-client" 2>/dev/null || true
+sleep 1
+cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u {{ .run_user }}:{{ .run_user }} "$SERVER_BIN" $CONFIG_ARG sync sync-as-client \
+  > /var/log/csghub/server/multi-sync.log 2>&1 &
+echo "Started multi-sync (PID $!)"
+{{- end }}
 
 # Build command arguments
 args=("start" "server" "-l" {{ .server.log.level | quote }})
