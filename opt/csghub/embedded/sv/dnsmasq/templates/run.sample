@@ -6,8 +6,8 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
-csghub-ctl hook pre-start dnsmasq
+# Grant dnsmasq permission to bind to privileged ports
+setcap cap_net_bind_service=+ep /opt/csghub/embedded/sv/dnsmasq/bin/dnsmasq
 
 exec chpst -e /opt/csghub/service/dnsmasq/env -P \
   -u {{ .run_user }}:{{ .run_user }} \

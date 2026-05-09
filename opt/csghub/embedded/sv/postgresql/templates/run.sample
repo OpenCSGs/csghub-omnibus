@@ -6,10 +6,17 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
-csghub-ctl hook pre-start postgresql
-
 {{- $dataDir := .postgresql.data_dir | default "/var/opt/csghub/postgresql" }}
+
+# Initialize database cluster if not already initialized
+if [ ! -f "{{ $dataDir }}/PG_VERSION" ]; then
+  echo "Initializing database cluster..."
+  PARENT_DIR=$(dirname "{{ $dataDir }}")
+  [ -f "{{ $dataDir }}/postgresql.conf" ] && mv "{{ $dataDir }}"/*.conf "$PARENT_DIR/"
+  chpst -e /opt/csghub/service/postgresql/env -P -u postgres:postgres \
+    /opt/csghub/embedded/bin/initdb --encoding=UTF8 -D "{{ $dataDir }}"
+  mv "$PARENT_DIR"/*.conf "{{ $dataDir }}/" 2>/dev/null || true
+fi
 
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/postgresql/env -P \
