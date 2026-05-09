@@ -6,9 +6,6 @@ exec 2>&1
 # Exit if execute with any errors
 set -e
 
-# Run pre-start hooks before any other initialization to allow them to set up necessary files and permissions.
-csghub-ctl hook pre-start logger
-
 exec chpst -e /opt/csghub/service/minio/env -P \
   -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/logger
