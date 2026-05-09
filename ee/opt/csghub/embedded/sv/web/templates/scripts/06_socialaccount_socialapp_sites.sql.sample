@@ -12,4 +12,5 @@ pg_catalog.setval('public.socialaccount_socialapp_sites_id_seq', (
         FROM public.socialaccount_socialapp_sites), TRUE);
 
 -- Change django_site to the correct domain
-UPDATE django_site SET domain = '{{ .csgship_api_url }}', name = '{{ .csgship_api_url }}' WHERE id = 1;
+ {{- $csgshipAPI := resolveEndpoint $csghub.scheme $csghub.host .csgship.listen.api "127.0.0.1:8002" }}
+UPDATE django_site SET domain = '{{ $csgshipAPI.url }}', name = '{{ $csgshipAPI.url }}' WHERE id = 1;

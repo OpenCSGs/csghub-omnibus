@@ -41,8 +41,8 @@ level = {{ .praefect.logging.level | quote }}
 grpc_latency_buckets = [{{- range $i, $v := .praefect.prometheus.grpc_latency_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
 
 [sentry]
-sentry_environment = {{ .praefect.sentry.sentry_environment | quote }}
-sentry_dsn = {{ .praefect.sentry.sentry_dsn | quote }}
+sentry_environment = {{ .praefect.sentry.sentry_environment | default "" | quote }}
+sentry_dsn = {{ .praefect.sentry.sentry_dsn | default "" | quote }}
 
 {{- $pgUser := .praefect.database.user }}
 {{- $pgPassword := .praefect.database.password | default (pbkdf2 $pgUser "opencsg" 2048 8) }}
