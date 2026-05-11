@@ -4,3 +4,6 @@
 **/*.rpm
 **/*.deb
 **/*-registry.yml
+CLAUDE.md
+.claude
+testdata

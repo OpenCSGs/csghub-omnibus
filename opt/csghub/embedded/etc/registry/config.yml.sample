@@ -1,0 +1,65 @@
+{{- $dataDir := .registry.data }}
+{{- $user := .minio.auth.user }}
+{{- $password := .minio.auth.password | default (pbkdf2 $user "opencsg" 2048 8) }}
+{{- $csghub := resolveUrl .csghub.external_url }}
+version: 0.1
+log:
+  {{- $logLevel := "info" }}
+  {{- $logFormatter := "text" }}
+  {{- if has .registry "log" }}
+  {{- $logLevel = .registry.log.level }}
+  {{- $logFormatter = .registry.log.formatter }}
+  {{- end }}
+  level: {{ $logLevel }}
+  formatter: {{ $logFormatter }}
+  fields:
+    service: registry
+storage:
+  cache:
+    blobdescriptor: inmemory
+  {{- if has .registry.storage "filesystem" }}
+  filesystem:
+    rootdirectory: {{ .registry.storage.filesystem.rootdirectory }}
+    maxthreads: {{ .registry.storage.filesystem.maxthreads }}
+  {{- else }}
+  {{- if has .registry.storage "s3" }}
+  {{- $auth := .registry.storage.s3 }}
+  s3:
+    accesskey: {{ $auth.access_key | default $user }}
+    secretkey: {{ $auth.secret_key | default $password }}
+    region: {{ $auth.region | default "cn-north-1" }}
+    regionendpoint: {{ $auth.region_endpoint | default (printf "http://%s:9000" $csghub.host) }}
+    forcepathstyle: {{ $auth.force_path_style | default false }}
+    bucket: {{ $auth.bucket | default "csghub-registry" }}
+    encrypt: {{ $auth.encrypt | default false }}
+    secure: {{ $auth.secure | default false }}
+    v4auth: {{ $auth.v4auth | default true }}
+    skipverify: {{ $auth.skip_verify | default true }}
+  {{- end }}
+  {{- if has .registry.storage "oss" }}
+  {{- $auth := .registry.storage.oss }}
+  oss:
+    accesskeyid: {{ $auth.access_key_id | default $user }}
+    accesskeysecret: {{ $auth.access_key_secret | default $password }}
+    region: {{ $auth.region | default "oss-cn-beijing" }}
+    regionendpoint: {{ $auth.region_endpoint | default (printf "http://csghub-registry.%s:9000" $csghub.host) }}
+    bucket: {{ $auth.bucket | default "csghub-registry" }}
+    encrypt: {{ $auth.encrypt | default false }}
+    secure: {{ $auth.secure | default false }}
+  {{- end }}
+  {{- end }}
+  redirect:
+    disable: true
+http:
+  addr: 127.0.0.1:5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+auth:
+  htpasswd:
+    realm: basic-realm
+    path: {{ printf "%s/.htpasswd" $dataDir }}
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3

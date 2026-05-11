@@ -6,23 +6,40 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
+readonly ENV_DIR=/opt/csghub/service/xnet/env
 
-{{- $xnet := (datasource "config").xnet }}
-{{- $dataDir := $xnet.data | default "/var/opt/csghub/xnet" }}
-{{- $configFile := printf "%s/config.toml" $dataDir }}
+{{ if or .postgresql.enable .patroni.enable }}
+# Wait for PostgreSQL
+echo "Waiting for PostgreSQL to become ready..."
+while ! /opt/csghub/embedded/sv/postgresql/bin/pg_isready -q; do sleep 2; done
+echo "PostgreSQL is ready."
+DB_USER=$(cat "$ENV_DIR/DB_USER")
+DB_PASSWORD=$(cat "$ENV_DIR/DB_PASSWORD")
+DB_NAME=$(cat "$ENV_DIR/DB_NAME")
+# Create database and update permissions for xnet user
+/opt/csghub/bin/csghub-dbm -a create -d "$DB_NAME" -u "$DB_USER" -p "$DB_PASSWORD"
+{{- end }}
+
+{{ if .minio.enable }}
+# Wait for MinIO and create bucket
+echo "Waiting for MinIO to become ready..."
+while ! /opt/csghub/service/minio/ping_minio; do sleep 2; done
+echo "MinIO is ready."
+# Create bucket for xnet
+/opt/csghub/service/minio/create_bucket {{ .xnet.s3.bucket | default "csghub-xnet" }}
+{{- end }}
+
+{{- $dataDir := .xnet.data | default "/var/opt/csghub/xnet" }}
+{{- $configDir := "/opt/csghub/service/xnet/etc" }}
+{{- $configFile := printf "%s/config.toml" $configDir }}
 
 # Define constants
 readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-xnet"
-readonly ENV_DIR="/opt/csghub/etc/xnet/env"
 
 # Build command arguments
-args=("start" "server" "-l" {{ $xnet.log.level | quote }})
+args=("start" "server" "-l" {{ .xnet.log.level | quote }})
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 echo "Starting xnet..."
 cd {{ $dataDir }}
-exec chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}"
+exec chpst -e "$ENV_DIR" -P -u {{ .run_user }}:{{ .run_user }} "$SERVER_BIN" "${args[@]}"

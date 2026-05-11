@@ -6,15 +6,10 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
-
-{{- $dataDir := (datasource "config").temporal_ui.data | default "/var/opt/csghub/temporal_ui" }}
-{{- $temporalDataDir := (datasource "config").temporal.data | default "/var/opt/csghub/temporal" }}
+{{- $dataDir := .temporal_ui.data | default "/var/opt/csghub/temporal_ui" }}
+{{- $temporalDataDir := .temporal.data | default "/var/opt/csghub/temporal" }}
 cd {{ $dataDir }}
 exec chpst -P \
-  -e /opt/csghub/etc/temporal_ui/env \
-  -u temporal:temporal \
-  /opt/csghub/embedded/bin/ui-server --env docker --root {{ $dataDir }}/env --config .. start
+  -e /opt/csghub/service/temporal_ui/env \
+  -u {{ .run_user }}:{{ .run_user }} \
+  /opt/csghub/embedded/bin/ui-server --env docker --root /opt/csghub/service/temporal_ui --config etc/ start

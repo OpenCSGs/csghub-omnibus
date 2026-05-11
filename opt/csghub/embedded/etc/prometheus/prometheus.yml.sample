@@ -1,0 +1,22 @@
+global:
+  scrape_interval: {{ .prometheus.scrape_interval | default "15s" }}
+  evaluation_interval: {{ .prometheus.evaluation_interval | default "15s" }}
+  scrape_timeout: {{ .prometheus.scrape_timeout | default "10s" }}
+
+{{- if .prometheus.external_labels }}
+  external_labels:
+    {{- range $key, $value := .prometheus.external_labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+
+rule_files:
+  # - "alert.rules.yml"
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+{{- if .prometheus.scrape_configs }}
+{{ toYaml .prometheus.scrape_configs | indent 2 }}
+{{- end }}

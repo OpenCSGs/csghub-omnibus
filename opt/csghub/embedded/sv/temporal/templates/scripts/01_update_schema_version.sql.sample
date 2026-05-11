@@ -26,8 +26,7 @@ SELECT pg_catalog.set_config('search_path', 'public', false);
 --
 -- Type: DML; Schema: public; Owner: schema_version
 --
-{{- $temporal := (datasource "config").temporal }}
-{{- $db := $temporal.postgresql }}
+{{- $db := .temporal.postgresql }}
 BEGIN;
     LOCK TABLE public.schema_version IN EXCLUSIVE MODE;
 

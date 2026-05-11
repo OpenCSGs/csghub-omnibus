@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/billing" }}
-{{- if has (datasource "config").billing "log" }}
-{{- if has (datasource "config").billing.log "dir" }}
-{{- if (datasource "config").billing.log.dir }}
-{{- $logDir = (datasource "config").billing.log.dir }}
-{{- end }}
+{{- if has .billing "log" }}
+{{- if .billing.log.dir }}
+{{- $logDir = .billing.log.dir }}
 {{- end }}
 {{- end }}
 

@@ -6,18 +6,13 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
-
-{{- $dataDir := (datasource "config").praefect.data_dir | default "/var/opt/csghub/praefect" }}
+{{- $dataDir := .praefect.data_dir | default "/var/opt/csghub/praefect" }}
+{{- $configDir := "/opt/csghub/service/praefect/etc" }}
 cd {{ $dataDir }}
-chpst -e /opt/csghub/etc/praefect/env -P \
-  -u git:git \
-    /opt/csghub/embedded/bin/praefect --config {{ $dataDir }}/config.toml sql-migrate
+chpst -e /opt/csghub/service/praefect/env -P \
+  -u {{ .run_user }}:{{ .run_user }} \
+    /opt/csghub/embedded/bin/praefect --config {{ $configDir }}/config.toml sql-migrate
 
-exec chpst -e /opt/csghub/etc/praefect/env -P \
-  -u git:git \
-  /opt/csghub/embedded/bin/gitaly-wrapper /opt/csghub/embedded/bin/praefect -config {{ $dataDir }}/config.toml
-
+exec chpst -e /opt/csghub/service/praefect/env -P \
+  -u {{ .run_user }}:{{ .run_user }} \
+  /opt/csghub/embedded/bin/gitaly-wrapper /opt/csghub/embedded/bin/praefect -config {{ $configDir }}/config.toml

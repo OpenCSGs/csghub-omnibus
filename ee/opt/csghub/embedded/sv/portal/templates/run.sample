@@ -6,33 +6,51 @@ exec 2>&1
 # Attempt to change ulimit before the set -e flag, ignore failures
 ulimit -n 15000
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
-
 # Exit if execute with any errors
 set -e
 
-readonly PORTAL_BIN="/opt/csghub/embedded/bin/csghub-portal"
-readonly ENV_DIR="/opt/csghub/etc/portal/env"
+readonly PORTAL_BIN=/opt/csghub/embedded/bin/csghub-portal
+readonly ENV_DIR=/opt/csghub/service/portal/env
+
+{{ if or .postgresql.enable .patroni.enable }}
+# Wait for PostgreSQL
+echo "Waiting for PostgreSQL to become ready..."
+while ! /opt/csghub/embedded/sv/postgresql/bin/pg_isready -q; do sleep 2; done
+echo "PostgreSQL is ready."
+DB_USER=$(cat "$ENV_DIR/DB_USER")
+DB_PASSWORD=$(cat "$ENV_DIR/DB_PASSWORD")
+DB_NAME=$(cat "$ENV_DIR/DB_NAME")
+# Create database and update permissions for portal user
+/opt/csghub/bin/csghub-dbm -a create -d "$DB_NAME" -u "$DB_USER" -p "$DB_PASSWORD"
+/opt/csghub/bin/csghub-dbm -a update -d "$DB_NAME" -N "$DB_USER"
+{{- end }}
+
+{{ if .minio.enable }}
+# Wait for MinIO and create buckets
+echo "Waiting for MinIO to become ready..."
+while ! /opt/csghub/service/minio/ping_minio; do sleep 2; done
+echo "MinIO is ready."
+# Create both public and private buckets for portal
+/opt/csghub/service/minio/create_bucket {{ .portal.s3.bucket | default "csghub-portal-public" }} public
+/opt/csghub/service/minio/create_bucket {{ .portal.additionalS3.bucket | default "csghub-portal" }}
+{{- end }}
 
 echo "Initializing database migrations..."
 chpst -e "$ENV_DIR" -P \
-  -u root:root \
+  -u {{ .run_user }}:{{ .run_user }} \
   "$PORTAL_BIN" migration init
 
 echo "Running database migrations..."
 chpst -e "$ENV_DIR" -P \
-  -u root:root \
+  -u {{ .run_user }}:{{ .run_user }} \
   "$PORTAL_BIN" migration migrate
 
 echo "Seed database ..."
 chpst -e "$ENV_DIR" -P \
-  -u root:root \
+  -u {{ .run_user }}:{{ .run_user }} \
   "$PORTAL_BIN" db seed
 
 echo "Starting portal..."
 exec chpst -e "$ENV_DIR" -P \
-  -u root:root \
+  -u {{ .run_user }}:{{ .run_user }} \
   "$PORTAL_BIN" start server

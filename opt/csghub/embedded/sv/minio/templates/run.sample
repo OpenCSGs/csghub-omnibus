@@ -6,19 +6,13 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
-
-{{- $minio := (datasource "config").minio }}
-{{- $dataDir := $minio.data | default "/var/opt/csghub/minio/data" }}
+{{- $dataDir := .minio.data | default "/var/opt/csghub/minio/data" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/minio/env -P \
-  -u minio:minio \
+exec chpst -e /opt/csghub/service/minio/env -P \
+  -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/minio server \
-    --address {{ $minio.listen }}  \
-    --console-address {{ $minio.console.address }} \
+    --address {{ .minio.listen }}  \
+    --console-address {{ .minio.console.address }} \
     --json \
     {{ $dataDir }}

@@ -3,16 +3,11 @@
 # Redirect stderr -> stdout
 exec 2>&1
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
-
 # fail on errors
 set -e
 
-{{- $dataDir := (datasource "config").billing.data | default "/var/opt/csghub/billing" }}
+{{- $dataDir := .billing.data | default "/var/opt/csghub/billing" }}
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/web/env -P \
-  -u root:root \
-  /opt/csghub/embedded/bin/billing -config={{ $dataDir }}/config.yaml
+exec chpst -e /opt/csghub/service/web/env -P \
+  -u {{ .run_user }}:{{ .run_user }} \
+  /opt/csghub/embedded/bin/billing -config=/opt/csghub/service/billing/etc/config.yaml

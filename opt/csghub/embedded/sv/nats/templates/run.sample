@@ -6,9 +6,10 @@ exec 2>&1
 # fail on errors
 set -e
 
-{{- $dataDir := (datasource "config").nats.data | default "/var/opt/csghub/nats" }}
+{{- $dataDir := .nats.data | default "/var/opt/csghub/nats" }}
+{{- $configDir := "/opt/csghub/service/nats/etc" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/nats/env -P \
-  -u nats:nats \
-  /opt/csghub/embedded/bin/nats-server -c {{ $dataDir }}/nats.conf
+exec chpst -e /opt/csghub/service/nats/env -P \
+  -u {{ .run_user }}:{{ .run_user }} \
+  /opt/csghub/embedded/bin/nats-server -c {{ $configDir }}/nats.conf

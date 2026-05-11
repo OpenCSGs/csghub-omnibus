@@ -6,18 +6,18 @@ exec 2>&1
 # fail on errors
 set -e
 
-{{- $server := (datasource "config").server }}
-{{- $dataDir := $server.data | default "/var/opt/csghub/server" }}
-{{- $configFile := printf "%s/config.toml" $dataDir }}
+{{- $dataDir := .server.data | default "/var/opt/csghub/server" }}
+{{- $configDir := "/opt/csghub/service/server/etc" }}
+{{- $configFile := printf "%s/config.toml" $configDir }}
 
 # Define constants
 readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
-readonly ENV_DIR="/opt/csghub/etc/server/env"
+readonly ENV_DIR="/opt/csghub/service/server/env"
 
 # Build command arguments
-args=("user" "launch" "-l" {{ $server.log.level | quote }})
+args=("user" "launch" "-l" {{ .server.log.level | quote }})
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
 
 echo "Starting server..."
 cd {{ $dataDir }}
-exec chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@]}"
+exec chpst -e "$ENV_DIR" -P -u {{ .run_user }}:{{ .run_user }} "$SERVER_BIN" "${args[@]}"

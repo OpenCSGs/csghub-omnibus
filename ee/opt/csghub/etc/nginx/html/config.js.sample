@@ -1,7 +1,0 @@
-{{- $csghub := tmpl.Exec "config.csghub" . | data.YAML -}}
-{{- $casdoor := tmpl.Exec "config.casdoor.conn" . | data.YAML }}
-window.envConfig = {
-    VITE_APP_BASE_WEB: {{ tmpl.Exec "endpoint.csgship.frontend" . | squote }},
-    VITE_APP_BASE_API: {{ tmpl.Exec "endpoint.csgship.api" . | squote }},
-    VITE_APP_LOGIN_URL: {{ printf "%s://%s:%s/login/oauth/authorize?client_id=%s&response_type=code&redirect_uri=%s/api/v1/account/casdoor/login/callback&scope=profile&state=casdoor" $csghub.scheme $csghub.host $casdoor.port (tmpl.Exec "GenClientId" "CSGShip") $csghub.external | squote }}
-};

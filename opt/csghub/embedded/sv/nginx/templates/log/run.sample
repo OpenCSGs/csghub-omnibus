@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/nginx" }}
-{{- if has (datasource "config").nginx "log" }}
-{{- if has (datasource "config").nginx.log "dir" }}
-{{- if (datasource "config").nginx.log.dir }}
-{{- $logDir = (datasource "config").nginx.log.dir }}
-{{- end }}
+{{- if has .nginx "log" }}
+{{- if .nginx.log.dir }}
+{{- $logDir = .nginx.log.dir }}
 {{- end }}
 {{- end }}
 

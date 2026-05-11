@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/xnet" }}
-{{- if has (datasource "config").xnet "log" }}
-{{- if has (datasource "config").xnet.log "dir" }}
-{{- if (datasource "config").xnet.log.dir }}
-{{- $logDir = (datasource "config").xnet.log.dir }}
-{{- end }}
+{{- if has .xnet "log" }}
+{{- if .xnet.log.dir }}
+{{- $logDir = .xnet.log.dir }}
 {{- end }}
 {{- end }}
 

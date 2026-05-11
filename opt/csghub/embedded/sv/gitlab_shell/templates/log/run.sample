@@ -1,11 +1,9 @@
 #!/bin/bash
 
 {{- $logDir := "/var/log/csghub/gitlab_shell" }}
-{{- if has (datasource "config").gitlab_shell "logging" }}
-{{- if has (datasource "config").gitlab_shell.logging "dir" }}
-{{- if (datasource "config").gitlab_shell.logging.dir }}
-{{- $logDir = (datasource "config").gitlab_shell.logging.dir }}
-{{- end }}
+{{- if has .gitlab_shell "logging" }}
+{{- if .gitlab_shell.logging.dir }}
+{{- $logDir = .gitlab_shell.logging.dir }}
 {{- end }}
 {{- end }}
 

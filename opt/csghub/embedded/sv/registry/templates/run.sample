@@ -6,15 +6,20 @@ exec 2>&1
 # fail on errors
 set -e
 
-# Run the pre-start script to ensure that the service meets the startup conditions
-if [ -x ./pre-start ]; then
-  ./pre-start
-fi
+{{ if .minio.enable }}
+# Wait for MinIO and create bucket
+echo "Waiting for MinIO to become ready..."
+while ! /opt/csghub/service/minio/ping_minio; do sleep 2; done
+echo "MinIO is ready."
+S3_BUCKET=$(cat /opt/csghub/service/registry/env/S3_BUCKET)
+# Create bucket for registry
+/opt/csghub/service/minio/create_bucket "$S3_BUCKET"
+{{- end }}
 
-{{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
+{{- $dataDir := .registry.data | default "/var/opt/csghub/registry" }}
+{{- $configDir := "/opt/csghub/service/registry/etc" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/registry/env -P \
-  -u registry:registry \
-  /opt/csghub/embedded/bin/registry serve {{ $dataDir }}/config.yml
-
+exec chpst -e /opt/csghub/service/registry/env -P \
+  -u {{ .run_user }}:{{ .run_user }} \
+  /opt/csghub/embedded/bin/registry serve {{ $configDir }}/config.yml

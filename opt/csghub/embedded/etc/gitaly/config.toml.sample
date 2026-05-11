@@ -1,0 +1,148 @@
+# Example Gitaly configuration file with all configuration blocks dynamically defined.
+
+{{- $csghub := resolveUrl .csghub.external_url }}
+{{- $dataDir := .gitaly.data_dir | default "/var/opt/csghub/gitaly" }}
+{{- $listenAddr := .gitaly.listen_addr | default "" }}
+{{- if eq $listenAddr "" }}
+# Unix socket path for Gitaly
+socket_path = {{ .gitaly.socket_path | default (printf "%s/gitaly.socket" $dataDir) | quote }}
+{{- end }}
+
+# Directory containing Gitaly executables
+bin_dir = {{ .gitaly.bin_dir | quote }}
+
+# Runtime directory for Gitaly
+runtime_dir = {{ printf "%s/run" $dataDir | quote }}
+
+# Unencrypted TCP listen address
+listen_addr = {{ .gitaly.listen_addr | quote }}
+
+{{- if and .gitaly.tls_listen_addr (not .gitaly.listen_addr) }}
+# TCP with TLS listen address
+tls_listen_addr = {{ .gitaly.tls_listen_addr | quote }}
+{{- end }}
+
+# Prometheus metrics listen address
+prometheus_listen_addr = {{ .gitaly.prometheus_listen_addr | quote }}
+
+[auth]
+# Auth token required for Gitaly authentication
+token = {{ .gitaly.auth.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) | quote }}
+transitioning = {{ .gitaly.auth.transitioning }}
+
+{{- if has .gitaly "tls" }}
+# Gitaly supports TLS encryption. You must bring your own certificates because this isn’t provided automatically.
+[tls]
+{{- if .gitaly.tls.certificate_path }}
+certificate_path = {{ .gitaly.tls.certificate_path | default "/var/opt/csghub/gitaly/ssl/cert.cert" | quote }}
+{{- end }}
+{{- if .gitaly.tls.key_path }}
+key_path = {{ .gitaly.tls.key_path | default "/var/opt/csghub/gitaly/ssl/key.pem" | quote }}
+{{- end }}
+{{- end }}
+
+# Git settings
+[git]
+use_bundled_binaries = {{ .gitaly.git.use_bundled_binaries }}
+ignore_gitconfig = {{ .gitaly.git.ignore_gitconfig }}
+bin_path = {{ .gitaly.git.bin_path | quote }}
+catfile_cache_size = {{ .gitaly.git.catfile_cache_size }}
+signing_key = "{{ .gitaly.git.signing_key }}"
+
+  # Git configuration
+  {{- range $config := .gitaly.git.config }}
+  [[git.config]]
+  key = {{ $config.key | quote }}
+  value = {{ $config.value | quote }}
+  {{- end }}
+
+# Storages configuration
+{{- range .gitaly.storage }}
+[[storage]]
+name = {{ .name | quote }}
+path = {{ .path | default (printf "%s/repositories" $dataDir) | quote }}
+{{- end }}
+
+[logging]
+format = {{ .gitaly.logging.format | quote }}
+level = {{ .gitaly.logging.level | quote }}
+dir = {{ .gitaly.logging.dir | quote }}
+sentry_dsn = {{ .gitaly.logging.sentry_dsn | default "" | quote }}
+sentry_environment = {{ .gitaly.logging.sentry_environment | default "" | quote }}
+
+[prometheus]
+grpc_latency_buckets = [{{- range $i, $v := .gitaly.prometheus.grpc_latency_buckets }}{{if $i}}, {{end}}{{$v}}{{- end }}]
+
+[hooks]
+custom_hooks_dir = {{ .gitaly.hooks.custom_hooks_dir | default (printf "%s/custom_hooks" $dataDir) | quote }}
+
+[gitlab]
+url = {{ $csghub.url | quote }}
+relative_url_root = {{ .csghub.relative_url_root | default "/" | quote }}
+{{- if .gitaly.secret_file }}
+secret_file = {{ .gitaly.secret_file | quote }}
+{{- else }}
+secret = {{ .gitaly.secret | default (persistentSeed | sha256sum) | quote }}
+{{- end }}
+
+[gitlab.http-settings]
+read_timeout = {{ .gitaly.http_settings.read_timeout }}
+self_signed_cert = {{ .gitaly.http_settings.self_signed_cert }}
+
+{{- range $concurrency := .gitaly.concurrency }}
+[[concurrency]]
+{{- range $key, $value := $concurrency }}
+{{- if isKind "string" $value }}
+{{ $key }} = {{ $value | quote }}
+{{- else if isKind "number" $value }}
+{{ $key }} = {{ $value }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $limiting := .gitaly.rate_limiting }}
+[[rate_limiting]]
+{{- range $key, $value := $limiting }}
+{{- if isKind "string" $value }}
+{{ $key }} = {{ $value | quote }}
+{{- else if isKind "number" $value }}
+{{ $key }} = {{ $value }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+[daily_maintenance]
+disabled = {{ .gitaly.daily_maintenance.disable }}
+start_hour = {{ .gitaly.daily_maintenance.start_hour }}
+start_minute = {{ .gitaly.daily_maintenance.start_minute }}
+duration = {{ .gitaly.daily_maintenance.duration | quote }}
+storages = [{{- range $i, $v := .gitaly.daily_maintenance.storages }}{{if $i}}, {{end}}{{ $v | quote }}{{- end }}]
+
+{{- if has .gitaly "cgroups" }}
+[cgroups]
+mountpoint = {{ .gitaly.cgroups.mountpoint | default "/sys/fs/cgroup" | quote }}
+hierarchy_root = {{ .gitaly.cgroups.hierarchy_root | default "gitaly" | quote }}
+memory_bytes = {{ .gitaly.cgroups.memory_bytes | default 64424509440 }}
+cpu_shares = {{ .gitaly.cgroups.cpu_shares | default 1024 }}
+cpu_quota_us = {{ .gitaly.cgroups.cpu_quota_us | default 400000 }}
+[cgroups.repositories]
+count = {{ .gitaly.cgroups.repositories.count | default 500 }}
+memory_bytes = {{ .gitaly.cgroups.repositories.memory_bytes | default 12884901888 }}
+cpu_shares = {{ .gitaly.cgroups.repositories.cpu_shares | default 512 }}
+cpu_quota_us = {{ .gitaly.cgroups.repositories.cpu_quota_us | default 200000 }}
+{{- end }}
+{{- if has .gitaly "backup" }}
+[backup]
+go_cloud_url = {{ .gitaly.backup.go_cloud_url | default "gs://gitaly-backups" | quote }}
+layout = {{ .gitaly.backup.layout | default "pointer" | quote }}
+wal_backup_go_cloud_url = {{ .gitaly.backup.wal_backup_go_cloud_url | default "gs://gitaly-wal-backups" | quote }}
+wal_backup_worker_count = {{ .gitaly.backup.wal_backup_worker_count | default 1 }}
+buffer_size = {{ .gitaly.backup.buffer_size | default 0 }}
+{{- end }}
+{{- if has .gitaly "bundle_uri" }}
+[bundle_uri]
+go_cloud_url = {{ .gitaly.bundle_uri.go_cloud_url | default "gs://my-bundle-uri-bucket" | quote }}
+{{- end }}
+
+[timeout]
+upload_pack_negotiation = {{ .gitaly.timeout.upload_pack_negotiation | default "10m" | quote }}
+upload_archive_negotiation = {{ .gitaly.timeout.upload_archive_negotiation | default "1m" | quote }}

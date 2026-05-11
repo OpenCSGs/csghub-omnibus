@@ -1,0 +1,157 @@
+scope: {{ .patroni.scope | squote }}
+namespace: {{ .patroni.namespace | squote }}
+name: {{ .patroni.name | default (env "HOSTNAME") }}
+
+log:
+  format: '%(asctime)s %(levelname)s: %(message)s'
+  level: {{ .patroni.log.level }}
+  max_queue_size: 1000
+  traceback_level: ERROR
+  type: {{ .patroni.log.type }}
+
+restapi:
+  connect_address: {{ printf "%s:8008" .patroni.listen }}
+  listen: {{ printf "%s:8008" .patroni.listen }}
+
+consul:
+   host: {{ .patroni.consul }}
+
+{{- $cpuCores := .resources.cpu_cores }}
+
+# The bootstrap configuration. Works only when the cluster is not yet initialized.
+# If the cluster is already initialized, all changes in the `bootstrap` section are ignored!
+bootstrap:
+  # This section will be written into <dcs>:/<namespace>/<scope>/config after initializing
+  # new cluster and all other cluster members will use it as a `global configuration`.
+  # WARNING! If you want to change any of the parameters that were set up
+  # via `bootstrap.dcs` section, please use `patronictl edit-config`!
+  dcs:
+    {{- if has .patroni "bootstrap" }}
+    {{- $bootstrap := .patroni.bootstrap }}
+    loop_wait: {{ $bootstrap.loop_wait }}
+    retry_timeout: {{ $bootstrap.retry_timeout }}
+    ttl: {{ $bootstrap.ttl }}
+    master_start_timeout: {{ $bootstrap.master_start_timeout }}
+    synchronous_mode:  {{ $bootstrap.synchronous_mode }}
+    {{- if $bootstrap.maximum_lag_on_failover }}
+    maximum_lag_on_failover: {{ $bootstrap.maximum_lag_on_failover }}
+    {{- end }}
+    {{- end }}
+    postgresql:
+      parameters:
+      {{- $postgresql := .patroni.postgresql.parameters }}
+      {{- $sharedBuffers := $postgresql.shared_buffers }}
+      {{- $sharedBuffersWithoutUnit := regexFind "^\\d+" ($sharedBuffers | upper) }}
+      {{- $memoryAllocated := mulf (div $sharedBuffersWithoutUnit 1024) 4 }}
+        hot_standby: 'on'
+        max_locks_per_transaction: 128
+        max_prepared_transactions: {{ floor (mulf (div (mul $memoryAllocated 1000) 4) 5) }}
+        max_worker_processes: {{ max (floor (div $cpuCores 2)) 2 }}
+        {{- $maxConnections := max (floor (div $memoryAllocated 20)) 100 }}
+        max_connections: {{ $postgresql.max_connections | default $maxConnections }}
+        superuser_reserved_connections: 5
+        work_mem: {{ printf "%dMB" (int (max (min (floor (div (mul .resources.memory_mb 1024) 4096)) 64) 16)) }}
+        maintenance_work_mem: {{ printf "%dMB" (int (min 8192 (floor (div (div (mul .resources.memory_mb 1024) 8) (min (max (floor (div $cpuCores 2)) 2) 16))))) }}
+        bgwriter_delay: 10ms
+        bgwriter_lru_maxpages: 1000
+        bgwriter_lru_multiplier: 10
+        bgwriter_flush_after: 521kB
+        effective_io_concurrency: 0
+        max_parallel_maintenance_workers: {{ min (max (floor (div $cpuCores 2)) 2) 16 }}
+        max_parallel_workers_per_gather: {{ min (max (floor (sub $cpuCores 4)) 2) 24 }}
+        max_parallel_workers: {{ max (floor (sub $cpuCores 4)) 2 }}
+        checkpoint_timeout: 10min
+        checkpoint_completion_target: 0.9
+        random_page_cost: 1.1
+        effective_cache_size: {{ printf "%dGB" (int (floor (mulf (div .resources.memory_mb 1024) 0.75))) }}
+        log_min_duration_statement: {{ $postgresql.log_min_duration_statement | default "2s" }}
+        autovacuum_max_workers: {{ max (min (floor (div $cpuCores 2)) 8) 5 }}
+        autovacuum_vacuum_scale_factor: 0.02
+        autovacuum_analyze_scale_factor: 0.01
+        autovacuum_freeze_max_age: 200000000
+        autovacuum_vacuum_cost_delay: 2ms
+        statement_timeout: 60000
+        idle_in_transaction_session_timeout: 60000
+        {{- range $key, $value := $postgresql }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+        wal_level: replica
+        wal_log_hints: 'on'
+        max_replication_slots: 6
+        max_wal_senders: 6
+      use_pg_rewind: true
+      use_slots: true
+  pg_hba:
+    - host all all all scram-sha-256
+    - host replication replicator all scram-sha-256
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+  {{- $standby := .patroni.standby_leader }}
+  {{- $standbyEnabled := $standby.enable }}
+  {{- if $standbyEnabled }}
+  standby_leader:
+    host: {{ $standby.host }}
+    port: {{ $standby.port }}
+    primary_slot_name: {{ $standby.primary_slot_name }}
+    recovery_min_apply_delay: {{ $standby.recovery_min_apply_delay }}
+  {{- end }}
+
+{{- $postgresql := .patroni.postgresql }}
+postgresql:
+  {{- $auth := $postgresql.authentication }}
+  authentication:
+    superuser:
+      username: postgres
+      password: {{ $auth.postgres | default (pbkdf2 "postgres" "opencsg" 2048 8) | squote }}
+    replication:
+      username: replicator
+      password: {{ $auth.replicator | default (pbkdf2 "replicator" "opencsg" 2048 8) | squote }}
+    rewind:
+      username: rewinder
+      password: {{ $auth.rewinder | default (pbkdf2 "rewinder" "opencsg" 2048 8) | squote }}
+  bin_dir: /opt/csghub/embedded/sv/postgresql/bin
+  data_dir: {{ $postgresql.data_dir }}
+  connect_address: {{ printf "%s:5432" .patroni.listen }}
+  listen: {{ printf "%s:5432" .patroni.listen }}
+  pgpass: {{ $postgresql.pgpass }}
+  parameters:
+    password_encryption: scram-sha-256
+  remove_data_directory_on_rewind_failure: {{ .patroni.remove_data_directory_on_rewind_failure }}
+  remove_data_directory_on_diverged_timelines: {{ .patroni.remove_data_directory_on_diverged_timelines }}
+  {{- if .patroni.callback.enable }}
+  callbacks:
+    on_start: /opt/csghub/service/patroni/etc/patroni_callback.sh
+    on_stop: /opt/csghub/service/patroni/etc/patroni_callback.sh
+    on_role_change: /opt/csghub/service/patroni/etc/patroni_callback.sh
+  {{- end }}
+
+{{- if has .patroni "watchdog" }}
+{{- $watchdog := .patroni.watchdog }}
+watchdog:
+  mode: {{ $watchdog.mode | default "automatic" }}
+  device: /dev/watchdog
+  safety_margin: {{ $watchdog.safety_margin | default 20 }}
+{{- end }}
+{{- if has .patroni "tags" }}
+{{- $tags := .patroni.tags }}
+tags:
+  {{- if $tags.clonefrom }}
+  clonefrom: {{ $tags.clonefrom }}
+  {{- end }}
+  {{- if $tags.failover_priority }}
+  failover_priority: {{ $tags.failover_priority }}
+  {{- end }}
+  {{- if $tags.noloadbalance }}
+  noloadbalance: {{ $tags.noloadbalance }}
+  {{- end }}
+  {{- if $tags.nostream }}
+  nostream: {{ $tags.nostream }}
+  {{- end }}
+  {{- if $tags.nosync }}
+  nosync: {{ $tags.nosync }}
+  {{- end }}
+  {{- if $tags.replicatefrom }}
+  replicatefrom: {{ $tags.replicatefrom }}
+  {{- end }}
+{{- end }}
