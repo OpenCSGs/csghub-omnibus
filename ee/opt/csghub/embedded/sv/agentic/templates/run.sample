@@ -13,7 +13,7 @@ set -e
 
 {{- $agentic := (datasource "config").agentic }}
 cd /opt/csghub/embedded/sv/agentic
-exec chpst -e /opt/csghub/etc/web/env -P \
+exec chpst -e /opt/csghub/service/web/env -P \
   -u root:root \
   /opt/csghub/embedded/bin/hypercorn starship.main:starlette \
     --bind {{ $agentic.listen }} \

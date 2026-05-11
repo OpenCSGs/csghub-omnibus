@@ -12,9 +12,10 @@ if [ -x ./pre-start ]; then
 fi
 
 {{- $dataDir := (datasource "config").registry.data | default "/var/opt/csghub/registry" }}
+{{- $configDir := "/opt/csghub/service/registry/etc" }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/registry/env -P \
+exec chpst -e /opt/csghub/service/registry/env -P \
   -u registry:registry \
-  /opt/csghub/embedded/bin/registry serve {{ $dataDir }}/config.yml
+  /opt/csghub/embedded/bin/registry serve {{ $configDir }}/config.yml
 

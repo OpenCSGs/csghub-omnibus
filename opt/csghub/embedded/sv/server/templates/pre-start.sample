@@ -6,8 +6,8 @@ exec 2>&1
 # exit when error
 set -e
 
-{{- $configDir := "/opt/csghub/etc/server" }}
-{{- $envDir := printf "%s/env" $configDir }}
+{{- $configDir := "/opt/csghub/service/server/etc" }}
+{{- $envDir := "/opt/csghub/service/server/env" }}
 
 # Clear all environment variable files
 # rm -rf {{ $envDir }}/* || true
@@ -44,11 +44,11 @@ set -e
 {{- end }}
 
 {{- $dataDir := (datasource "config").server.data | default "/var/opt/csghub/server" }}
-{{- $configFile := printf "%s/config.toml" $dataDir }}
+{{- $configFile := printf "%s/config.toml" $configDir }}
 
 # Define constants
 readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
-readonly ENV_DIR="/opt/csghub/etc/server/env"
+readonly ENV_DIR="/opt/csghub/service/server/env"
 
 # Build command arguments
 ## Migration init
@@ -67,7 +67,7 @@ cd {{ $dataDir }} && chpst -e "$ENV_DIR" -P -u root:root "$SERVER_BIN" "${args[@
 
 # Load local sql scripts
 cd /opt/csghub/service/server
-[ -x "/opt/csghub/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/etc/csghub/scripts/pg_executor
+[ -x "/opt/csghub/embedded/etc/csghub/scripts/pg_executor" ] && chpst -e {{ $envDir }} /opt/csghub/embedded/etc/csghub/scripts/pg_executor
 
 {{- $minio := (datasource "config").minio }}
 {{- if $minio.enable }}
@@ -77,7 +77,7 @@ cd /opt/csghub/service/server
   /opt/csghub/service/minio/create_bucket "csghub-runner"
 {{- end }}
 
-find {{ $configDir }} -mindepth 1 -maxdepth 1 ! -name '*.sample' ! -name 'seed' ! -name 'env' ! -name 'scripts' -exec cp -r {} {{ $dataDir }} \;
+find /opt/csghub/embedded/etc/server -mindepth 1 -maxdepth 1 ! -name '*.sample' ! -name 'seed' ! -name 'env' ! -name 'scripts' -exec cp -r {} {{ $dataDir }} \;
 echo "copy configuration files done."
 
 {{- $multi_sync := $server.multi_sync -}}

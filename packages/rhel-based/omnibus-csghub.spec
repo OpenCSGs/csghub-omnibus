@@ -33,7 +33,7 @@ mkdir -p %{buildroot}/etc/csghub
 mkdir -p %{buildroot}/opt/csghub
 
 cp -a %{_builddir}/opt/csghub/* %{buildroot}/opt/csghub/
-cp -a %{_builddir}/opt/csghub/etc/csghub/templates/system/csghub-runsvdir.service %{buildroot}/etc/systemd/system/
+cp -a %{_builddir}/opt/csghub/embedded/etc/csghub/csghub-runsvdir.service %{buildroot}/etc/systemd/system/
 
 %pre
 #!/bin/sh
@@ -52,7 +52,7 @@ done
 # Create central configuration file
 if [ ! -e /etc/csghub/csghub.yaml ]; then
     mkdir -p /etc/csghub || true
-    cp /opt/csghub/etc/csghub/templates/csghub/csghub.yaml.sample /etc/csghub/csghub.yaml
+    cp /opt/csghub/embedded/etc/csghub/templates/csghub.yaml.sample /etc/csghub/csghub.yaml
 fi
 
 # Enable and start service

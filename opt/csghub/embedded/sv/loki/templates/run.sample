@@ -12,9 +12,10 @@ fi
 set -e
 
 {{- $dataDir := (datasource "config").loki.data | default "/var/opt/csghub/loki" }}
+{{- $configDir := "/opt/csghub/service/loki/etc" }}
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/loki/env -P \
+exec chpst -e /opt/csghub/service/loki/env -P \
   -u loki:loki \
   /opt/csghub/embedded/bin/loki \
-    -config.file={{ $dataDir }}/loki-config.yaml \
+    -config.file={{ $configDir }}/loki-config.yaml \
     -server.path-prefix="/-/loki"

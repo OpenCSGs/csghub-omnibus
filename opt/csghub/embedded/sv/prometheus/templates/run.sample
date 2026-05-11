@@ -14,6 +14,7 @@ set -e
 {{- $csghub := tmpl.Exec "config.csghub" . | data.YAML }}
 {{- $prometheus := (datasource "config").prometheus }}
 {{- $dataDir := $prometheus.data | default "/var/opt/csghub/prometheus" }}
+{{- $configDir := "/opt/csghub/service/prometheus/etc" }}
 {{- $tsdb := $prometheus.tsdb }}
 {{- $tsdbPath := ($tsdb.path | default (printf "%s/data" $dataDir)) }}
 {{- $tsdbRetention := ($tsdb.retention | default "15d") }}
@@ -21,10 +22,10 @@ set -e
 {{- $externalUrl := ($prometheus.external_url | default (printf "%s/-/prometheus" $csghub.external)) }}
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/prometheus/env -P \
+exec chpst -e /opt/csghub/service/prometheus/env -P \
   -u prometheus:prometheus \
   /opt/csghub/embedded/bin/prometheus \
-  --config.file={{ $dataDir }}/prometheus.yml \
+  --config.file={{ $configDir }}/prometheus.yml \
   --storage.tsdb.path={{ $tsdbPath }} \
   --storage.tsdb.retention.time={{ $tsdbRetention }} \
   --web.listen-address={{ $listenAddr }} \

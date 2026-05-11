@@ -6,7 +6,7 @@ exec 2>&1
 # Exit if execute with any errors
 set -e
 
-{{- $envDir := "/opt/csghub/etc/portal/env" }}
+{{- $envDir := "/opt/csghub/service/portal/env" }}
 
 # Clear all environment variable files
 # rm -rf {{ $envDir }}/* || true

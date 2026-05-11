@@ -109,7 +109,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p \
       ${CSGHUB_HOME}/{LICENSES,bin} \
-      ${CSGHUB_EMBEDDED}/{bin,lib,sv} \
+      ${CSGHUB_EMBEDDED}/{bin,lib,sv,etc} \
       ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus,loki,xnet}/bin
 
 ## Install Runit Service Daemon
@@ -146,9 +146,9 @@ COPY --from=gitaly /usr/local/. ${CSGHUB_SRV_HOME}/gitaly/
 COPY --from=gitlab-shell /srv/gitlab-shell/. ${CSGHUB_SRV_HOME}/gitlab_shell/
 
 ## Install Temporal & Temporal-ui
-COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_HOME}/etc/temporal/
+COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_EMBEDDED}/etc/temporal/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal/
-COPY --from=temporal ${CSGHUB_HOME}/etc/temporal_ui/. ${CSGHUB_HOME}/etc/temporal_ui/
+COPY --from=temporal ${CSGHUB_HOME}/etc/temporal_ui/. ${CSGHUB_EMBEDDED}/etc/temporal_ui/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal_ui/. ${CSGHUB_SRV_HOME}/temporal_ui/
 
 ## Install NATS
@@ -156,20 +156,20 @@ COPY --from=nats /nats-server ${CSGHUB_SRV_HOME}/nats/bin/
 
 ## Install Casdoor
 COPY --from=casdoor /server ${CSGHUB_SRV_HOME}/casdoor/bin/casdoor
-COPY --from=casdoor /web ${CSGHUB_HOME}/etc/casdoor/web
+COPY --from=casdoor /web ${CSGHUB_EMBEDDED}/etc/casdoor/web
 
 ## Install Nginx
-COPY --from=nginx /opt/csghub/. /opt/csghub/
-#COPY ./opt/csghub/etc/nginx/. /opt/csghub/etc/nginx/
+COPY --from=nginx /opt/csghub/embedded/sv/nginx/. /opt/csghub/embedded/sv/nginx/
+COPY --from=nginx /opt/csghub/etc/nginx/. /opt/csghub/embedded/etc/nginx/
 
 ## Install csghub-server
 ENV GIN_MODE=release
 
 COPY --from=server /starhub-bin/starhub ${CSGHUB_SRV_HOME}/server/bin/csghub-server
-COPY --from=server /starhub-bin/. ${CSGHUB_HOME}/etc/server/
+COPY --from=server /starhub-bin/. ${CSGHUB_EMBEDDED}/etc/server/
 COPY --from=server /root/.duckdb ${CSGHUB_SRV_HOME}/server/.duckdb
 
-RUN rm ${CSGHUB_HOME}/etc/server/starhub
+RUN rm ${CSGHUB_EMBEDDED}/etc/server/starhub
 
 ## Install csghub-portal
 COPY --from=portal /myapp/csghub-portal ${CSGHUB_SRV_HOME}/portal/bin/
@@ -187,15 +187,18 @@ COPY --from=loki /usr/bin/loki ${CSGHUB_SRV_HOME}/loki/bin/
 ## Install csgship-web
 COPY --from=csgship /code/. ${CSGHUB_SRV_HOME}/web/
 COPY --from=billing /app/. ${CSGHUB_SRV_HOME}/billing/bin/
-COPY --from=frontend /usr/share/nginx/html ${CSGHUB_HOME}/etc/nginx/html
+COPY --from=frontend /usr/share/nginx/html ${CSGHUB_EMBEDDED}/etc/nginx/html
 COPY --from=agentic /code/. ${CSGHUB_SRV_HOME}/agentic/
 
 # Using 8182 as temporal-ui default listen port
-RUN sed -i 's/8080/8182/g' ${CSGHUB_HOME}/etc/temporal_ui/config-template.yaml && \
+RUN sed -i 's/8080/8182/g' ${CSGHUB_EMBEDDED}/etc/temporal_ui/config-template.yaml && \
     sed -i -e 's/:8000/:8183/g' \
       -e 's|/code/logs/gunicorn.access.log|/dev/stdout|g' \
       -e 's|/code/|/opt/csghub/embedded/sv/web/|g' \
       ${CSGHUB_EMBEDDED}/sv/web/project/{gunicorn_config.py,uwsgi.ini}
+
+# Remap temporal internal paths from component image to new embedded location
+RUN find ${CSGHUB_EMBEDDED}/etc/temporal -type f -exec sed -i 's|/opt/csghub/etc/temporal|/opt/csghub/embedded/etc/temporal|g' {} \;
 
 ENV PATH=$PATH:/opt/csghub/embedded/bin
 RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
@@ -303,7 +306,7 @@ RUN chmod +x -R /opt/csghub/bin && \
     chmod +x -R /opt/csghub/embedded/sv/**/templates && \
     chmod +x -R /scripts && \
     ln -s /opt/csghub/bin/* /usr/bin/ && \
-    find /opt/csghub/etc/ -type f -name "*.sh" -exec chmod +x {} \;
+    find /opt/csghub/embedded/etc/ -type f -name "*.sh" -exec chmod +x {} \;
 
 EXPOSE 80 443 2222 5000 8000 9000 9001
 ENTRYPOINT ["/scripts/entrypoint.sh"]

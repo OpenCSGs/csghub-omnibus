@@ -12,6 +12,6 @@ if [ -e {{ $dataDir }}/server_metadata.json ]; then
 fi
 
 cd {{ $dataDir }}
-exec chpst -e /opt/csghub/etc/consul/env -P \
+exec chpst -e /opt/csghub/service/consul/env -P \
   -u consul:consul \
-  /opt/csghub/embedded/bin/consul agent -config-dir={{ $dataDir }}
+  /opt/csghub/embedded/bin/consul agent -config-dir=/opt/csghub/service/consul/etc

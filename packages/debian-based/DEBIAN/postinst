@@ -81,7 +81,7 @@ case "$1" in
     if [ -n "$2" ]; then
       if [ ! -e /etc/csghub/csghub.yaml ]; then
         mkdir -p /etc/csghub || true
-        cp /opt/csghub/etc/csghub/templates/csghub/csghub.yaml.sample /etc/csghub/csghub.yaml
+        cp /opt/csghub/embedded/etc/csghub/templates/csghub.yaml.sample /etc/csghub/csghub.yaml
       fi
     fi
 
@@ -90,11 +90,11 @@ case "$1" in
     create_symlinks "/opt/csghub/embedded/python/bin" "/opt/csghub/embedded/bin"
 
     echo "Copy systemd unit files."
-    cp -f /opt/csghub/etc/csghub/templates/system/csghub-runsvdir.service /etc/systemd/system/
+    cp -f /opt/csghub/embedded/etc/csghub/csghub-runsvdir.service /etc/systemd/system/
 
     echo "Copy configuration files."
     if [ ! -f "/etc/csghub/csghub.yaml" ]; then
-      cp -rf /opt/csghub/etc/csghub/templates/csghub /etc/csghub
+      cp -rf /opt/csghub/embedded/etc/csghub/templates /etc/csghub
       mv /etc/csghub/csghub.yaml.sample /etc/csghub/csghub.yaml
     fi
 
