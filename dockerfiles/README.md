@@ -18,7 +18,6 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg RUNIT_VERSION=${RUNIT_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:runit-${RUNIT_VERSION} \
-  --tag opencsghq/omnibus-csghub:runit-${RUNIT_VERSION} \
   --file dockerfiles/runit/Dockerfile_runit \
   --push .
 ```
@@ -34,7 +33,6 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg MINIO_VERSION=${MINIO_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:minio-${MINIO_VERSION} \
-  --tag opencsghq/omnibus-csghub:minio-${MINIO_VERSION} \
   --file dockerfiles/minio/Dockerfile_minio \
   --push .
 ```
@@ -44,7 +42,7 @@ docker buildx build \
 ```shell
 ## Toolbox
 OS_RELEASE=ubuntu:22.04
-TOOLBOX_VERSION=1.3.2
+TOOLBOX_VERSION=1.4.0
 GOMPLATE_VERSION=v4.3.2
 KUBECTL_VERSION=v1.33.0
 DNSMASQ_VERSION=2.91
@@ -54,7 +52,7 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg GOMPLATE_VERSION=${GOMPLATE_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:toolbox-${TOOLBOX_VERSION} \
-  --tag opencsghq/omnibus-csghub:toolbox-${TOOLBOX_VERSION} \
+  --tag git-devops.opencsg.com:5050/product/infra/deployment-automation/standard/csghub-omnibus/omnibus-toolbox:1.4.0-ubuntu_22.04 \
   --file dockerfiles/toolbox/Dockerfile_toolbox \
   --push .
 ```
@@ -71,7 +69,6 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg TEMPORAL_VERSION=${TEMPORAL_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:temporal-${TEMPORAL_VERSION} \
-  --tag opencsghq/omnibus-csghub:temporal-${TEMPORAL_VERSION} \
   --file dockerfiles/temporal/Dockerfile_temporal \
   --push .
 ```
@@ -88,7 +85,6 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg REDIS_VERSION=${REDIS_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:redis-${REDIS_VERSION} \
-  --tag opencsghq/omnibus-csghub:redis-${REDIS_VERSION} \
   --file dockerfiles/redis/Dockerfile_redis \
   --push .
 ```
@@ -107,7 +103,6 @@ docker buildx build \
   --build-arg POSTGRESQL_VERSION=${POSTGRESQL_VERSION} \
   --build-arg SCWS_VERSION=${SCWS_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} \
-  --tag opencsghq/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} \
   --file dockerfiles/postgresql/Dockerfile_postgresql \
   --push .
 ```
@@ -130,7 +125,6 @@ docker buildx build \
   --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
   --build-arg PATRONI_VERSION=${PATRONI_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:patroni-${PATRONI_VERSION} \
-  --tag opencsghq/omnibus-csghub:patroni-${PATRONI_VERSION} \
   --file dockerfiles/patroni/Dockerfile_patroni \
   --push .
 ```
@@ -147,7 +141,6 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg NGINX_VERSION=${NGINX_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:nginx-${NGINX_VERSION} \
-  --tag opencsghq/omnibus-csghub:nginx-${NGINX_VERSION} \
   --file dockerfiles/nginx/Dockerfile_nginx \
   --push .
 ```
