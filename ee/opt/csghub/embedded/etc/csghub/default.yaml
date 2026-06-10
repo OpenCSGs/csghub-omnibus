@@ -271,6 +271,17 @@ moderation:
     region: ""                       ## Service region identifier
     endpoint: ""                     ## Custom endpoint URL for the moderation service
     enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
+    check_chain: "ac_automaton,mutable_ac_automaton,aliyun_green"   # Sensitive check chain
+    stream_check_mode: "async"              ## Stream check mode (async/sync)
+    async_buffer_max_chars: 50              ## Max characters for async buffer
+    maxContentLength: 2000                  ## Max content length for sensitive check
+  ## LLM-based Sensitive Check Settings
+  llm:
+    enabled: false                                         ## Enable LLM-based sensitive check
+    endpoint: "http://localhost:8094/v1/chat/completions"  ## LLM endpoint URL (defaults to aigateway endpoint)
+    api_key: ""                                            ## API key for LLM service
+    guard_model: "Qwen/Qwen3Guard-Gen-0.6B"                ## Guard model for non-stream
+    guard_stream_model: "Qwen/Qwen3Guard-Gen-Stream-0.6B"  ## Guard model for stream   
 
 ##########################################################################
 ## Portal Service Configuration
