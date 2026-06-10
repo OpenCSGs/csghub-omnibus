@@ -238,7 +238,7 @@ aigateway:
   enable: true
   port: 8094
   moderation_bypass_sensitive_check: false
-  enable_llm_log: true
+  enable_llm_log: false
 
 ##########################################################################
 ## DNSMasq Configuration
@@ -271,7 +271,7 @@ moderation:
     region: ""                       ## Service region identifier
     endpoint: ""                     ## Custom endpoint URL for the moderation service
     enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
-    check_chain: "ac_automaton,mutable_ac_automaton,aliyun_green"   # Sensitive check chain
+    check_chain: ["ac_automaton","mutable_ac_automaton","aliyun_green"]   # Sensitive check chain
     stream_check_mode: "async"              ## Stream check mode (async/sync)
     async_buffer_max_chars: 50              ## Max characters for async buffer
     maxContentLength: 2000                  ## Max content length for sensitive check
@@ -995,7 +995,7 @@ loki:
 ## - LLM logging and analytics service
 ##########################################################################
 llmlog:
-  enable: true
+  enable: false
   bucket: "opencsg-inference-logs"
   prefix: "llmlog"
   worker_num: 10

@@ -14,6 +14,15 @@ set -e
 readonly SERVER_BIN="/opt/csghub/embedded/bin/csghub-server"
 readonly ENV_DIR="/opt/csghub/service/server/env"
 
+{{ if .minio.enable }}
+# Wait for MinIO and create bucket
+echo "Waiting for MinIO to become ready..."
+while ! /opt/csghub/service/minio/ping_minio; do sleep 2; done
+echo "MinIO is ready."
+# Create bucket for llmlog
+/opt/csghub/service/minio/create_bucket {{ .llmlog.bucket | default "opencsg-inference-logs" }}
+{{- end }}
+
 # Build command arguments
 args=("llmlog" "launch" "-l" {{ .server.log.level | quote }})
 [[ -f "{{ $configFile }}" ]] && args=("--config={{ $configFile }}" "${args[@]}")
