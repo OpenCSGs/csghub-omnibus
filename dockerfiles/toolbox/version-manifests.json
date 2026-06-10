@@ -6,7 +6,7 @@
         "version": "1.4.0",
         "environments": {
           "OS_RELEASE": "ubuntu:22.04",
-          "TOOLBOX_VERSION": "1.4.0",
+          "TOOLBOX_VERSION": "1.4.1",
           "KUBECTL_VERSION": "v1.33.0",
           "DNSMASQ_VERSION": "2.91"
         }

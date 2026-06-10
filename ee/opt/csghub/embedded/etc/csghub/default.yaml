@@ -238,6 +238,7 @@ aigateway:
   enable: true
   port: 8094
   moderation_bypass_sensitive_check: false
+  enable_llm_log: true
 
 ##########################################################################
 ## DNSMasq Configuration
@@ -977,3 +978,15 @@ loki:
 
   ## Options: debug, info, warn, error
   log_level: "info"
+
+##########################################################################
+## LLM Log Service Configuration
+## - LLM logging and analytics service
+##########################################################################
+llmlog:
+  enable: true
+  bucket: "opencsg-inference-logs"
+  prefix: "llmlog"
+  worker_num: 10
+  batch_size: 1000
+  flush_interval_seconds: 300
