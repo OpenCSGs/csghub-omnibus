@@ -1,0 +1,12 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/llmlog" }}
+{{- if has .llmlog "log" }}
+{{- if .llmlog.log.dir }}
+{{- $logDir = .llmlog.log.dir }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}
