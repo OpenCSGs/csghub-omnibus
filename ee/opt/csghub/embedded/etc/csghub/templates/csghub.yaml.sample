@@ -231,6 +231,11 @@ csghub:
   # enable: true
   # port: 8094
   # moderation_bypass_sensitive_check: false
+  # enable_llm_log: false
+  # enable_llm_trace: false
+  # llm_trace_content_capture: "metadata_only"
+  # llm_trace_max_content_length: 256
+  # llm_trace_max_input_user_messages: 1
 
 ##########################################################################
 ## DNSMasq Configuration
@@ -262,6 +267,25 @@ csghub:
   #   region: ""                       ## Service region identifier
   #   endpoint: ""                     ## Custom endpoint URL for the moderation service
   #   enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
+  #   check_chain: ["ac_automaton","mutable_ac_automaton","aliyun_green"]   # Sensitive check chain
+  #   stream_check_mode: "async"              ## Stream check mode (async/sync)
+  #   async_buffer_max_chars: 50              ## Max characters for async buffer
+  #   maxContentLength: 2000                  ## Max content length for sensitive check
+  ## LLM-based Sensitive Check Settings
+  # llm:
+  #   enabled: false                                         ## Enable LLM-based sensitive check
+  #   guard:
+  #     model: "Qwen/Qwen3Guard-Stream-0.6B"
+  #     endpoint: "http://proxy-k8s-master-lb:1001/v1/chat/completions"
+  #     headers:
+  #       host: "s-qwen-qwen3guard-gen-0-6b-c0v.spaces.a800.external"
+  #       authorization: "Bearer custom-token-1"
+  #   guard_stream:
+  #     model: "Qwen/Qwen3Guard-Gen-Stream-0.6B"
+  #     endpoint: "http://proxy-k8s-master-lb:1001/v1/chat/completions"
+  #     headers:
+  #       host: "s-qwen-qwen3guard-stream-0-6b-etj.spaces.a800.external"
+  #       authorization: "Bearer custom-token-1"
 
 ##########################################################################
 ## Portal Service Configuration
@@ -969,3 +993,21 @@ csghub:
 
   ## Options: debug, info, warn, error
   # log_level: "info"
+
+##########################################################################
+## LLM Log Service Configuration
+## - LLM logging and analytics service
+##########################################################################
+# llmlog:
+  # enable: false
+  # bucket: "opencsg-inference-logs"
+  # prefix: "llmlog"
+  # worker_num: 10
+  # batch_size: 1000
+  # flush_interval_seconds: 300
+  # sync:
+  #   enable: false
+  #   username: ""
+  #   dataset_namespace: ""
+  #   dataset_name: ""
+  #   max_shard_size_bytes: "67108864"
