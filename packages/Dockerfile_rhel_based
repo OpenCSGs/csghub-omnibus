@@ -30,8 +30,8 @@ RUN rpmdev-setuptree
 COPY ./packages/rhel-based/omnibus-csghub.spec /root/rpmbuild/SPECS/
 COPY --from=omnibus /opt/. /root/rpmbuild/BUILD/opt
 
-RUN cd /root/rpmbuild/BUILD && mkdir -p etc/systemd && \
-    cp -a opt/csghub/etc/csghub/templates/system etc/systemd/
+RUN cd /root/rpmbuild/BUILD && mkdir -p etc/systemd/system && \
+    cp -a opt/csghub/embedded/etc/csghub/csghub-runsvdir.service etc/systemd/system/
 
 ARG TARGETARCH
 RUN \
