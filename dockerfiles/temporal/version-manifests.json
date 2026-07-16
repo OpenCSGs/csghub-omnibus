@@ -7,7 +7,7 @@
         "repository": "https://github.com/temporalio/temporal",
         "environments": {
           "OS_RELEASE": "ubuntu:22.04",
-          "TEMPORAL_VERSION": "1.25.2"
+          "TEMPORAL_VERSION": "1.29.7"
         }
       }
     ]
