@@ -11,7 +11,7 @@
       {
         "name": "runit",
         "description": "A UNIX init scheme with service supervision",
-        "version": "2.1.2",
+        "version": "2.3.1",
         "repository": "http://smarden.org/runit/"
       },
       {
