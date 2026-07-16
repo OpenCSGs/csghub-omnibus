@@ -94,7 +94,7 @@ docker buildx build \
 ```shell
 ## PostgreSQL
 OS_RELEASE=ubuntu:22.04
-POSTGRESQL_VERSION=15.17
+POSTGRESQL_VERSION=16.14
 SCWS_VERSION=1.2.3
 docker buildx build \
   --provenance false \
@@ -112,7 +112,7 @@ docker buildx build \
 ```shell
 ## Patroni
 OS_RELEASE=ubuntu:22.04
-POSTGRESQL_VERSION=15.17
+POSTGRESQL_VERSION=16.14
 SCWS_VERSION=1.2.3
 PYTHON_VERSION=3.11.11
 PATRONI_VERSION=4.0.5
