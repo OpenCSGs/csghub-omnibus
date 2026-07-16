@@ -142,6 +142,13 @@ server:
   ## Prometheus Settings
   prometheus:
     address: "http://127.0.0.1:9090"
+    basic_auth: ""                                       ## Basic auth for Prometheus API (format: "user:password")
+    cpu_usage_metric: "container_cpu_usage_seconds_total"     ## CPU usage Prometheus metric name
+    cpu_limit_metric: "kube_pod_container_resource_limits"    ## CPU limit Prometheus metric name
+    memory_usage_metric: "container_memory_usage_bytes"       ## Memory usage Prometheus metric name
+    request_count_metric: "kn_serving_invocation_duration_seconds_count"            ## Request count Prometheus metric name
+    request_latency_metric: "http_server_request_duration_seconds_bucket"  ## Request latency Prometheus metric name
+    metric_keys: "pod,service_name,namespace,http_response_status_code,le"  ## Prometheus metric keys
 
   ## Loki Settings
   logcollector:
@@ -220,6 +227,7 @@ aigateway:
   enable: true
   port: 8094
   moderation_bypass_sensitive_check: false
+  responses_id_secret: ""        ## Secret for aigateway response ID generation
 
 ##########################################################################
 ## DNSMasq Configuration

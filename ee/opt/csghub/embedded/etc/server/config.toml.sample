@@ -225,6 +225,10 @@ access_key_secret = {{ $sensitive.access_key_secret | quote }}
 region = {{ $sensitive.region | quote }}
 endpoint = {{ $sensitive.endpoint | quote }}
 enable_ssl = {{ $sensitive.enable_ssl }}
+check_chain = [{{- range $i, $v := $sensitive.check_chain }}{{if $i}}, {{end}}{{$v | quote}}{{- end }}]
+stream_check_mode = {{ $sensitive.stream_check_mode | quote }}
+async_buffer_max_chars = {{ $sensitive.async_buffer_max_chars }}
+max_content_length = {{ $sensitive.maxContentLength | default 2000 }}
 {{- end }}
 
 {{- $workflow := .server.workflow }}
@@ -294,6 +298,13 @@ chat_ids_cache_ttl = {{ $feishu.chat_ids_cache_ttl }}
 
 [prometheus]
 api_address = {{ printf "%s/api/v1/query" $prometheus.address | quote }}
+basic_auth = {{ $prometheus.basic_auth | quote }}
+cpu_usage_metric = {{ $prometheus.cpu_usage_metric | quote }}
+cpu_limit_metric = {{ $prometheus.cpu_limit_metric | quote }}
+memory_usage_metric = {{ $prometheus.memory_usage_metric | quote }}
+request_count_metric = {{ $prometheus.request_count_metric | quote }}
+request_latency_metric = {{ $prometheus.request_latency_metric | quote }}
+metric_keys = {{ $prometheus.metric_keys | quote }}
 
 {{- $logcollector := .server.logcollector }}
 [logcollector]
@@ -319,9 +330,12 @@ port = {{ $csgbot.port }}
 endpoint = {{ $xnet.endpoint | default (printf "%s/xnet" $csghub.url) | quote }}
 api_key = {{ $xnet.api_key | default (deriveToken)| quote }}
 
+{{- $aigateway := .aigateway }}
+
 [aigateway]
-port = {{ .aigateway.port }}
-moderation_bypass_sensitive_check = {{ .aigateway.moderation_bypass_sensitive_check }}
+port = {{ $aigateway.port }}
+moderation_bypass_sensitive_check = {{ $aigateway.moderation_bypass_sensitive_check }}
+responses_id_secret = {{ $aigateway.responses_id_secret | quote }}
 advertise_addr = "{{ $csghub.host }}:8094"
 
 [storagegateway]
