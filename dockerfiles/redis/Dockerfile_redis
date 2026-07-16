@@ -35,7 +35,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
     fi
 
 ## Install Redis
-ARG REDIS_VERSION=6.2.14
+ARG REDIS_VERSION=7.4.9
 RUN wget --no-check-certificate -O /redis.tar.gz https://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz && \
     mkdir /redis && tar --strip-components=1 -xzf /redis.tar.gz -C /redis && \
     cd /redis/deps && make hiredis linenoise hdr_histogram lua jemalloc && \

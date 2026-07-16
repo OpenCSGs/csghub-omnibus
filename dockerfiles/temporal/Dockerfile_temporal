@@ -1,7 +1,7 @@
 ARG REGISTRY=docker.io
 ARG OS_RELEASE=ubuntu:22.04
-ARG TEMPORAL_VERSION=1.25.1
-ARG TEMPORAL_UI_VERSION=2.30.3
+ARG TEMPORAL_VERSION=1.29.7
+ARG TEMPORAL_UI_VERSION=2.48.4
 
 FROM ${REGISTRY}/temporalio/auto-setup:${TEMPORAL_VERSION} AS temporal
 
@@ -12,10 +12,8 @@ WORKDIR /
 
 ENV GOPROXY=https://goproxy.cn,direct
 
-RUN sed -i 's|http://archive.ubuntu.com/ubuntu/|http://mirrors.aliyun.com/ubuntu/|g; s|http://security.ubuntu.com/ubuntu/|http://mirrors.aliyun.com/ubuntu/|g; s|http://ports.ubuntu.com/ubuntu-ports|http://mirrors.aliyun.com/ubuntu-ports|g' /etc/apt/sources.list && \
-    apt update && \
+RUN apt update && \
     apt install --no-install-recommends -y npm && \
-    apt clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
 RUN git clone --depth 1 https://github.com/temporalio/ui.git && \
