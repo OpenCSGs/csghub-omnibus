@@ -611,7 +611,7 @@
       "failedSigninLimit": 5,
       "failedSigninFrozenTime": 15
     }
-    {{- if .csgship.enable }}
+    {{- if and (has . "csgship") .csgship.enable }}
     ,{
       "owner": "admin",
       "name": "CSGShip",
@@ -953,6 +953,7 @@
       "content": "\u003c!DOCTYPE html\u003e\n\u003chtml lang=\u0022en\u0022\u003e\n\u003chead\u003e\n\u003cmeta charset=\u0022UTF-8\u0022\u003e\n\u003cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022\u003e\n\u003ctitle\u003eVerification Code Email\u003c/title\u003e\n\u003cstyle\u003ebody { font-family: Arial, sans-serif; } .email-container { width: 600px; margin: 0 auto; } .header { text-align: center; } .code { font-size: 24px; margin: 20px 0; text-align: center; } .footer { font-size: 12px; text-align: center; margin-top: 50px; } .footer a { color: #000; text-decoration: none; } .center { text-align: center; } .center a { text-decoration: none; color: #1C8B7F; }\u003c/style\u003e\n\u003c/head\u003e\n\u003cbody\u003e\n\u003cdiv class=\u0022email-container\u0022\u003e\n  \u003cdiv class=\u0022header\u0022\u003e\n    \u003cimg src=\u0022{{ $casdoorEp.url }}/files/avatar/OpenCSG/logo.png\u0022 alt=\u0022OpenCSG Logo\u0022 width=\u0022300\u0022\u003e\n  \u003c/div\u003e\n    \u003cp\u003e\u003cstrong\u003e%{user.friendlyName}\u003c/strong\u003e, here is your verification code\u003c/p\u003e\n    \u003cp\u003eUse this code for your transaction. It's valid for 5 minutes\u003c/p\u003e\n    \u003cdiv class=\u0022code\u0022\u003e\n        %s\n    \u003c/div\u003e\n  \u003chr\u003e\n  \u003cp class=\u0022center\u0022\u003e\n    \u003ca href=\u0022https://opencsg.com\u0022 target=\u0022_blank\u0022\u003eOpenCSG Team\u003c/a\u003e\n  \u003c/p\u003e\n\u003c/div\u003e\n\u003c/body\u003e\n\u003c/html\u003e",
       "enableSignAuthnRequest": false
     },
+    {{ $glOauth := dict "client_id" "" "client_secret" "" "issuer" "" }}{{ if has . "csgship" }}{{ $glOauth = .csgship.oauth }}{{ end }}
     {
       "owner": "admin",
       "name": "GitLab_Provider",
@@ -960,11 +961,11 @@
       "category": "OAuth",
       "type": "Custom",
       "method": "Normal",
-      "clientId": {{ .csgship.oauth.client_id | default "" | quote }},
-      "clientSecret": {{ .csgship.oauth.client_secret | default "" | quote }},
-      "customAuthUrl": {{ printf "%s/oauth/authorize" .csgship.oauth.issuer | default "" | quote }},
-      "customTokenUrl": {{ printf "%s/oauth/token" .csgship.oauth.issuer | default "" | quote }},
-      "customUserInfoUrl": {{ printf "%s/api/v4/user" .csgship.oauth.issuer | default "" | quote }},
+      "clientId": {{ $glOauth.client_id | default "" | quote }},
+      "clientSecret": {{ $glOauth.client_secret | default "" | quote }},
+      "customAuthUrl": {{ printf "%s/oauth/authorize" $glOauth.issuer | default "" | quote }},
+      "customTokenUrl": {{ printf "%s/oauth/token" $glOauth.issuer | default "" | quote }},
+      "customUserInfoUrl": {{ printf "%s/api/v4/user" $glOauth.issuer | default "" | quote }},
       "customLogo": "{{ $casdoorEp.url }}/files/avatar/OpenCSG/gitlab_favicon.png",
       "scopes": "read_user openid profile email",
       "userMapping":
@@ -975,8 +976,8 @@
         "id": "id",
         "username": "username"
       },
-      "issuerUrl": {{ .csgship.oauth.issuer | default "" | quote }},
-      "providerUrl": {{ .csgship.oauth.issuer | default "" | quote }}
+      "issuerUrl": {{ $glOauth.issuer | default "" | quote }},
+      "providerUrl": {{ $glOauth.issuer | default "" | quote }}
     },
     {
       "owner": "OpenCSG",

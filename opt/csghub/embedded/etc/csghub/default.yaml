@@ -665,3 +665,111 @@ loki:
 
   ## Options: debug, info, warn, error
   log_level: "info"
+
+##########################################################################
+## Moderation Service Configuration
+## - Manages sensitive contents checking
+## - Disabled by default in CE; present so server config renders without error.
+##########################################################################
+moderation:
+  enable: false
+  address: "http://127.0.0.1:8089"   ## Moderation service endpoint
+  encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
+
+  ## Sensitive Check Settings
+  sensitive_check:
+    access_key_id: ""                ## Access key ID for the moderation service
+    access_key_secret: ""            ## Access key secret for the moderation service
+    region: ""                       ## Service region identifier
+    endpoint: ""                     ## Custom endpoint URL for the moderation service
+    enable_ssl: true                 ## Whether to enable SSL/TLS for secure connections
+    check_chain: ["ac_automaton","mutable_ac_automaton","aliyun_green"]   # Sensitive check chain
+    stream_check_mode: "async"              ## Stream check mode (async/sync)
+    async_buffer_max_chars: 50              ## Max characters for async buffer
+    maxContentLength: 2000                  ## Max content length for sensitive check
+  ## LLM-based Sensitive Check Settings
+  llm:
+    enabled: false                                         ## Enable LLM-based sensitive check
+    guard:
+      model: "Qwen/Qwen3Guard-Stream-0.6B"
+      endpoint: "http://proxy-k8s-master-lb:1001/v1/chat/completions"
+      headers:
+        host: "s-qwen-qwen3guard-gen-0-6b-c0v.spaces.a800.external"
+        authorization: "Bearer custom-token-1"
+    guard_stream:
+      model: "Qwen/Qwen3Guard-Gen-Stream-0.6B"
+      endpoint: "http://proxy-k8s-master-lb:1001/v1/chat/completions"
+      headers:
+        host: "s-qwen-qwen3guard-stream-0-6b-etj.spaces.a800.external"
+        authorization: "Bearer custom-token-1"
+
+##########################################################################
+## Praefect Configuration
+## - Manages Gitaly cluster and provides high availability
+## - Disabled by default in CE; present so server config renders without error.
+##########################################################################
+praefect:
+  enable: false
+  listen_addr: "127.0.0.1:2305"
+
+  ## Authentication Settings
+  auth:
+    token: ""
+
+  ## Logging Settings
+  logging:
+    dir: "/var/log/csghub/praefect"
+    format: "json"
+    level: "info"
+
+  ## PostgreSQL Settings
+  database:
+    host: "127.0.0.1"
+    port: 5432
+    user: "praefect"
+    password: ""
+    dbname: "praefect_production"
+
+  ## Virtual Storage Settings
+  virtual_storage:
+    - name: "default"                      ## Virtual storage name
+      nodes:
+        - storage: "gitaly-01"             ## Gitaly storage name
+          address: "tcp://10.0.0.5:8075"   ## Gitaly address
+          token: ""                        ## Gitaly token
+        - storage: "gitaly-02"
+          address: "tcp://10.0.0.6:8075"
+          token: ""
+        - storage: "gitaly-03"
+          address: "tcp://10.0.0.7:8075"
+          token: ""
+
+  ## Replication Settings
+  replication:
+    batch_size: 10  ## Replication batch size
+
+  ## Reconcile Settings
+  reconciliation:
+    scheduling_interval: "1m"  ## Reconciliation scheduling interval
+    histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]  ## Histogram buckets
+
+  ## Failover Settings
+  failover:
+    enabled: true  ## Enable automatic failover
+
+  graceful_stop_timeout: "30s"
+
+  ## Prometheus Settings
+  prometheus_listen_addr: "127.0.0.1:9652"
+  prometheus:
+    grpc_latency_buckets: [ 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0 ]
+
+  ## Background Verification Settings
+  background_verification:
+    delete_invalid_records: false
+    verification_interval: "72h"
+
+  ## Sentry Settings
+  sentry: {}
+    # sentry_environment: ""
+    # sentry_dsn: ""

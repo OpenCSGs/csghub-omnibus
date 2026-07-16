@@ -197,7 +197,8 @@ END
 $$;
 
 -- Dynamically update provider table (only if table exists)
-{{- $oauth := .csgship.oauth }}
+{{- $oauth := dict "client_id" "" "client_secret" "" "issuer" "" }}
+{{- if has . "csgship" }}{{- $oauth = .csgship.oauth }}{{- end }}
 DO $$
 BEGIN
     IF EXISTS (
