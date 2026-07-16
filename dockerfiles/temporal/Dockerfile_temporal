@@ -45,7 +45,7 @@ COPY --from=temporal /etc/temporal/config/. ${CSGHUB_HOME}/etc/temporal/config/
 COPY --from=temporal /etc/temporal/schema/. ${CSGHUB_HOME}/etc/temporal/schema/.
 COPY --from=temporal_ui /home/ui-server/ui-server ${CSGHUB_SRV_HOME}/temporal_ui/bin/
 COPY --from=temporal_ui /home/ui-server/config/. ${CSGHUB_HOME}/etc/temporal_ui/config/
-COPY --from=temporal_ui /home/ui-server/config-template.yaml ${CSGHUB_HOME}/etc/temporal_ui/
+# COPY --from=temporal_ui /home/ui-server/config-template.yaml ${CSGHUB_HOME}/etc/temporal_ui/
 COPY --from=builder /ui-server ${CSGHUB_SRV_HOME}/temporal_ui/bin/
 
 RUN find /opt/csghub/etc/temporal -type f -exec sed -i 's|/etc/temporal|/opt/csghub/etc/temporal|g' {} \;
