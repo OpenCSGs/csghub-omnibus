@@ -7,18 +7,27 @@ FROM ${REGISTRY}/temporalio/auto-setup:${TEMPORAL_VERSION} AS temporal
 
 FROM ${REGISTRY}/temporalio/ui:${TEMPORAL_UI_VERSION} AS temporal_ui
 
-FROM ${REGISTRY}/golang:1.24.2 AS builder
+FROM ${REGISTRY}/golang:1.24.11 AS builder
 WORKDIR /
 
 ENV GOPROXY=https://goproxy.cn,direct
+ARG TEMPORAL_UI_VERSION
 
-RUN apt update && \
-    apt install --no-install-recommends -y npm && \
+RUN if grep -q -i -E 'debian' /etc/os-release; then \
+        find /etc/apt -type f \( -name '*.list' -o -name '*.sources' \) -exec sed -i \
+          's|https\?://deb.debian.org/debian-security|http://mirrors.aliyun.com/debian-security|g; s|https\?://deb.debian.org/debian|http://mirrors.aliyun.com/debian|g' {} +; \
+    fi && \
+    apt update && \
+    apt install -y --no-install-recommends curl ca-certificates gcc g++ make && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt install -y --no-install-recommends nodejs && \
+    corepack enable && corepack prepare pnpm@latest --activate && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*
 
-RUN git clone --depth 1 https://github.com/temporalio/ui.git && \
-    cd /ui && sed -i '32d;192,200d' server/server/route/auth.go && \
-    npm install -g pnpm@8.15.7 && \
+RUN git clone --depth 1 --branch v${TEMPORAL_UI_VERSION} https://github.com/temporalio/ui.git && \
+    cd /ui && sed -i '32d' server/server/route/auth.go && \
+    sed -i '46s/.*/func validateReturnURL(returnURL string, allowedOrigins []string, requestHost string) error { return nil }/' server/server/route/auth.go && \
+    sed -i '47,71d' server/server/route/auth.go && \
     pnpm install && git submodule update && \
     pnpm build:local && pnpm build:server && \
     cd server && \
@@ -43,7 +52,6 @@ COPY --from=temporal /etc/temporal/config/. ${CSGHUB_HOME}/etc/temporal/config/
 COPY --from=temporal /etc/temporal/schema/. ${CSGHUB_HOME}/etc/temporal/schema/.
 COPY --from=temporal_ui /home/ui-server/ui-server ${CSGHUB_SRV_HOME}/temporal_ui/bin/
 COPY --from=temporal_ui /home/ui-server/config/. ${CSGHUB_HOME}/etc/temporal_ui/config/
-COPY --from=temporal_ui /home/ui-server/config-template.yaml ${CSGHUB_HOME}/etc/temporal_ui/
 COPY --from=builder /ui-server ${CSGHUB_SRV_HOME}/temporal_ui/bin/
 
 RUN find /opt/csghub/etc/temporal -type f -exec sed -i 's|/etc/temporal|/opt/csghub/etc/temporal|g' {} \;
