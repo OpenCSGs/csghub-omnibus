@@ -9,9 +9,9 @@ In order to improve the building efficiency of the omnibus image, multiple compo
 ### Runit
 
 ```shell
-# Runit-2.1.2
+# Runit-2.3.1
 OS_RELEASE=ubuntu:22.04
-RUNIT_VERSION=2.1.2
+RUNIT_VERSION=2.3.1
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
@@ -26,7 +26,7 @@ docker buildx build \
 
 ```shell
 ## Minio
-MINIO_VERSION=RELEASE.2025-03-12T18-04-18Z
+MINIO_VERSION=RELEASE.2025-09-07T16-13-09Z
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
@@ -42,7 +42,7 @@ docker buildx build \
 ```shell
 ## Toolbox
 OS_RELEASE=ubuntu:22.04
-TOOLBOX_VERSION=1.4.0
+TOOLBOX_VERSION=1.4.1
 GOMPLATE_VERSION=v4.3.2
 KUBECTL_VERSION=v1.33.0
 DNSMASQ_VERSION=2.91
@@ -52,7 +52,7 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg GOMPLATE_VERSION=${GOMPLATE_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:toolbox-${TOOLBOX_VERSION} \
-  --tag git-devops.opencsg.com:5050/product/infra/deployment-automation/standard/csghub-omnibus/omnibus-toolbox:1.4.0-ubuntu_22.04 \
+  --tag git-devops.opencsg.com:5050/product/infra/deployment-automation/standard/csghub-omnibus/omnibus-toolbox:1.4.1-ubuntu_22.04 \
   --file dockerfiles/toolbox/Dockerfile_toolbox \
   --push .
 ```
@@ -62,7 +62,7 @@ docker buildx build \
 ```shell
 ## temporal
 OS_RELEASE=ubuntu:22.04
-TEMPORAL_VERSION=1.25.2
+TEMPORAL_VERSION=1.29.7
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
@@ -78,7 +78,7 @@ docker buildx build \
 ```shell
 ## Redis
 OS_RELEASE=ubuntu:22.04
-REDIS_VERSION=6.2.14
+REDIS_VERSION=7.4.9
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
@@ -134,7 +134,7 @@ docker buildx build \
 ```shell
 ## Nginx
 OS_RELEASE=ubuntu:22.04
-NGINX_VERSION=1.22.1
+NGINX_VERSION=1.30.4
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
