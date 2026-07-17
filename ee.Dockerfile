@@ -150,6 +150,7 @@ COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_EMBEDDED}/etc/tempor
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal/
 COPY --from=temporal ${CSGHUB_HOME}/etc/temporal_ui/. ${CSGHUB_EMBEDDED}/etc/temporal_ui/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal_ui/. ${CSGHUB_SRV_HOME}/temporal_ui/
+COPY ./opt/csghub/embedded/etc/temporal_ui/. ${CSGHUB_EMBEDDED}/etc/temporal_ui/
 
 ## Install NATS
 COPY --from=nats /nats-server ${CSGHUB_SRV_HOME}/nats/bin/
@@ -191,8 +192,7 @@ COPY --from=frontend /usr/share/nginx/html ${CSGHUB_EMBEDDED}/etc/nginx/html
 COPY --from=agentic /code/. ${CSGHUB_SRV_HOME}/agentic/
 
 # Using 8182 as temporal-ui default listen port
-RUN sed -i 's/8080/8182/g' ${CSGHUB_EMBEDDED}/etc/temporal_ui/config-template.yaml && \
-    sed -i -e 's/:8000/:8183/g' \
+RUN sed -i -e 's/:8000/:8183/g' \
       -e 's|/code/logs/gunicorn.access.log|/dev/stdout|g' \
       -e 's|/code/|/opt/csghub/embedded/sv/web/|g' \
       ${CSGHUB_EMBEDDED}/sv/web/project/{gunicorn_config.py,uwsgi.ini}

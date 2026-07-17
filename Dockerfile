@@ -132,9 +132,7 @@ COPY --from=temporal ${CSGHUB_HOME}/etc/temporal/. ${CSGHUB_EMBEDDED}/etc/tempor
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal/. ${CSGHUB_SRV_HOME}/temporal/
 COPY --from=temporal ${CSGHUB_HOME}/etc/temporal_ui/. ${CSGHUB_EMBEDDED}/etc/temporal_ui/
 COPY --from=temporal ${CSGHUB_SRV_HOME}/temporal_ui/. ${CSGHUB_SRV_HOME}/temporal_ui/
-
-# Using 8182 as temporal-ui default listen port
-RUN sed -i 's/8080/8182/g' ${CSGHUB_EMBEDDED}/etc/temporal_ui/config-template.yaml
+COPY ./opt/csghub/embedded/etc/temporal_ui/. ${CSGHUB_EMBEDDED}/etc/temporal_ui/
 
 # Remap temporal internal paths from component image to new embedded location
 RUN find ${CSGHUB_EMBEDDED}/etc/temporal -type f -exec sed -i 's|/opt/csghub/etc/temporal|/opt/csghub/embedded/etc/temporal|g' {} \;
