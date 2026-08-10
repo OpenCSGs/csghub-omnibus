@@ -96,12 +96,16 @@ docker buildx build \
 OS_RELEASE=ubuntu:22.04
 POSTGRESQL_VERSION=16.14
 SCWS_VERSION=1.2.3
+PGVECTOR_VERSION=v0.8.0
+TIMESCALEDB_VERSION=2.28.3
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg POSTGRESQL_VERSION=${POSTGRESQL_VERSION} \
   --build-arg SCWS_VERSION=${SCWS_VERSION} \
+  --build-arg PGVECTOR_VERSION=${PGVECTOR_VERSION} \
+  --build-arg TIMESCALEDB_VERSION=${TIMESCALEDB_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} \
   --file dockerfiles/postgresql/Dockerfile_postgresql \
   --push .
@@ -114,6 +118,8 @@ docker buildx build \
 OS_RELEASE=ubuntu:22.04
 POSTGRESQL_VERSION=16.14
 SCWS_VERSION=1.2.3
+PGVECTOR_VERSION=v0.8.0
+TIMESCALEDB_VERSION=2.28.3
 PYTHON_VERSION=3.11.11
 PATRONI_VERSION=4.0.5
 docker buildx build \
@@ -122,6 +128,8 @@ docker buildx build \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg POSTGRESQL_VERSION=${POSTGRESQL_VERSION} \
   --build-arg SCWS_VERSION=${SCWS_VERSION} \
+  --build-arg PGVECTOR_VERSION=${PGVECTOR_VERSION} \
+  --build-arg TIMESCALEDB_VERSION=${TIMESCALEDB_VERSION} \
   --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
   --build-arg PATRONI_VERSION=${PATRONI_VERSION} \
   --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:patroni-${PATRONI_VERSION} \

@@ -210,6 +210,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 ca-certificates \
                 libicu74 \
                 libreadline8t64 \
+                libstdc++6 \
                 netcat-openbsd \
                 libaprutil1t64 \
                 libgeoip1t64 \
@@ -226,6 +227,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
                 ca-certificates \
                 libicu70 \
                 libreadline8 \
+                libstdc++6 \
                 netcat-openbsd \
                 libaprutil1 \
                 libgeoip1 \
