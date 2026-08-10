@@ -439,7 +439,7 @@ csghub:
   # max_connections: 200                                     ## Max connections
   # shared_buffers: "256MB"                                  ## Shared memory buffers
   # timezone: "Asia/Shanghai"                                ## Database timezone
-  # shared_preload_libraries: "pg_stat_statements,zhparser"  ## Preloaded extensions (comma-separated)
+  # shared_preload_libraries: "pg_stat_statements,zhparser,timescaledb"  ## Preloaded extensions (comma-separated)
   # log_statement: "none"                                    ## Log all SQL statements (off|ddl|mod|all)
   # log_checkpoints: "off"                                   ## Log checkpoint operations
   # log_connections: "off"                                   ## Log connections

@@ -20,6 +20,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
           libssl-dev \
           zlib1g-dev \
           pkg-config \
+          cmake \
           ca-certificates && \
         apt clean && \
         rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/*; \
@@ -32,6 +33,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
               openssl-devel \
               zlib-devel \
               pkgconfig \
+              cmake \
               ca-certificates && \
             dnf clean all; \
         else \
@@ -42,6 +44,7 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
               openssl-devel \
               zlib-devel \
               pkgconfig \
+              cmake \
               ca-certificates && \
             yum clean all; \
         fi; \
@@ -70,6 +73,17 @@ RUN wget http://www.xunsearch.com/scws/down/scws-${SCWS_VERSION}.tar.bz2 && \
 ENV SCWS_HOME=${CSGHUB_EMBEDDED}
 RUN git clone https://github.com/amutu/zhparser.git && \
     cd /zhparser && make && make install
+
+# Build pgvector extension (disable -march=native to avoid miscompilation on arm64)
+ARG PGVECTOR_VERSION=v0.8.0
+RUN git clone --branch ${PGVECTOR_VERSION} https://github.com/pgvector/pgvector.git && \
+    cd /pgvector && make OPTFLAGS="" && make install
+
+# Build timescaledb extension
+ARG TIMESCALEDB_VERSION=2.28.3
+RUN git clone --depth 1 --branch ${TIMESCALEDB_VERSION} https://github.com/timescale/timescaledb.git && \
+    cd /timescaledb && ./bootstrap -DCMAKE_BUILD_TYPE=Release -DAPACHE_ONLY=true && \
+    cd build && make -j$(nproc) && make install
 
 FROM ${REGISTRY}/${OS_RELEASE}
 

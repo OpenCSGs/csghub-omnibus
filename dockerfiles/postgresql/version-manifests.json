@@ -8,7 +8,9 @@
         "environments": {
           "OS_RELEASE": "ubuntu:22.04",
           "POSTGRESQL_VERSION": "16.14",
-          "SCWS_VERSION": "1.2.3"
+          "SCWS_VERSION": "1.2.3",
+          "PGVECTOR_VERSION": "v0.8.0",
+          "TIMESCALEDB_VERSION": "2.28.3"
         }
       }
     ]
