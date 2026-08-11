@@ -4,6 +4,8 @@ ARG OS_RELEASE=ubuntu:22.04
 ARG OS_TAG=ubuntu_22.04
 
 ARG CSGHUB_VERSION=v2.3.0-ee
+ARG CSGHUB_SERVER_VERSION=v2.3.0-ee
+ARG CSGHUB_PORTAL_VERSION=v2.3.0-ee
 ARG RUNIT_VERSION=2.3.1
 ARG TOOLBOX_VERSION=1.4.2
 ARG CONSUL_VERSION=1.20.5
@@ -66,10 +68,10 @@ FROM ${REGISTRY}/casbin/casdoor:${CASDOOR_VERSION} AS casdoor
 FROM ${GITLAB_REGISTRY}/omnibus-nginx:${NGINX_VERSION}-${OS_TAG} AS nginx
 
 ## Install csghub-server
-FROM ${REGISTRY}/csghub-server:${CSGHUB_VERSION} AS server
+FROM ${REGISTRY}/csghub-server:${CSGHUB_SERVER_VERSION} AS server
 
 ## Install csghub-portal
-FROM ${REGISTRY}/csghub-portal:${CSGHUB_VERSION} AS portal
+FROM ${REGISTRY}/csghub-portal:${CSGHUB_PORTAL_VERSION} AS portal
 
 ## Install csghub-xnet
 FROM ${REGISTRY}/csghub-xnet:${XNET_VERSION} AS xnet
