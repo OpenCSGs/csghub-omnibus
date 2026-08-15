@@ -73,9 +73,11 @@ public_key_file = "/opt/csghub/embedded/etc/server/enterprise/public_key_ee.pem"
 signing_key = {{ persistentSeed | sha256sum | quote }}
 valid_hour = 24
 
+{{- $instrumentation := .server.instrumentation }}
+
 [instrumentation]
-otlp_endpoint = "{otlp_endpoint}"
-otlp_logging = false
+otlp_logging = {{ $instrumentation.otlp_logging }}
+otlp_endpoint = {{ $instrumentation.otlp_endpoint | quote }}
 
 {{- $natsUser := .nats.auth.user }}
 {{- $natsPassword := .nats.auth.password | default (pbkdf2 $natsUser "opencsg" 2048 8) }}
