@@ -140,6 +140,13 @@
           "viewRule": "Admin",
           "modifyRule": "Admin",
           "regex": ""
+        },
+        {
+          "name": "Tag",
+          "visible": true,
+          "viewRule": "Public",
+          "modifyRule": "Admin",
+          "regex": ""
         }
       ]
     }
