@@ -29,6 +29,7 @@ if ls /etc/ssh/ssh_host_* 1> /dev/null 2>&1; then
   # copy from KEYS_DIRECTORY to /etc/ssh as needed
   if [ "$KEYS_DIRECTORY" != "/etc/ssh" ]; then
       cp /etc/ssh/ssh_host_* $KEYS_DIRECTORY/
+      chown {{ .run_user }}:{{ .run_user }} $KEYS_DIRECTORY/ssh_host_*
   fi
 else
   echo "Generating Host Keys"
@@ -36,6 +37,7 @@ else
   ssh-keygen -t rsa -b 4096 -f $KEYS_DIRECTORY/ssh_host_rsa_key -N ""
   ssh-keygen -t ecdsa -b 521 -f $KEYS_DIRECTORY/ssh_host_ecdsa_key -N ""
   ssh-keygen -t ed25519 -f $KEYS_DIRECTORY/ssh_host_ed25519_key -N ""
+  chown {{ .run_user }}:{{ .run_user }} $KEYS_DIRECTORY/ssh_host_*
 fi
 
 if [ "${SSH_DAEMON}" == "gitlab-sshd" ]; then
