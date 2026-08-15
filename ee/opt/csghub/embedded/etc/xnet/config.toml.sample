@@ -27,6 +27,16 @@ driver = "pg"
 dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" (toString $pgUser) (toString $pgPassword) (toString $postgresql.host) (int64 $postgresql.port) (toString $postgresql.name) | quote }}
 timezone = {{ $postgresql.timezone | quote }}
 
+{{- $redisUser := .redis.user }}
+{{- $redisPassword := .redis.password | default (pbkdf2 $redisUser "opencsg" 2048 8) }}
+
+[redis]
+endpoint = {{ printf "127.0.0.1:%d" (int64 .redis.port) | quote }}
+max_retries = 3
+min_idle_connections = 0
+user = {{ $redisUser | quote }}
+password = {{ $redisPassword | quote }}
+
 {{- $s3 := .xnet.s3 }}
 
 [xorb]
