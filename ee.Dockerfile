@@ -27,6 +27,7 @@ ARG CSGSHIP_AGENTIC=v0.4.0
 ARG PROM_VERSION=v3.7.3
 ARG LOKI_VERSION=3.5
 ARG XNET_VERSION=v2.4.0-ee
+ARG BACKUP_VERSION=v0.1.0
 
 ## Install Runit Service Daemon
 FROM ${GITLAB_REGISTRY}/omnibus-runit:${RUNIT_VERSION}-${OS_TAG} AS runit
@@ -91,6 +92,8 @@ FROM ${REGISTRY}/csgship-portal:${CSGSHIP_FRONTEND} AS frontend
 
 FROM ${REGISTRY}/csgship-agentic:${CSGSHIP_AGENTIC} AS agentic
 
+FROM ${GITLAB_REGISTRY}/omnibus-backup:${BACKUP_VERSION}-${OS_TAG} AS backup
+
 FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
@@ -133,6 +136,9 @@ COPY --from=minio ${CSGHUB_SRV_HOME}/logger/bin/. ${CSGHUB_SRV_HOME}/logger/bin/
 
 ## Installer PostgreSQL (or Patroni Python)
 COPY --from=patroni ${CSGHUB_EMBEDDED}/. ${CSGHUB_EMBEDDED}/
+
+## Install Backup
+COPY --from=backup ${CSGHUB_SRV_HOME}/backup/bin/. ${CSGHUB_SRV_HOME}/backup/bin/.
 
 ## Install Redis
 COPY --from=redis ${CSGHUB_SRV_HOME}/redis/bin/. ${CSGHUB_SRV_HOME}/redis/bin/
