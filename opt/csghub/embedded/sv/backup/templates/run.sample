@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Redirect stderr -> stdout (runit log pipe -> svlogd)
+exec 2>&1
+
+set -e
+
+{{- $dataDir := .backup.backup_root | default "/var/opt/csghub/backup" }}
+{{- $configFile := "/opt/csghub/service/backup/etc/config.toml" }}
+{{- $scheduler := true }}
+{{- if has .backup "scheduler" }}
+{{-   if eq (.backup.scheduler | toString) "false" }}{{ $scheduler = false }}{{ end }}
+{{- end }}
+
+# csghub-backup locates pg_dumpall / gitaly-backup / mc on PATH.
+# reconfigure aggregates every service's binaries into /opt/csghub/embedded/bin;
+# the sv/* paths are fallbacks if a component's symlinks are not in place yet.
+export PATH=/opt/csghub/embedded/bin:/opt/csghub/embedded/sv/postgresql/bin:/opt/csghub/embedded/sv/gitaly/bin:/opt/csghub/embedded/sv/minio/bin:$PATH
+
+# mc / gitaly-backup child processes need a writable HOME
+export HOME={{ $dataDir }}
+
+mkdir -p {{ $dataDir }}
+cd {{ $dataDir }}
+
+{{- if $scheduler }}
+exec chpst -e /opt/csghub/service/backup/env -P \
+  -u {{ .run_user }}:{{ .run_user }} \
+  /opt/csghub/embedded/bin/csghub-backup schedule --config {{ $configFile }}
+{{- else }}
+# scheduler disabled: idle so runit keeps this service up (status shows run).
+# Manual operations (`csghub-ctl backup now|list|restore`) still work.
+exec chpst -P -u {{ .run_user }}:{{ .run_user }} sleep infinity
+{{- end }}
