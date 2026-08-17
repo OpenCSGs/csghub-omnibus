@@ -15,7 +15,7 @@ keep = {{ .backup.keep | default 7 }}
 concurrent = {{ .backup.concurrent | default 1 }}
 
 [schedule]
-full = {{ .backup.schedule | default "0 2 * * *" | quote }}
+full = {{ .backup.schedule | default "" | quote }}
 
 [sources.postgresql]
 # pg_hba 对 127.0.0.1 是 trust 认证，postgres 超级用户本机免密
