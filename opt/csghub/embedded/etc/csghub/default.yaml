@@ -777,13 +777,12 @@ praefect:
 ##########################################################################
 ## Backup Configuration
 ## - CSGHub data backup: PostgreSQL / Gitaly / MinIO snapshot archives
-## - Disabled by default; opt in via CSGHUB_OMNIBUS_CONFIG
+## - Enabled by default; scheduled backup runs only when `schedule` is set (empty = manual only)
 ## - Disk planning: each snapshot ~= data size, backup peak ~= 2x, keep N ~= (N+1)x
 ##########################################################################
 backup:
-  enable: false                            ## Enable backup (renders config; enables manual ops)
-  scheduler: true                          ## Run scheduled backups via built-in cron (needs enable: true)
-  schedule: "0 2 * * *"                    ## Cron expression (robfig/cron 5-field)
+  enable: true                             ## Enable backup (renders config; enables manual ops)
+  schedule: ""                             ## Cron expression (robfig/cron 5-field); empty = manual only
   backup_root: "/var/opt/csghub/backup"    ## Snapshot root (recommend a dedicated volume)
   keep: 7                                  ## Snapshots to retain
   concurrent: 1                            ## Service-level parallelism (1-3)

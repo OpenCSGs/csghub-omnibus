@@ -7,10 +7,6 @@ set -e
 
 {{- $dataDir := .backup.backup_root | default "/var/opt/csghub/backup" }}
 {{- $configFile := "/opt/csghub/service/backup/etc/config.toml" }}
-{{- $scheduler := true }}
-{{- if has .backup "scheduler" }}
-{{-   if eq (.backup.scheduler | toString) "false" }}{{ $scheduler = false }}{{ end }}
-{{- end }}
 
 # csghub-backup locates pg_dumpall / gitaly-backup / mc on PATH.
 # reconfigure aggregates every service's binaries into /opt/csghub/embedded/bin;
@@ -23,12 +19,8 @@ export HOME={{ $dataDir }}
 mkdir -p {{ $dataDir }}
 cd {{ $dataDir }}
 
-{{- if $scheduler }}
+# schedule 常驻：config.toml 的 [schedule] full 为空时，csghub-backup 空转（不定时，仅手动）；
+# 非空时按 cron 定时备份。两种情况服务都保持 runit 常驻，可 csghub-ctl backup now 手动触发。
 exec chpst -e /opt/csghub/service/backup/env -P \
   -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/csghub-backup schedule --config {{ $configFile }}
-{{- else }}
-# scheduler disabled: idle so runit keeps this service up (status shows run).
-# Manual operations (`csghub-ctl backup now|list|restore`) still work.
-exec chpst -P -u {{ .run_user }}:{{ .run_user }} sleep infinity
-{{- end }}
