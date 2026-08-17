@@ -773,3 +773,24 @@ praefect:
   sentry: {}
     # sentry_environment: ""
     # sentry_dsn: ""
+
+##########################################################################
+## Backup Configuration
+## - CSGHub data backup: PostgreSQL / Gitaly / MinIO snapshot archives
+## - Disabled by default; opt in via CSGHUB_OMNIBUS_CONFIG
+## - Disk planning: each snapshot ~= data size, backup peak ~= 2x, keep N ~= (N+1)x
+##########################################################################
+backup:
+  enable: false                            ## Enable backup (renders config; enables manual ops)
+  scheduler: true                          ## Run scheduled backups via built-in cron (needs enable: true)
+  schedule: "0 2 * * *"                    ## Cron expression (robfig/cron 5-field)
+  backup_root: "/var/opt/csghub/backup"    ## Snapshot root (recommend a dedicated volume)
+  keep: 7                                  ## Snapshots to retain
+  concurrent: 1                            ## Service-level parallelism (1-3)
+  sources:
+    postgresql: true                       ## Backup PostgreSQL (pg_dumpall)
+    gitaly: true                           ## Backup git repositories (gitaly-backup)
+    minio: true                            ## Backup object storage (mc mirror, all buckets)
+  log:
+    dir: "/var/log/csghub/backup"
+    level: "info"                          ## debug|info|warn|error
