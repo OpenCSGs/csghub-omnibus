@@ -1,0 +1,48 @@
+{{/* csghub-backup 配置：reconfigure 渲染一次，runit 调度与 csghub-ctl 手动命令共用。
+     凭据推导链必须与各服务自身保持一致（防漂移，锁定测试 TestBackupConfigRendersCredentials）：
+     - minio secret_key ← 显式 .minio.auth.password 优先，空则 pbkdf2（同 minio prestart 的 utils.DefaultPassword）
+     - gitaly token     ← 与 opt/csghub/embedded/etc/gitaly/config.toml.sample 的 token 行同表达式 */}}
+{{- $minioUser := .minio.auth.user | default "minio" }}
+{{- $minioPassword := .minio.auth.password | default (pbkdf2 $minioUser "opencsg" 2048 8) }}
+{{- $logLevel := "info" }}
+{{- if has .backup "log" }}
+{{- if .backup.log.level }}{{ $logLevel = .backup.log.level }}{{ end }}
+{{- end }}
+
+[backup]
+backup_root = {{ .backup.backup_root | default "/var/opt/csghub/backup" | quote }}
+keep = {{ .backup.keep | default 7 }}
+concurrent = {{ .backup.concurrent | default 1 }}
+
+[schedule]
+full = {{ .backup.schedule | default "0 2 * * *" | quote }}
+
+[sources.postgresql]
+# pg_hba 对 127.0.0.1 是 trust 认证，postgres 超级用户本机免密
+host = "127.0.0.1"
+port = {{ .postgresql.port | default 5432 }}
+user = "postgres"
+password = ""
+backup = {{ ne (.backup.sources.postgresql | toString) "false" }}
+
+[sources.gitaly]
+address = {{ .gitaly.listen_addr | default "127.0.0.1:8075" | quote }}
+token = {{ .gitaly.auth.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) | quote }}
+storage = "default"
+repo_discovery_db = "csghub_server"
+backup = {{ ne (.backup.sources.gitaly | toString) "false" }}
+
+[sources.minio]
+# 直连 MinIO API 实际端口（nginx :9000 是外部代理，见 nginx.conf.sample proxy_pass 127.0.0.1:9001）
+endpoint = {{ printf "127.0.0.1%s" (.minio.listen | default ":9001") | quote }}
+access_key = {{ $minioUser | quote }}
+secret_key = {{ $minioPassword | quote }}
+alias = "csghub"
+secure = false
+buckets = []
+backup = {{ ne (.backup.sources.minio | toString) "false" }}
+
+[logging]
+# file 留空：日志走 stderr → runit svlogd（/var/log/csghub/backup），避免 backup 用户写 root 属主目录
+level = {{ $logLevel | quote }}
+file = ""
