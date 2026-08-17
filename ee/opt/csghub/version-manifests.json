@@ -127,7 +127,7 @@
         "version": "v2.4.0-ee"
       },
       {
-        "name": "backup",
+        "name": "csghub-backup",
         "description": "CSGHub data backup tool: PostgreSQL/Gitaly/MinIO snapshot archives with retention and restore",
         "version": "v0.1.0",
         "repository": "https://git-devops.opencsg.com/product/infra/deployment-automation/toolbox/csghub-backup"
