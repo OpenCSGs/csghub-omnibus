@@ -1,48 +1,60 @@
 {{/* csghub-backup 配置：reconfigure 渲染一次，runit 调度与 csghub-ctl 手动命令共用。
      凭据推导链必须与各服务自身保持一致（防漂移，锁定测试 TestBackupConfigRendersCredentials）：
-     - minio secret_key ← 显式 .minio.auth.password 优先，空则 pbkdf2（同 minio prestart 的 utils.DefaultPassword）
-     - gitaly token     ← 与 opt/csghub/embedded/etc/gitaly/config.toml.sample 的 token 行同表达式 */}}
-{{- $minioUser := .minio.auth.user | default "minio" }}
-{{- $minioPassword := .minio.auth.password | default (pbkdf2 $minioUser "opencsg" 2048 8) }}
-{{- $logLevel := "info" }}
-{{- if has .backup "log" }}
-{{- if .backup.log.level }}{{ $logLevel = .backup.log.level }}{{ end }}
-{{- end }}
+     - gitaly token     ← 显式 .backup.sources.gitaly.token 优先，空则与 gitaly config 同表达式
+     - minio secret_key ← 显式 .backup.sources.minio.secret_key 优先，空则与 minio prestart 同推导 */}}
 
 [backup]
-backup_root = {{ .backup.backup_root | default "/var/opt/csghub/backup" | quote }}
-keep = {{ .backup.keep | default 7 }}
+# Local scratch space for staging during backup and extraction during restore.
+# NOT snapshot storage — snapshots live in [storage.*] backends.
+work_dir = {{ .backup.work_dir | default "/var/opt/csghub/backup/work" | quote }}
 concurrent = {{ .backup.concurrent | default 1 }}
 
 [schedule]
 full = {{ .backup.schedule | default "" | quote }}
 
 [sources.postgresql]
-# pg_hba 对 127.0.0.1 是 trust 认证，postgres 超级用户本机免密
-host = "127.0.0.1"
-port = {{ .postgresql.port | default 5432 }}
-user = "postgres"
-password = ""
-backup = {{ ne (.backup.sources.postgresql | toString) "false" }}
+host = {{ .backup.sources.postgresql.host | default "127.0.0.1" | quote }}
+port = {{ .backup.sources.postgresql.port | default 5432 }}
+user = {{ .backup.sources.postgresql.user | default "csghub" | quote }}
+password = {{ .backup.sources.postgresql.password | default (pbkdf2 (.backup.sources.postgresql.user | default "csghub") "opencsg" 2048 8) | quote }}
+backup = {{ eq (.backup.sources.postgresql.backup | toString) "false" | ternary false true }}
 
 [sources.gitaly]
-address = {{ .gitaly.listen_addr | default "127.0.0.1:8075" | quote }}
-token = {{ .gitaly.auth.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) | quote }}
-storage = "default"
-repo_discovery_db = "csghub_server"
-backup = {{ ne (.backup.sources.gitaly | toString) "false" }}
+address = {{ .backup.sources.gitaly.address | default "127.0.0.1:8075" | quote }}
+token = {{ .backup.sources.gitaly.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) | quote }}
+storage = {{ .backup.sources.gitaly.storage | default "default" | quote }}
+repo_discovery_db = {{ .backup.sources.gitaly.repo_discovery_db | default "csghub_server" | quote }}
+backup = {{ eq (.backup.sources.gitaly.backup | toString) "false" | ternary false true }}
 
 [sources.minio]
-# 直连 MinIO API 实际端口（nginx :9000 是外部代理，见 nginx.conf.sample proxy_pass 127.0.0.1:9001）
-endpoint = {{ printf "127.0.0.1%s" (.minio.listen | default ":9001") | quote }}
-access_key = {{ $minioUser | quote }}
-secret_key = {{ $minioPassword | quote }}
-alias = "csghub"
-secure = false
-buckets = []
-backup = {{ ne (.backup.sources.minio | toString) "false" }}
+endpoint = {{ .backup.sources.minio.endpoint | default "127.0.0.1:9001" | quote }}
+access_key = {{ .backup.sources.minio.access_key | default "minio" | quote }}
+secret_key = {{ .backup.sources.minio.secret_key | default (pbkdf2 "minio" "opencsg" 2048 8) | quote }}
+alias = {{ .backup.sources.minio.alias | default "csghub" | quote }}
+secure = {{ .backup.sources.minio.secure | default false }}
+buckets = {{ .backup.sources.minio.buckets | default list | toJson }}
+backup = {{ eq (.backup.sources.minio.backup | toString) "false" | ternary false true }}
+
+[storage.local]
+# Local filesystem snapshots at <backup_root>/snapshots/<id>.tar.gz.
+enabled = {{ .backup.storage.local.enabled | default true }}
+backup_root = {{ .backup.storage.local.backup_root | default "/var/opt/csghub/backup" | quote }}
+keep = {{ .backup.storage.local.keep | default 1 }}
+
+[storage.s3]
+# S3-compatible object storage snapshots at <bucket>/<prefix>/<id>.tar.gz.
+# Works with AWS S3, MinIO, Ceph, Alibaba OSS, etc. Enable together with
+# [storage.local] to mirror snapshots to both backends.
+enabled = {{ .backup.storage.s3.enabled | default false }}
+endpoint = {{ .backup.storage.s3.endpoint | default "" | quote }}
+region = {{ .backup.storage.s3.region | default "" | quote }}
+bucket = {{ .backup.storage.s3.bucket | default "" | quote }}
+prefix = {{ .backup.storage.s3.prefix | default "csghub-backup" | quote }}
+access_key = {{ .backup.storage.s3.access_key | default "" | quote }}
+secret_key = {{ .backup.storage.s3.secret_key | default "" | quote }}
+keep = {{ .backup.storage.s3.keep | default 7 }}
 
 [logging]
 # file 留空：日志走 stderr → runit svlogd（/var/log/csghub/backup），避免 backup 用户写 root 属主目录
-level = {{ $logLevel | quote }}
+level = {{ .backup.log.level | default "info" | quote }}
 file = ""

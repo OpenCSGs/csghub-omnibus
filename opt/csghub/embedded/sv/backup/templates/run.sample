@@ -5,8 +5,8 @@ exec 2>&1
 
 set -e
 
-{{- $dataDir := .backup.backup_root | default "/var/opt/csghub/backup" }}
-{{- $configFile := "/opt/csghub/service/backup/etc/config.toml" }}
+{{- $backupRoot := .backup.storage.local.backup_root | default "/var/opt/csghub/backup" }}
+{{- $workDir := .backup.work_dir | default (printf "%s/work" $backupRoot) }}
 
 # csghub-backup locates pg_dumpall / gitaly-backup / mc on PATH.
 # reconfigure aggregates every service's binaries into /opt/csghub/embedded/bin;
@@ -14,13 +14,13 @@ set -e
 export PATH=/opt/csghub/embedded/bin:/opt/csghub/embedded/sv/postgresql/bin:/opt/csghub/embedded/sv/gitaly/bin:/opt/csghub/embedded/sv/minio/bin:$PATH
 
 # mc / gitaly-backup child processes need a writable HOME
-export HOME={{ $dataDir }}
+export HOME={{ $workDir }}
 
-mkdir -p {{ $dataDir }}
-cd {{ $dataDir }}
+mkdir -p {{ $workDir }} {{ $backupRoot }}
+cd {{ $workDir }}
 
 # schedule 常驻：config.toml 的 [schedule] full 为空时，csghub-backup 空转（不定时，仅手动）；
 # 非空时按 cron 定时备份。两种情况服务都保持 runit 常驻，可 csghub-ctl backup now 手动触发。
 exec chpst -e /opt/csghub/service/backup/env -P \
   -u {{ .run_user }}:{{ .run_user }} \
-  /opt/csghub/embedded/bin/csghub-backup schedule --config {{ $configFile }}
+  /opt/csghub/embedded/bin/csghub-backup schedule --config /opt/csghub/service/backup/etc/config.toml
