@@ -19,8 +19,7 @@ export HOME={{ $workDir }}
 mkdir -p {{ $workDir }} {{ $backupRoot }}
 cd {{ $workDir }}
 
-# schedule 常驻：config.toml 的 [schedule] full 为空时，csghub-backup 空转（不定时，仅手动）；
-# 非空时按 cron 定时备份。两种情况服务都保持 runit 常驻，可 csghub-ctl backup now 手动触发。
+# schedule 常驻：按 cron 定时备份，服务常驻；也可 csghub-ctl backup now 手动触发。
 exec chpst -e /opt/csghub/service/backup/env -P \
   -u {{ .run_user }}:{{ .run_user }} \
   /opt/csghub/embedded/bin/csghub-backup schedule --config /opt/csghub/service/backup/etc/config.toml
