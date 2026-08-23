@@ -804,7 +804,7 @@ backup:
       storage: "default"
     minio:
       backup: true                         ## Enable MinIO backup (mc mirror)
-      endpoint: "127.0.0.1:9001"
+      endpoint: "http://127.0.0.1:9001"
       access_key: "minio"
       secret_key: ""
       alias: "csghub"
