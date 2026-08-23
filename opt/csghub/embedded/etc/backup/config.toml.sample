@@ -10,7 +10,7 @@ work_dir = {{ .backup.work_dir | default "/var/opt/csghub/backup/work" | quote }
 concurrent = {{ .backup.concurrent | default 1 }}
 
 [schedule]
-full = {{ .backup.schedule | default "" | quote }}
+cron = {{ .backup.schedule | default "" | quote }}
 
 [sources.postgresql]
 host = {{ .backup.sources.postgresql.host | default "127.0.0.1" | quote }}
@@ -23,7 +23,6 @@ backup = {{ eq (.backup.sources.postgresql.backup | toString) "false" | ternary 
 address = {{ .backup.sources.gitaly.address | default "127.0.0.1:8075" | quote }}
 token = {{ .backup.sources.gitaly.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) | quote }}
 storage = {{ .backup.sources.gitaly.storage | default "default" | quote }}
-repo_discovery_db = {{ .backup.sources.gitaly.repo_discovery_db | default "csghub_server" | quote }}
 backup = {{ eq (.backup.sources.gitaly.backup | toString) "false" | ternary false true }}
 
 [sources.minio]
@@ -32,7 +31,15 @@ access_key = {{ .backup.sources.minio.access_key | default "minio" | quote }}
 secret_key = {{ .backup.sources.minio.secret_key | default (pbkdf2 "minio" "opencsg" 2048 8) | quote }}
 alias = {{ .backup.sources.minio.alias | default "csghub" | quote }}
 secure = {{ .backup.sources.minio.secure | default false }}
+# Empty = back up all buckets; or list them explicitly.
 buckets = {{ .backup.sources.minio.buckets | default list | toJson }}
+# Buckets to skip in backup-all mode; ignored when buckets is set.
+# REQUIRED when [storage.s3] writes to this same MinIO: add its bucket here
+# (e.g. ["csghub-backup"]), or every backup copies all previous snapshots
+# into the new one — sizes snowball every run. Note also: snapshots stored
+# on this same MinIO share its fate — if MinIO loses data, the snapshots
+# are lost with it. Use a separate storage system for real disaster recovery.
+ignore_buckets = {{ .backup.sources.minio.ignore_buckets | default list | toJson }}
 backup = {{ eq (.backup.sources.minio.backup | toString) "false" | ternary false true }}
 
 [storage.local]
@@ -45,6 +52,11 @@ keep = {{ .backup.storage.local.keep | default 1 }}
 # S3-compatible object storage snapshots at <bucket>/<prefix>/<id>.tar.gz.
 # Works with AWS S3, MinIO, Ceph, Alibaba OSS, etc. Enable together with
 # [storage.local] to mirror snapshots to both backends.
+# WARNING: if this is the SAME MinIO as [sources.minio], the snapshot bucket
+# must be listed in sources.minio.ignore_buckets — see the warning there.
+# Caveat: snapshots then live on the same MinIO as the data they protect.
+# If MinIO loses data, the snapshots are lost too — use a separate storage
+# system for real disaster recovery.
 enabled = {{ .backup.storage.s3.enabled | default false }}
 endpoint = {{ .backup.storage.s3.endpoint | default "" | quote }}
 region = {{ .backup.storage.s3.region | default "" | quote }}

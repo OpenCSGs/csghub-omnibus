@@ -1019,3 +1019,59 @@ csghub:
   #   dataset_namespace: ""
   #   dataset_name: ""
   #   max_shard_size_bytes: "67108864"
+
+
+##########################################################################
+## Backup Configuration
+## - CSGHub data backup: PostgreSQL / Gitaly / MinIO snapshot archives
+## - Enabled by default; scheduled backup runs only when `schedule` is set (empty = manual only)
+## - Disk planning: each snapshot ~= data size, backup peak ~= 2x, keep N ~= (N+1)x
+## - WARNING: if storage.s3 targets the same MinIO as sources.minio, the snapshot
+##   bucket MUST be listed in sources.minio.ignore_buckets — otherwise every backup
+##   copies all previous snapshots into the new one (recursive, runaway growth).
+##   Snapshots on the same MinIO also share its fate — use a separate storage
+##   system for real disaster recovery.
+##########################################################################
+#backup:
+#  enable: true                             ## Enable backup (renders config; enables manual ops)
+#  schedule: ""                             ## Cron expression (robfig/cron 5-field); empty = manual only
+#  work_dir: ""                             ## Staging scratch space; empty = /var/opt/csghub/backup/work
+#  concurrent: 1                            ## Service-level parallelism (1-3)
+#  sources:
+#    postgresql:
+#      backup: true                         ## Enable PostgreSQL backup (pg_dumpall)
+#      host: "127.0.0.1"
+#      port: 5432
+#      user: "csghub"
+#      password: ""
+#    gitaly:
+#      backup: true                         ## Enable Gitaly backup (gitaly-backup)
+#      address: "tcp://127.0.0.1:8075"
+#      token: ""
+#      storage: "default"
+#    minio:
+#      backup: true                         ## Enable MinIO backup (mc mirror)
+#      endpoint: "127.0.0.1:9001"
+#      access_key: "minio"
+#      secret_key: ""
+#      alias: "csghub"
+#      secure: false
+#      buckets: []                          ## Empty = back up all; or list explicitly
+#      ignore_buckets: []                   ## Buckets to skip in backup-all mode (ignored when buckets is set)
+#  storage:
+#    local:
+#      enabled: true                        ## Enable local filesystem snapshot storage
+#      backup_root: "/var/opt/csghub/backup" ## Snapshot root (recommend a dedicated volume)
+#      keep: 7                              ## Snapshots to retain
+#    s3:
+#      enabled: false                       ## Enable S3-compatible snapshot storage
+#      endpoint: ""                         ## S3 endpoint (e.g. https://s3.example.com)
+#      region: ""                           ## Region (empty for non-AWS)
+#      bucket: ""                           ## S3 bucket name
+#      prefix: "csghub-backup"              ## Key prefix inside bucket
+#      access_key: ""                       ## S3 access key
+#      secret_key: ""                       ## S3 secret key
+#      keep: 30                             ## Snapshots to retain in S3
+#  log:
+#    dir: "/var/log/csghub/backup"
+#    level: "info"                          ## debug|info|warn|error
