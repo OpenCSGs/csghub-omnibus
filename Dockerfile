@@ -174,8 +174,26 @@ RUN if grep -q -i -E 'ubuntu|debian' /etc/os-release; then \
         sed -i 's|http://archive.ubuntu.com/ubuntu/|http://mirrors.aliyun.com/ubuntu/|g; s|http://security.ubuntu.com/ubuntu/|http://mirrors.aliyun.com/ubuntu/|g; s|http://ports.ubuntu.com/ubuntu-ports|http://mirrors.aliyun.com/ubuntu-ports|g' /etc/apt/sources.list && \
         apt update && \
         UBUNTU_VERSION=$(grep -oP 'VERSION_ID="\K[\d.]+' /etc/os-release) && \
-        if dpkg --compare-versions "$UBUNTU_VERSION" ge "24.04"; then \
-            # Ubuntu 24.04+ (新包名带 t64 后缀)
+        if dpkg --compare-versions "$UBUNTU_VERSION" ge "26.04"; then \
+            # Ubuntu 26.04+ (libicu78, libxml2-16)
+            DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
+                ca-certificates \
+                libicu78 \
+                libreadline8t64 \
+                libstdc++6 \
+                netcat-openbsd \
+                libaprutil1t64 \
+                libgeoip1t64 \
+                libgd3 \
+                libxml2-16 \
+                libxslt1.1 \
+                libcurl4t64 \
+                libpq-dev \
+                libcap2-bin \
+                vim lsof jq curl \
+                tzdata; \
+        elif dpkg --compare-versions "$UBUNTU_VERSION" ge "24.04"; then \
+            # Ubuntu 24.04 (新包名带 t64 后缀)
             DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
                 ca-certificates \
                 libicu74 \
