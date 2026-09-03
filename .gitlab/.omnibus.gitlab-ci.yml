@@ -93,9 +93,12 @@ build-omnibus-$[[ inputs.tag ]]:
         DOCKERFILE=Dockerfile
       else
         DOCKERFILE=ee.Dockerfile
-        TAGS+=(
+        # Only tag latest on the default ubuntu:22.04 build.
+        if [ "$OS_RELEASE" = "ubuntu:22.04" ]; then
+          TAGS+=(
             "-t" "${ACR_REGISTRY}/opencsghq/omnibus-csghub:latest"
           )
+        fi
       fi
 
       BUILD_PLATFORMS_CNT=$(echo "$BUILD_PLATFORMS" | tr ',' '\n' | wc -l)
