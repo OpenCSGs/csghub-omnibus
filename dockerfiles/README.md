@@ -78,7 +78,7 @@ docker buildx build \
 ```shell
 ## Redis
 OS_RELEASE=ubuntu:22.04
-REDIS_VERSION=7.4.9
+REDIS_VERSION=7.4.11
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
@@ -94,7 +94,7 @@ docker buildx build \
 ```shell
 ## PostgreSQL
 OS_RELEASE=ubuntu:22.04
-POSTGRESQL_VERSION=16.14
+POSTGRESQL_VERSION=16.15
 SCWS_VERSION=1.2.3
 PGVECTOR_VERSION=v0.8.0
 TIMESCALEDB_VERSION=2.28.3
@@ -116,7 +116,7 @@ docker buildx build \
 ```shell
 ## Patroni
 OS_RELEASE=ubuntu:22.04
-POSTGRESQL_VERSION=16.14
+POSTGRESQL_VERSION=16.15
 SCWS_VERSION=1.2.3
 PGVECTOR_VERSION=v0.8.0
 TIMESCALEDB_VERSION=2.28.3
