@@ -13,7 +13,7 @@ This project includes unmodified binary components from third-party open source 
    - Code Repository: http://thekelleys.org.uk/dnsmasq/
 
 3. **Casdoor** (Apache License 2.0)
-   - Source: Official Docker image `casbin/casdoor:3.62.0`
+   - Source: Official Docker image `casbin/casdoor:3.62.1`
    - Code Repository: https://github.com/casdoor/casdoor
 
 4. **Consul** (MPL-2.0 License)
@@ -33,7 +33,7 @@ This project includes unmodified binary components from third-party open source 
    - Code Repository: https://gitlab.com/gitlab-org/gitlab-shell
 
 8. **NATS** (Apache License 2.0)
-   - Source: Official Docker image `nats:2.10.16`
+   - Source: Official Docker image `nats:2.12.15`
    - Code Repository: https://github.com/nats-io/nats-server
 
 9. **NGINX** (2-clause BSD License)
