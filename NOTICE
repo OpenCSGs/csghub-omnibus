@@ -29,7 +29,7 @@ This project includes unmodified binary components from third-party open source 
    - Code Repository: https://gitlab.com/gitlab-org/gitaly
 
 7. **GitLab Shell** (MIT License)
-   - Source: Official Docker image `registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:v17.5.0`
+   - Source: Official Docker image `registry.gitlab.com/gitlab-org/build/cng/gitlab-shell:v19.2.5`
    - Code Repository: https://gitlab.com/gitlab-org/gitlab-shell
 
 8. **NATS** (Apache License 2.0)
