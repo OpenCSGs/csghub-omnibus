@@ -35,7 +35,7 @@ cd {{ $dataDir }}
 # Setup temporal database
 chpst -e /opt/csghub/service/temporal/env -P \
   -u {{ .run_user }}:{{ .run_user }} \
-  "${TEMPORAL_HOME}"/auto-setup.sh
+  "${TEMPORAL_HOME}"/setup.sh
 
 exec chpst -e /opt/csghub/service/temporal/env -P \
   -u {{ .run_user }}:{{ .run_user }} \

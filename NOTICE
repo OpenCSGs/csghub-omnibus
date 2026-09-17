@@ -54,7 +54,7 @@ This project includes unmodified binary components from third-party open source 
 
 
 13. **Temporal** (MIT License)
-    - Source: Official Docker image `temporalio/auto-setup:1.25.1`
+    - Source: Official Docker images `temporalio/server:1.32.0` and `temporalio/admin-tools:1.32.0`
     - Code Repository: https://github.com/temporalio/temporal
 
 14. **Loki** (Apache License 2.0)

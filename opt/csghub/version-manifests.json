@@ -65,7 +65,7 @@
       {
         "name": "temporal",
         "description": "Temporal is a microservice orchestration platform which enables developers to build scalable applications without sacrificing productivity or reliability.",
-        "version": "1.29.7",
+        "version": "1.32.0",
         "repository": "https://github.com/temporalio/temporal"
       },
       {
