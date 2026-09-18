@@ -49,6 +49,8 @@ Omnibus-CSGHub 是 OpenCSG CSGHub 的一键式 Docker Compose 部署方案，让
 使用 Omnibus-CSGHub，您可以在几分钟内完成 CSGHub 的部署，立即开始管理您的 AI 模型和数据资产。  
 *With Omnibus-CSGHub, deploy CSGHub in minutes and start managing your AI models and data assets immediately.*
 
+> For full installation guides, see the [Quick Start](https://opencsg.com/docs/csghub/101/install/quick-start/overview) and [Kubernetes deployment](https://opencsg.com/docs/csghub/101/install/kubernetes/overview) docs.
+
 ## 运行服务 | Running the Service
 
 ### 功能说明 Feature Description
