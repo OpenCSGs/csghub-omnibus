@@ -1,6 +1,6 @@
 services:
   csghub:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:v2.2.0-ee
+    image: registry.opencsg.com/opencsghq/omnibus-csghub:v2.2.0-ee
     environment:
       CSGHUB_OMNIBUS_CONFIG: |
         csghub:
@@ -26,7 +26,7 @@ services:
     shm_size: '256m'
 
   megalinter-server:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/oxsecurity/megalinter-server:beta
+    image: registry.opencsg.com/opencsghq/oxsecurity/megalinter-server:beta
     command: uvicorn server.server:app --host 0.0.0.0 --port 9000
     environment:
       MEGALINTER_SERVER_REDIS_HOST: "csghub"
@@ -37,7 +37,7 @@ services:
     restart: always
 
   megalinter-worker:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/oxsecurity/megalinter-worker:v8.0.0
+    image: registry.opencsg.com/opencsghq/oxsecurity/megalinter-worker:v8.0.0
     environment:
       MEGALINTER_SERVER_REDIS_HOST: "csghub"
       MEGALINTER_SERVER_REDIS_PORT: 6379
@@ -48,7 +48,7 @@ services:
     restart: always
 
   secscan:
-    image: opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/csgship-secscan:latest
+    image: registry.opencsg.com/opencsghq/csgship-secscan:latest
     volumes:
       - csghub_worker_data:/code/data
       - csghub_worker_data:/var/opt/gitrepos
