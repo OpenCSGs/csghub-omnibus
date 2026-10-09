@@ -4,20 +4,28 @@
 
 In order to improve the building efficiency of the omnibus image, multiple components within the image are split into separate images and built separately to manage complex components independently.
 
+All component images are pushed to the internal GitLab container registry at `${GITLAB_REGISTRY}`. The CI skip check (`.gitlab/.component.gitlab-ci.yml`) inspects the same registry, so pushing the same tag there is what makes the pipeline skip a rebuild.
+
+```shell
+GITLAB_REGISTRY=git-devops.opencsg.com:5050/product/infra/deployment-automation/standard/csghub-omnibus
+OS_RELEASE=ubuntu:22.04
+OS_TAG=$(basename ${OS_RELEASE} | sed 's/:/_/g')
+
+docker login -u <user> ${GITLAB_REGISTRY}
+```
+
 ## Build the image
 
 ### Runit
 
 ```shell
-# Runit-2.3.1
-OS_RELEASE=ubuntu:22.04
 RUNIT_VERSION=2.3.1
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg RUNIT_VERSION=${RUNIT_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:runit-${RUNIT_VERSION} \
+  --tag ${GITLAB_REGISTRY}/omnibus-runit:${RUNIT_VERSION}-${OS_TAG} \
   --file dockerfiles/runit/Dockerfile_runit \
   --push .
 ```
@@ -25,14 +33,17 @@ docker buildx build \
 ### Minio
 
 ```shell
-## Minio
 MINIO_VERSION=RELEASE.2025-09-07T16-13-09Z
+MC_VERSION=RELEASE.2025-08-13T08-35-41Z
+GOLANG_VERSION=1.24.2
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg MINIO_VERSION=${MINIO_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:minio-${MINIO_VERSION} \
+  --build-arg MC_VERSION=${MC_VERSION} \
+  --build-arg GOLANG_VERSION=${GOLANG_VERSION} \
+  --tag ${GITLAB_REGISTRY}/omnibus-minio:${MINIO_VERSION}-${OS_TAG} \
   --file dockerfiles/minio/Dockerfile_minio \
   --push .
 ```
@@ -40,19 +51,17 @@ docker buildx build \
 ### Toolbox
 
 ```shell
-## Toolbox
-OS_RELEASE=ubuntu:22.04
-TOOLBOX_VERSION=1.4.1
-GOMPLATE_VERSION=v4.3.2
+GOLANG_VERSION=1.26.3
 KUBECTL_VERSION=v1.33.0
 DNSMASQ_VERSION=2.91
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
-  --build-arg GOMPLATE_VERSION=${GOMPLATE_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:toolbox-${TOOLBOX_VERSION} \
-  --tag git-devops.opencsg.com:5050/product/infra/deployment-automation/standard/csghub-omnibus/omnibus-toolbox:1.4.1-ubuntu_22.04 \
+  --build-arg GOLANG_VERSION=${GOLANG_VERSION} \
+  --build-arg KUBECTL_VERSION=${KUBECTL_VERSION} \
+  --build-arg DNSMASQ_VERSION=${DNSMASQ_VERSION} \
+  --tag ${GITLAB_REGISTRY}/omnibus-toolbox:1.4.3-${OS_TAG} \
   --file dockerfiles/toolbox/Dockerfile_toolbox \
   --push .
 ```
@@ -60,15 +69,15 @@ docker buildx build \
 ### Temporal
 
 ```shell
-## temporal
-OS_RELEASE=ubuntu:22.04
 TEMPORAL_VERSION=1.32.0
+TEMPORAL_UI_VERSION=2.48.4
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg TEMPORAL_VERSION=${TEMPORAL_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:temporal-${TEMPORAL_VERSION} \
+  --build-arg TEMPORAL_UI_VERSION=${TEMPORAL_UI_VERSION} \
+  --tag ${GITLAB_REGISTRY}/omnibus-temporal:${TEMPORAL_VERSION}-${OS_TAG} \
   --file dockerfiles/temporal/Dockerfile_temporal \
   --push .
 ```
@@ -76,15 +85,13 @@ docker buildx build \
 ### Redis
 
 ```shell
-## Redis
-OS_RELEASE=ubuntu:22.04
 REDIS_VERSION=7.4.11
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg REDIS_VERSION=${REDIS_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:redis-${REDIS_VERSION} \
+  --tag ${GITLAB_REGISTRY}/omnibus-redis:${REDIS_VERSION}-${OS_TAG} \
   --file dockerfiles/redis/Dockerfile_redis \
   --push .
 ```
@@ -92,8 +99,6 @@ docker buildx build \
 ### PostgreSQL
 
 ```shell
-## PostgreSQL
-OS_RELEASE=ubuntu:22.04
 POSTGRESQL_VERSION=16.15
 SCWS_VERSION=1.2.3
 PGVECTOR_VERSION=v0.8.0
@@ -106,7 +111,7 @@ docker buildx build \
   --build-arg SCWS_VERSION=${SCWS_VERSION} \
   --build-arg PGVECTOR_VERSION=${PGVECTOR_VERSION} \
   --build-arg TIMESCALEDB_VERSION=${TIMESCALEDB_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:postgresql-${POSTGRESQL_VERSION} \
+  --tag ${GITLAB_REGISTRY}/omnibus-postgresql:${POSTGRESQL_VERSION}-${OS_TAG} \
   --file dockerfiles/postgresql/Dockerfile_postgresql \
   --push .
 ```
@@ -114,8 +119,6 @@ docker buildx build \
 ### Patroni
 
 ```shell
-## Patroni
-OS_RELEASE=ubuntu:22.04
 POSTGRESQL_VERSION=16.15
 SCWS_VERSION=1.2.3
 PGVECTOR_VERSION=v0.8.0
@@ -132,7 +135,7 @@ docker buildx build \
   --build-arg TIMESCALEDB_VERSION=${TIMESCALEDB_VERSION} \
   --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
   --build-arg PATRONI_VERSION=${PATRONI_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:patroni-${PATRONI_VERSION} \
+  --tag ${GITLAB_REGISTRY}/omnibus-patroni:${PATRONI_VERSION}-${OS_TAG} \
   --file dockerfiles/patroni/Dockerfile_patroni \
   --push .
 ```
@@ -140,16 +143,13 @@ docker buildx build \
 ### Nginx
 
 ```shell
-## Nginx
-OS_RELEASE=ubuntu:22.04
 NGINX_VERSION=1.30.4
 docker buildx build \
   --provenance false \
   --platform linux/arm64,linux/amd64 \
   --build-arg OS_RELEASE=${OS_RELEASE} \
   --build-arg NGINX_VERSION=${NGINX_VERSION} \
-  --tag opencsg-registry.cn-beijing.cr.aliyuncs.com/opencsghq/omnibus-csghub:nginx-${NGINX_VERSION} \
+  --tag ${GITLAB_REGISTRY}/omnibus-nginx:${NGINX_VERSION}-${OS_TAG} \
   --file dockerfiles/nginx/Dockerfile_nginx \
   --push .
 ```
-
