@@ -1,0 +1,12 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/deletion_worker" }}
+{{- if has .deletion_worker "log" }}
+{{- if .deletion_worker.log.dir }}
+{{- $logDir = .deletion_worker.log.dir }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

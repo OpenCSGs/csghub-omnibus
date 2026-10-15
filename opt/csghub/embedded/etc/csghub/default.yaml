@@ -308,6 +308,12 @@ temporal_worker:
   enable: true
 
 ##########################################################################
+## Deletion-Worker Service Configuration
+##########################################################################
+deletion_worker:
+  enable: true
+
+##########################################################################
 ## Gitaly Service Configuration
 ## - Git repository storage service for all Git operations
 ##########################################################################
