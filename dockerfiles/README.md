@@ -61,7 +61,7 @@ docker buildx build \
   --build-arg GOLANG_VERSION=${GOLANG_VERSION} \
   --build-arg KUBECTL_VERSION=${KUBECTL_VERSION} \
   --build-arg DNSMASQ_VERSION=${DNSMASQ_VERSION} \
-  --tag ${GITLAB_REGISTRY}/omnibus-toolbox:1.4.3-${OS_TAG} \
+  --tag ${GITLAB_REGISTRY}/omnibus-toolbox:1.4.4-${OS_TAG} \
   --file dockerfiles/toolbox/Dockerfile_toolbox \
   --push .
 ```
