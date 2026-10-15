@@ -39,6 +39,7 @@ EOF
 }
 
 export PGUSER="postgres"
+export PGSSLMODE="${PGSSLMODE:-disable}"
 
 # Format log output
 log() {
