@@ -207,6 +207,10 @@ runner:
     deploy_timeout: 60                                        ## Deployment timeout in minutes
     registry: "opencsg-registry.cn-beijing.cr.aliyuncs.com/"  ## Docker registry prefix
 
+  ## S3 Storage Settings (used for Argo public bucket)
+  s3:
+    bucket: ""                  ## Public bucket for Argo artifacts
+
   ## Knative Serving Settings
   knative:
     services:
@@ -310,6 +314,7 @@ moderation:
 portal:
   enable: true
   data: "/var/opt/csghub/portal"
+  region: ""                    ## Site region
 
   ## PostgreSQL Settings
   postgresql:
@@ -331,6 +336,13 @@ portal:
     secure: false                   ## If S3 Use HTTPS
   additionalS3:
     bucket: "csghub-portal"
+
+  ## Direct Email Settings
+  email:
+    access_key: ""                  ## Direct email access key
+    access_secret: ""               ## Direct email access secret
+    endpoint: ""                    ## Direct email endpoint
+    region: ""                      ## Direct email region
 
 ##########################################################################
 ## Notifier Configuration
