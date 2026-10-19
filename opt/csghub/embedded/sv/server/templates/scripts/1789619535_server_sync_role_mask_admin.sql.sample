@@ -121,8 +121,5 @@ BEGIN
       );
 
     RAISE NOTICE 'Backfill completed';
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE WARNING 'Backfill failed (csghubcasdoor pod likely not ready): %; will retry on next restart', SQLERRM;
 END
 $$;
