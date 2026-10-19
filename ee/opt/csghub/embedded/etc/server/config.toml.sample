@@ -336,7 +336,7 @@ api_key = {{ $xnet.api_key | default (deriveToken)| quote }}
 port = {{ $aigateway.port }}
 moderation_bypass_sensitive_check = {{ $aigateway.moderation_bypass_sensitive_check }}
 responses_id_secret = {{ $aigateway.responses_id_secret | quote }}
-public_aigateway_url = {{ printf "%s/aigateway/v1" $csghub.external_url | quote }}
+public_aigateway_url = {{ printf "%s/aigateway/v1" $csghub.url | quote }}
 advertise_addr = "{{ $csghub.host }}:8094"
 
 [storagegateway]
