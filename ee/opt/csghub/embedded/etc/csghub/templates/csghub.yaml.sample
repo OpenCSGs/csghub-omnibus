@@ -241,7 +241,7 @@ csghub:
 # aigateway:
   # enable: true
   # port: 8094
-  # moderation_bypass_sensitive_check: false
+  # moderation_bypass_sensitive_check: true
   # responses_id_secret: ""        ## Secret for aigateway response ID generation
   # enable_llm_log: false
   # enable_llm_trace: false
