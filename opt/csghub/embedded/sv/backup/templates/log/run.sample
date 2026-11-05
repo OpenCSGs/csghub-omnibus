@@ -1,0 +1,12 @@
+#!/bin/bash
+
+{{- $logDir := "/var/log/csghub/backup" }}
+{{- if has .backup "log" }}
+{{- if .backup.log.dir }}
+{{- $logDir = .backup.log.dir }}
+{{- end }}
+{{- end }}
+
+exec chpst -P \
+  -u root:root \
+  svlogd -tt {{ $logDir }}

@@ -62,7 +62,7 @@ build-omnibus-$[[ inputs.tag ]]:
       # csghub-server/csghub-portal are excluded from the manifest-driven args:
       # their versions are pinned separately (default = omnibus release tag) so a
       # patch release can keep them on the previous minor if desired.
-      BUILD_ARGS=$(jq -r '.version_manifest.components[] | select(.name != "csghub-server" and .name != "csghub-portal") | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' opt/csghub/version-manifests.json | tr '\n' ' ')
+      BUILD_ARGS=$(jq -r '.version_manifest.components[] | select(.name != "csghub-server" and .name != "csghub-portal" and .name != "csghub-backup") | "--build-arg \(.name | ascii_upcase | gsub("-"; "_"))_VERSION=\(.version)"' opt/csghub/version-manifests.json | tr '\n' ' ')
 
       OS_TAG=$(basename $OS_RELEASE | sed 's/:/_/g')
       BUILD_ARGS+=(

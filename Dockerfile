@@ -22,6 +22,7 @@ ARG DNSMASQ_VERSION=2.91
 ARG NGINX_VERSION=1.30.4
 ARG PROM_VERSION=v3.7.3
 ARG LOKI_VERSION=3.5
+ARG CSGHUB_BACKUP_VERSION=v0.1.0
 
 ## Install Runit Service Daemon
 FROM ${GITLAB_REGISTRY}/omnibus-runit:${RUNIT_VERSION}-${OS_TAG} AS runit
@@ -74,6 +75,9 @@ FROM ${REGISTRY}/prom/prometheus:${PROM_VERSION} AS prometheus
 ## Install Loki
 FROM ${REGISTRY}/grafana/loki:${LOKI_VERSION} AS loki
 
+## Install csghub-backup
+FROM git-devops.opencsg.com:5050/product/infra/deployment-automation/toolbox/csghub-backup:${CSGHUB_BACKUP_VERSION} AS backup
+
 FROM ${REGISTRY}/${OS_RELEASE}
 WORKDIR /
 
@@ -94,7 +98,7 @@ SHELL ["/bin/bash", "-c"]
 RUN mkdir -p \
       ${CSGHUB_HOME}/{LICENSES,bin} \
       ${CSGHUB_EMBEDDED}/{bin,lib,sv,etc} \
-      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus,loki}/bin
+      ${CSGHUB_SRV_HOME}/{registry,nats,temporal,temporal_ui,casdoor,dnsmasq,consul,server,portal,prometheus,loki,backup}/bin
 
 ## Install Runit Service Daemon
 COPY --from=runit ${CSGHUB_EMBEDDED}/bin/. ${CSGHUB_EMBEDDED}/bin/
@@ -115,6 +119,9 @@ COPY --from=minio ${CSGHUB_SRV_HOME}/logger/bin/. ${CSGHUB_SRV_HOME}/logger/bin/
 
 ## Installer PostgreSQL (or Patroni Python)
 COPY --from=postgresql ${CSGHUB_EMBEDDED}/. ${CSGHUB_EMBEDDED}/
+
+## Install Backup
+COPY --from=backup /usr/bin/csghub-backup ${CSGHUB_SRV_HOME}/backup/bin/
 
 ## Install Redis
 COPY --from=redis ${CSGHUB_SRV_HOME}/redis/bin/. ${CSGHUB_SRV_HOME}/redis/bin/
