@@ -1,6 +1,6 @@
 services:
   csghub:
-    image: registry.opencsg.com/opencsghq/omnibus-csghub:v2.6.3-ce
+    image: registry.opencsg.com/opencsghq/omnibus-csghub:v2.7.0-ce
     environment:
       CSGHUB_OMNIBUS_CONFIG: |
         csghub:
