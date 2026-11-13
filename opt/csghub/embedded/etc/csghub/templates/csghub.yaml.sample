@@ -39,6 +39,11 @@ csghub:
   # docs_host: "http://127.0.0.1:6636"  ## Documentation service host
   # enable_presigned_url_proxy: false   ## Enable presigned URL proxy
 
+  ## CORS Settings
+  # cors:
+  #   allowed_origins: []               ## Explicit browser origins allowed cross-origin
+  #                                     ## Empty derives from frontend / API / space domains
+
   ## Logging Settings
   # log:
   #   dir: "/var/log/csghub/server"
@@ -107,6 +112,11 @@ csghub:
   #   enabled: true                                  ## Enable multi-sync feature
   #   sync_as_client_cron_expression: "0 * * * *"    ## Sync cron schedule
   #   calc_recom_score_cron_expression: "1 * * * *"  ## Score calculation schedule
+
+  ## Signin Callback Allowlist
+  # flow_redirects: []                  ## Allowed signin callback targets
+  #   # - name: "langflow"
+  #   #   callback_url: "https://agenticflow.example.com/api/v1/opencsg/callback/csghub"
 
   ## NATS Messaging Settings
   # nats:
@@ -622,6 +632,7 @@ csghub:
   # enable: true
   # listen: "127.0.0.1:8000"
   # data: "/var/opt/csghub/casdoor"
+  # force_language: "en"            ## Casdoor UI language, e.g. en or zh
 
   ## Authentication Settings
   # auth:
