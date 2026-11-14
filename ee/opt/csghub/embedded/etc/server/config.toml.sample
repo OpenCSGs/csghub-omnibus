@@ -70,6 +70,15 @@ jwt_secret ={{ $gitaly.secret | default (persistentSeed | sha256sum) | quote }}
 [frontend]
 url = {{ $csghub.url | quote }}
 
+{{- $cors := .server.cors | default dict }}
+{{- $corsOrigins := $cors.allowed_origins | default list }}
+
+# Explicit browser origins allowed to read responses cross-origin. Setting at
+# least one entry makes this list the whole whitelist and disables derivation.
+# When empty the middleware falls back to the deployment's own addresses.
+[cors]
+allowed_origins = [{{- range $i, $v := $corsOrigins }}{{ if $i }}, {{ end }}{{ $v | quote }}{{- end }}]
+
 {{- $s3 := .server.s3 }}
 {{- $accessKeyId := $s3.access_key }}
 {{- $secretKey := $s3.secret_key | default (pbkdf2 $accessKeyId "opencsg" 2048 8) }}
@@ -158,6 +167,12 @@ port = {{ $actPort }}
 host = {{ printf "http://%s" $userHost | quote }}
 port = {{ $userPort }}
 signin_success_redirect_url = {{ printf "%s/server/callback" $csghub.url | quote }}
+{{- $flowRedirects := .server.flow_redirects | default list }}
+{{- if $flowRedirects }}
+# Allowlist of legacy "flows" signin callback targets; signin never redirects
+# to URLs outside this list.
+flow_redirects = [{{- range $i, $v := $flowRedirects }}{{ if $i }}, {{ end }}{ name = {{ $v.name | quote }}, callback_url = {{ $v.callback_url | quote }} }{{- end }}]
+{{- end }}
 
 {{- $multi_sync := .server.multi_sync }}
 
@@ -216,6 +231,23 @@ host = {{ printf "%s://%s" $moderationUrl.Scheme $moderationHost | quote }}
 port = {{ $moderationPort }}
 encoded_sensitive_words = {{ .moderation.encoded_sensitive_words | quote }}
 
+{{- with .moderation.security_scan }}
+
+[moderation.security_scan]
+{{- with .fetch_base_url }}
+fetch_base_url = {{ . | quote }}
+{{- end }}
+{{- with .fetch_signing_key }}
+fetch_signing_key = {{ . | quote }}
+{{- end }}
+{{- with .plugin_registry_url }}
+plugin_registry_url = {{ . | quote }}
+{{- end }}
+{{- with .plugin_staging_path }}
+plugin_staging_path = {{ . | quote }}
+{{- end }}
+{{- end }}
+
 {{- $sensitive := .moderation.sensitive_check }}
 
 [sensitive_check]
@@ -229,6 +261,7 @@ check_chain = [{{- range $i, $v := $sensitive.check_chain }}{{if $i}}, {{end}}{{
 stream_check_mode = {{ $sensitive.stream_check_mode | quote }}
 async_buffer_max_chars = {{ $sensitive.async_buffer_max_chars }}
 max_content_length = {{ $sensitive.maxContentLength | default 2000 }}
+prompt_max_chunks = {{ $sensitive.prompt_max_chunks | default 3 }}
 {{- end }}
 
 {{- $workflow := .server.workflow }}
@@ -315,8 +348,6 @@ loki_url = {{ $logcollector.loki_url | quote }}
 [agent]
 agent_hub_service_host = {{ $agent.langflow.host | quote }}
 agent_hub_service_token = {{ $agent.langflow.token | quote }}
-code_instance_quota_per_user = {{ $agent.code_instance_quota_per_user | default 5 }}
-langflow_instance_quota_per_user = {{ $agent.instance_quota_per_user | default 5 }}
 
 {{- $csgbot := .server.csgbot }}
 
@@ -341,3 +372,21 @@ advertise_addr = "{{ $csghub.host }}:8094"
 
 [storagegateway]
 enable_presigned_url_proxy = {{ .server.enable_presigned_url_proxy }}
+
+{{- $llmlog := .llmlog | default dict }}
+
+[llmlog]
+bucket = {{ $llmlog.bucket | default "opencsg-inference-logs" | quote }}
+prefix = {{ $llmlog.prefix | default "llmlog" | quote }}
+worker_num = {{ $llmlog.worker_num | default 10 }}
+batch_size = {{ $llmlog.batch_size | default 50 }}
+flush_interval_seconds = {{ $llmlog.flush_interval_seconds | default 60 }}
+
+{{- $llmlogSync := $llmlog.sync | default dict }}
+
+[llmlog.sync]
+enable = {{ $llmlogSync.enable | default false }}
+username = {{ $llmlogSync.username | default "" | quote }}
+dataset_namespace = {{ $llmlogSync.dataset_namespace | default "" | quote }}
+dataset_name = {{ $llmlogSync.dataset_name | default "" | quote }}
+max_shard_size_bytes = {{ $llmlogSync.max_shard_size_bytes | default "67108864" | int64 }}

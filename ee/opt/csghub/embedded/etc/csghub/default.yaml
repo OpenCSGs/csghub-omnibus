@@ -39,6 +39,11 @@ server:
   docs_host: "http://127.0.0.1:6636"  ## Documentation service host
   enable_presigned_url_proxy: false   ## Enable presigned URL proxy
 
+  ## CORS Settings
+  cors:
+    allowed_origins: []               ## Explicit browser origins allowed to read responses cross-origin
+                                      ## Empty derives from frontend / API / space domains
+
   ## Logging Settings
   log:
     dir: "/var/log/csghub/server"
@@ -114,6 +119,9 @@ server:
     sync_as_client_cron_expression: "0 * * * *"    ## Sync cron schedule
     calc_recom_score_cron_expression: "1 * * * *"  ## Score calculation schedule
 
+  ## Signin Callback Allowlist
+  flow_redirects: []                  ## Allowed signin callback targets, e.g. [{name: "langflow", callback_url: "https://..."}]
+
   ## NATS Messaging Settings
   nats:
     url: ""                                        ## NATS server URL
@@ -159,8 +167,6 @@ server:
     langflow:                                    ## Langflow service configuration
       host: "http://127.0.0.1:8088"              ## Langflow endpoint URL
       token: ""                                  ## API token for Langflow authentication
-      instance_quota_per_user: 5                 ## Max Langflow instances per user
-      code_instance_quota_per_user: 5            ## Max code-execution instances per user
 
   ## CSGBot Settings
   csgbot:
@@ -250,11 +256,6 @@ aigateway:
   port: 8094
   moderation_bypass_sensitive_check: true
   responses_id_secret: ""        ## Secret for aigateway response ID generation
-  enable_llm_log: false
-  enable_llm_trace: false
-  llm_trace_content_capture: "metadata_only"
-  llm_trace_max_content_length: 256
-  llm_trace_max_input_user_messages: 1
 
 ##########################################################################
 ## DNSMasq Configuration
@@ -280,6 +281,13 @@ moderation:
   address: "http://127.0.0.1:8089"   ## Moderation service endpoint
   encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
 
+  ## Remote Security Scanner Plugin Settings (EE/SaaS only)
+  security_scan: {}
+    # fetch_base_url: ""               ## HTTPS base URL for scanner plugin files
+    # fetch_signing_key: ""            ## HMAC key for plugin file fetches
+    # plugin_registry_url: ""          ## Plugin package registry
+    # plugin_staging_path: "/starhub-bin/plugin-staging"  ## Must be writable in the container
+
   ## Sensitive Check Settings
   sensitive_check:
     access_key_id: ""                ## Access key ID for the moderation service
@@ -291,6 +299,7 @@ moderation:
     stream_check_mode: "async"              ## Stream check mode (async/sync)
     async_buffer_max_chars: 50              ## Max characters for async buffer
     maxContentLength: 2000                  ## Max content length for sensitive check
+    prompt_max_chunks: 3                    ## Prompt chunks checked synchronously (0 = always synchronous)
   ## LLM-based Sensitive Check Settings
   llm:
     enabled: false                                         ## Enable LLM-based sensitive check
@@ -899,6 +908,7 @@ casdoor:
   enable: true
   listen: "127.0.0.1:8000"
   data: "/var/opt/csghub/casdoor"
+  force_language: "en"                ## Casdoor UI language, e.g. en or zh
 
   ## Authentication Settings
   auth:
@@ -1038,8 +1048,8 @@ llmlog:
   bucket: "opencsg-inference-logs"
   prefix: "llmlog"
   worker_num: 10
-  batch_size: 1000
-  flush_interval_seconds: 300
+  batch_size: 50
+  flush_interval_seconds: 60
   sync:
     enable: false
     username: ""

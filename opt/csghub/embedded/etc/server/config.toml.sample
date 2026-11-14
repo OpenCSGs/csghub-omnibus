@@ -70,6 +70,15 @@ jwt_secret ={{ $gitaly.secret | default (persistentSeed | sha256sum) | quote }}
 [frontend]
 url = {{ $csghub.url | quote }}
 
+{{- $cors := .server.cors | default dict }}
+{{- $corsOrigins := $cors.allowed_origins | default list }}
+
+# Explicit browser origins allowed to read responses cross-origin. Setting at
+# least one entry makes this list the whole whitelist and disables derivation.
+# When empty the middleware falls back to the deployment's own addresses.
+[cors]
+allowed_origins = [{{- range $i, $v := $corsOrigins }}{{ if $i }}, {{ end }}{{ $v | quote }}{{- end }}]
+
 {{- $s3 := .server.s3 }}
 {{- $accessKeyId := $s3.access_key }}
 {{- $secretKey := $s3.secret_key | default (pbkdf2 $accessKeyId "opencsg" 2048 8) }}
@@ -159,6 +168,12 @@ port = {{ $actPort }}
 host = {{ printf "http://%s" $userHost | quote }}
 port = {{ $userPort }}
 signin_success_redirect_url = {{ printf "%s/server/callback" $csghub.url | quote }}
+{{- $flowRedirects := .server.flow_redirects | default list }}
+{{- if $flowRedirects }}
+# Allowlist of legacy "flows" signin callback targets; signin never redirects
+# to URLs outside this list.
+flow_redirects = [{{- range $i, $v := $flowRedirects }}{{ if $i }}, {{ end }}{ name = {{ $v.name | quote }}, callback_url = {{ $v.callback_url | quote }} }{{- end }}]
+{{- end }}
 
 {{- $multi_sync := .server.multi_sync }}
 
@@ -226,6 +241,7 @@ access_key_secret = {{ $sensitive.access_key_secret | quote }}
 region = {{ $sensitive.region | quote }}
 endpoint = {{ $sensitive.endpoint | quote }}
 enable_ssl = {{ $sensitive.enable_ssl }}
+prompt_max_chunks = {{ $sensitive.prompt_max_chunks | default 3 }}
 {{- end }}
 {{- $workflow := .server.workflow }}
 

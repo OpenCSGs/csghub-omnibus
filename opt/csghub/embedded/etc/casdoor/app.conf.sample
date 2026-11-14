@@ -1,6 +1,7 @@
 {{- $csghub := resolveUrl .csghub.external_url }}
 {{- $casdoorEp := resolveEndpoint $csghub.scheme $csghub.host .casdoor.listen "127.0.0.1:8000" }}
 appname = casdoor
+forceLanguage = {{ .casdoor.force_language | default "en" | quote }}
 httpport = 8087
 runmode = prod
 copyrequestbody = true
