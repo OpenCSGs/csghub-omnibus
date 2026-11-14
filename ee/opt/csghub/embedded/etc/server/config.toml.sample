@@ -374,3 +374,21 @@ advertise_addr = "{{ $csghub.host }}:8094"
 
 [storagegateway]
 enable_presigned_url_proxy = {{ .server.enable_presigned_url_proxy }}
+
+{{- $llmlog := .llmlog | default dict }}
+
+[llmlog]
+bucket = {{ $llmlog.bucket | default "opencsg-inference-logs" | quote }}
+prefix = {{ $llmlog.prefix | default "llmlog" | quote }}
+worker_num = {{ $llmlog.worker_num | default 10 }}
+batch_size = {{ $llmlog.batch_size | default 50 }}
+flush_interval_seconds = {{ $llmlog.flush_interval_seconds | default 60 }}
+
+{{- $llmlogSync := $llmlog.sync | default dict }}
+
+[llmlog.sync]
+enable = {{ $llmlogSync.enable | default false }}
+username = {{ $llmlogSync.username | default "" | quote }}
+dataset_namespace = {{ $llmlogSync.dataset_namespace | default "" | quote }}
+dataset_name = {{ $llmlogSync.dataset_name | default "" | quote }}
+max_shard_size_bytes = {{ $llmlogSync.max_shard_size_bytes | default "67108864" | int64 }}
