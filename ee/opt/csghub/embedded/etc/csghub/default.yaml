@@ -167,8 +167,6 @@ server:
     langflow:                                    ## Langflow service configuration
       host: "http://127.0.0.1:8088"              ## Langflow endpoint URL
       token: ""                                  ## API token for Langflow authentication
-      instance_quota_per_user: 5                 ## Max Langflow instances per user
-      code_instance_quota_per_user: 5            ## Max code-execution instances per user
 
   ## CSGBot Settings
   csgbot:
@@ -258,11 +256,6 @@ aigateway:
   port: 8094
   moderation_bypass_sensitive_check: true
   responses_id_secret: ""        ## Secret for aigateway response ID generation
-  enable_llm_log: false
-  enable_llm_trace: false
-  llm_trace_content_capture: "metadata_only"
-  llm_trace_max_content_length: 256
-  llm_trace_max_input_user_messages: 1
 
 ##########################################################################
 ## DNSMasq Configuration
