@@ -56,7 +56,6 @@ server:
     port: 5432
     user: "csghub"
     password: ""
-    timezone: "Asia/Shanghai"
 
   ## Redis Settings
   redis:
@@ -279,7 +278,6 @@ user:
 moderation:
   enable: false
   address: "http://127.0.0.1:8089"   ## Moderation service endpoint
-  encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
 
   ## Remote Security Scanner Plugin Settings (EE/SaaS only)
   security_scan: {}

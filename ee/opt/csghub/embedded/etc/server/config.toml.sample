@@ -22,11 +22,6 @@ ssh_domain = {{ printf "ssh://git@%s:%d" (toString $csghub.host) (int64 $shell_p
 url = {{ printf "http://localhost:%d" .mirror_repo.listen_port | quote }}
 token = ""
 port = {{ .mirror_repo.listen_port }}
-{{- if .server.saas }}
-remote = true
-{{- else }}
-remote = false
-{{- end }}
 session_secret_key = {{ persistentSeed | sha1sum | quote }}
 worker_number = {{ .mirror_repo.worker_number }}
 lfs_concurrency = {{ .mirror_lfs.lfs_concurrency }}
@@ -39,7 +34,6 @@ part_size = {{ .mirror_lfs.part_size  }}
 [database]
 driver = "pg"
 dsn = {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" (toString $pgUser) (toString $pgPassword) (toString $postgresql.host) (int64 $postgresql.port) (toString $postgresql.name) | quote }}
-timezone = {{ $postgresql.timezone | quote }}
 
 {{- $redis := .server.redis }}
 {{- $redisUser := $redis.auth.user }}
@@ -55,15 +49,12 @@ sentinel_mode = {{ $redis.sentinel.mode }}
 sentinel_endpoint = {{ $redis.sentinel.endpoint | quote }}
 sentinel_master = {{ $redis.sentinel.master | quote }}
 
-[git_server]
-type = "gitaly"
-
 {{- $gitaly := .server.gitaly }}
 {{- $gitalyToken := $gitaly.token | default (pbkdf2 "gitaly" "opencsg" 2048 8) }}
 
 [gitaly_server]
 address = {{ $gitaly.address | quote }}
-storge = {{ $gitaly.storage | quote }}
+storage = {{ $gitaly.storage | quote }}
 token = {{ $gitalyToken | quote }}
 jwt_secret ={{ $gitaly.secret | default (persistentSeed | sha256sum) | quote }}
 
@@ -187,9 +178,6 @@ saas_sync_domain = "https://sync.opencsg.com"
 enable = {{ $telemetry.enabled | default true }}
 report_url = "http://hub.opencsg.com/api/v1/telemetry"
 
-[auto_clean]
-instance = false
-
 {{- $dataset := .server.dataset }}
 
 [dataset]
@@ -229,7 +217,6 @@ port = {{ $dfPort }}
 [moderation]
 host = {{ printf "%s://%s" $moderationUrl.Scheme $moderationHost | quote }}
 port = {{ $moderationPort }}
-encoded_sensitive_words = {{ .moderation.encoded_sensitive_words | quote }}
 
 {{- with .moderation.security_scan }}
 

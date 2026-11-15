@@ -56,7 +56,6 @@ server:
     port: 5432
     user: "csghub"
     password: ""
-    timezone: "Asia/Shanghai"
 
   ## Redis Settings
   redis:
@@ -238,7 +237,6 @@ dataviewer:
 aigateway:
   enable: true
   port: 8094
-  moderation_bypass_sensitive_check: true
   responses_id_secret: ""        ## Secret for aigateway response ID generation
 
 ##########################################################################
@@ -701,7 +699,6 @@ loki:
 moderation:
   enable: false
   address: "http://127.0.0.1:8089"   ## Moderation service endpoint
-  encoded_sensitive_words: ""        ## Base64-encoded sensitive words list, separated by commas when decoded
 
   ## Sensitive Check Settings
   sensitive_check:
