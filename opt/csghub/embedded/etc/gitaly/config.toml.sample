@@ -44,7 +44,6 @@ key_path = {{ .gitaly.tls.key_path | default "/var/opt/csghub/gitaly/ssl/key.pem
 # Git settings
 [git]
 use_bundled_binaries = {{ .gitaly.git.use_bundled_binaries }}
-ignore_gitconfig = {{ .gitaly.git.ignore_gitconfig }}
 bin_path = {{ .gitaly.git.bin_path | quote }}
 catfile_cache_size = {{ .gitaly.git.catfile_cache_size }}
 signing_key = "{{ .gitaly.git.signing_key }}"
@@ -66,7 +65,6 @@ path = {{ .path | default (printf "%s/repositories" $dataDir) | quote }}
 [logging]
 format = {{ .gitaly.logging.format | quote }}
 level = {{ .gitaly.logging.level | quote }}
-dir = {{ .gitaly.logging.dir | quote }}
 sentry_dsn = {{ .gitaly.logging.sentry_dsn | default "" | quote }}
 sentry_environment = {{ .gitaly.logging.sentry_environment | default "" | quote }}
 
@@ -87,7 +85,6 @@ secret = {{ .gitaly.secret | default (persistentSeed | sha256sum) | quote }}
 
 [gitlab.http-settings]
 read_timeout = {{ .gitaly.http_settings.read_timeout }}
-self_signed_cert = {{ .gitaly.http_settings.self_signed_cert }}
 
 {{- range $concurrency := .gitaly.concurrency }}
 [[concurrency]]

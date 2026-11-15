@@ -402,7 +402,6 @@ csghub:
   ## HTTP Settings
   # http_settings:
   #   read_timeout: 300  ## HTTP read timeout
-  #   self_signed_cert: false
 
   ## Concurrency Control Settings
   # concurrency:
@@ -433,7 +432,6 @@ csghub:
   ## Git Settings
   # git:
   #   use_bundled_binaries: true                ## Use bundled Git binaries
-  #   ignore_gitconfig: true                    ## Ignore user gitconfig
   #   bin_path: "/opt/gitlab/embedded/bin/git"  ## Git binary path
   #   catfile_cache_size: 100
   #   signing_key: ""
