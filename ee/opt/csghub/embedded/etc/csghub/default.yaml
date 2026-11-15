@@ -428,6 +428,7 @@ xnet:
     encrypt: false              ## S3 Server-side encryption
     secure: false               ## If S3 Use HTTPS
     path_style: false           ## S3 Path-style access
+    signed_url_expire_hours: 3  ## Presigned URL expiry for xorb downloads (hours)
 
 ##########################################################################
 ## Gitaly Service Configuration
@@ -470,7 +471,6 @@ gitaly:
   ## HTTP Settings
   http_settings:
     read_timeout: 300  ## HTTP read timeout
-    self_signed_cert: false
 
   ## Concurrency Control Settings
   concurrency:
@@ -501,7 +501,6 @@ gitaly:
   ## Git Settings
   git:
     use_bundled_binaries: true                ## Use bundled Git binaries
-    ignore_gitconfig: true                    ## Ignore user gitconfig
     bin_path: "/opt/gitlab/embedded/bin/git"  ## Git binary path
     catfile_cache_size: 100
     signing_key: ""

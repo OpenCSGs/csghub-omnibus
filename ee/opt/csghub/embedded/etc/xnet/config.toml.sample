@@ -43,7 +43,7 @@ password = {{ $redisPassword | quote }}
 meta_store = "s3"
 {{- $s3Endpoint := $s3.endpoint | default (printf "%s:9000" $csghub.host) }}
 xorb_s3_url = {{ printf "%s/%s" $s3Endpoint $s3.bucket | quote }}
-signed_ul_expire_hours = {{ .xnet.s3.signed_ul_expire_hours | default 3 }}
+signed_url_expire_hours = {{ .xnet.s3.signed_url_expire_hours | default 3 }}
 cleanup_timeout_seconds = 30
 
 {{- $accessKeyId := $s3.access_key }}
