@@ -52,6 +52,15 @@ fi
 # Execute SQL seed scripts (after casdoor init so tables exist)
 cd /opt/csghub/service/casdoor && chpst -e "$ENV_DIR" /opt/csghub/embedded/etc/csghub/scripts/pg_executor
 
+# The initialization run above executes as root, so casdoor creates its log directory
+# (logConfig.filename in app.conf is "logs/casdoor.log", relative to the data directory)
+# owned by root. The unprivileged process below cannot open it and panics on startup,
+# which runit would restart forever. Hand the directory to the run user before dropping
+# privileges.
+LOGDIR={{ $dataDir }}/logs
+mkdir -p "$LOGDIR"
+chown -R {{ .run_user }}:{{ .run_user }} "$LOGDIR"
+
 cd {{ $dataDir }}
 exec chpst -e /opt/csghub/service/casdoor/env -P \
   -u {{ .run_user }}:{{ .run_user }} \
