@@ -255,6 +255,8 @@ aigateway:
   port: 8094
   moderation_bypass_sensitive_check: true
   responses_id_secret: ""        ## Secret for aigateway response ID generation
+  enable_llm_log: false          ## Enable LLM logging; also starts the llmlog service
+  enable_llm_trace: false        ## Enable LLM tracing; also starts the llmlog service
 
 ##########################################################################
 ## DNSMasq Configuration
@@ -1041,7 +1043,7 @@ loki:
 ## - LLM logging and analytics service
 ##########################################################################
 llmlog:
-  enable: false
+  enable: false                  ## Also enabled by aigateway.enable_llm_log / enable_llm_trace
   bucket: "opencsg-inference-logs"
   prefix: "llmlog"
   worker_num: 10
